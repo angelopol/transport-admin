@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\BusController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DriverController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RouteController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,9 +18,21 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Fleet Management (all authenticated users)
+    Route::resource('buses', BusController::class);
+    Route::post('/buses/{bus}/regenerate-token', [BusController::class, 'regenerateToken'])
+        ->name('buses.regenerate-token');
+
+    // Admin-only routes
+    Route::middleware('admin')->group(function () {
+        Route::resource('routes', RouteController::class)->except(['show']);
+        Route::resource('drivers', DriverController::class)->except(['show']);
+    });
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -24,4 +40,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
+
