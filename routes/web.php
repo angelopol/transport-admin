@@ -31,6 +31,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('admin')->group(function () {
         Route::resource('routes', RouteController::class)->except(['show']);
         Route::resource('drivers', DriverController::class)->except(['show']);
+        Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+        Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     });
 });
 
