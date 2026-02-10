@@ -48,7 +48,7 @@ export default function Index({ users, filters }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-4">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Gestión de Usuarios ({users.total})
                     </h2>
@@ -86,55 +86,106 @@ export default function Index({ users, filters }: Props) {
                             </form>
                         </div>
 
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {users.data.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 font-medium text-gray-900">{user.name}</td>
-                                        <td className="px-6 py-4 text-gray-600">{user.email}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'admin'
+                        {/* Desktop Table */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {users.data.map((user) => (
+                                        <tr key={user.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 font-medium text-gray-900">{user.name}</td>
+                                            <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'admin'
                                                     ? 'bg-purple-100 text-purple-700 border-purple-200'
                                                     : 'bg-blue-100 text-blue-700 border-blue-200'
-                                                }`}>
-                                                {user.role === 'admin' ? 'Administrador' : 'Dueño'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600">{user.phone || '—'}</td>
-                                        <td className="px-6 py-4 text-right space-x-2">
-                                            <Link
-                                                href={route('users.edit', user.id)}
-                                                className="text-indigo-600 hover:text-indigo-900 font-medium"
-                                            >
-                                                Editar
-                                            </Link>
-                                            <button
-                                                onClick={() => handleDelete(user)}
-                                                className="text-red-600 hover:text-red-900 font-medium"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {users.data.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                            No se encontraron usuarios.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                                    }`}>
+                                                    {user.role === 'admin' ? 'Administrador' : 'Dueño'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600">{user.phone || '—'}</td>
+                                            <td className="px-6 py-4 text-right space-x-2">
+                                                <Link
+                                                    href={route('users.edit', user.id)}
+                                                    className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                                >
+                                                    Editar
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(user)}
+                                                    className="text-red-600 hover:text-red-900 font-medium"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {users.data.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                                No se encontraron usuarios.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile List View */}
+                        <div className="md:hidden">
+                            {users.data.map((user) => (
+                                <div key={user.id} className="p-4 border-b border-gray-200 last:border-b-0 space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg font-bold text-gray-900">{user.name}</h3>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'admin'
+                                            ? 'bg-purple-100 text-purple-700 border-purple-200'
+                                            : 'bg-blue-100 text-blue-700 border-blue-200'
+                                            }`}>
+                                            {user.role === 'admin' ? 'Admin' : 'Dueño'}
+                                        </span>
+                                    </div>
+
+                                    <div className="text-sm text-gray-600 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-500 w-16">Email:</span>
+                                            <span className="truncate">{user.email}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-500 w-16">Teléfono:</span>
+                                            <span>{user.phone || '—'}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-3 pt-2">
+                                        <Link
+                                            href={route('users.edit', user.id)}
+                                            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200"
+                                        >
+                                            Editar
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(user)}
+                                            className="px-3 py-1.5 bg-red-50 text-red-600 rounded text-sm hover:bg-red-100"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {users.data.length === 0 && (
+                                <div className="p-8 text-center text-gray-500">
+                                    No hay usuarios registrados.
+                                </div>
+                            )}
+                        </div>
 
                         {/* Pagination */}
                         <div className="px-6 py-4 border-t border-gray-200 flex justify-center">
@@ -145,8 +196,8 @@ export default function Index({ users, filters }: Props) {
                                             key={i}
                                             href={link.url}
                                             className={`px-3 py-1 rounded border ${link.active
-                                                    ? 'bg-blue-600 text-white border-blue-600'
-                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                                                 }`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />

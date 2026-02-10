@@ -38,7 +38,7 @@ export default function Index({ stats, hourlyData, buses, isAdmin }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-4">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Dashboard
                     </h2>
@@ -80,27 +80,29 @@ export default function Index({ stats, hourlyData, buses, isAdmin }: Props) {
                     {/* Hourly Chart */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">Pasajeros por Hora</h3>
-                        <div className="flex items-end gap-1 h-40">
-                            {hourlyData.map((data, idx) => (
-                                <div key={idx} className="flex-1 flex flex-col items-center group">
-                                    <div
-                                        className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all hover:from-blue-600 hover:to-blue-500 relative"
-                                        style={{
-                                            height: `${(data.passengers / maxPassengers) * 100}%`,
-                                            minHeight: data.passengers > 0 ? '4px' : '0'
-                                        }}
-                                    >
-                                        {data.passengers > 0 && (
-                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                                                {data.passengers}
-                                            </div>
+                        <div className="overflow-x-auto pb-4">
+                            <div className="flex items-end gap-1 h-40 min-w-[600px] sm:min-w-full">
+                                {hourlyData.map((data, idx) => (
+                                    <div key={idx} className="flex-1 flex flex-col items-center group">
+                                        <div
+                                            className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all hover:from-blue-600 hover:to-blue-500 relative"
+                                            style={{
+                                                height: `${(data.passengers / maxPassengers) * 100}%`,
+                                                minHeight: data.passengers > 0 ? '4px' : '0'
+                                            }}
+                                        >
+                                            {data.passengers > 0 && (
+                                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
+                                                    {data.passengers}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {idx % 3 === 0 && (
+                                            <span className="text-xs text-gray-500 mt-1">{data.hour}</span>
                                         )}
                                     </div>
-                                    {idx % 3 === 0 && (
-                                        <span className="text-xs text-gray-500 mt-1">{data.hour}</span>
-                                    )}
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -126,8 +128,8 @@ export default function Index({ stats, hourlyData, buses, isAdmin }: Props) {
                                         <tr key={bus.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${bus.is_online
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : 'bg-gray-100 text-gray-600'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-gray-100 text-gray-600'
                                                     }`}>
                                                     <span className={`w-2 h-2 rounded-full ${bus.is_online ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
                                                         }`}></span>

@@ -39,10 +39,15 @@ class DashboardController extends Controller
         $totalBuses = $buses->count();
 
         // Hourly breakdown for chart
+        $driver = DB::connection()->getDriverName();
+        $hourExpression = $driver === 'sqlite'
+            ? "CAST(strftime('%H', event_timestamp) AS INTEGER)"
+            : "HOUR(event_timestamp)";
+
         $hourlyStats = TelemetryEvent::whereIn('bus_id', $busIds)
             ->where('event_timestamp', '>=', $todayStart)
             ->select(
-                DB::raw('HOUR(event_timestamp) as hour'),
+                DB::raw("$hourExpression as hour"),
                 DB::raw('SUM(passenger_count) as passengers')
             )
             ->groupBy('hour')

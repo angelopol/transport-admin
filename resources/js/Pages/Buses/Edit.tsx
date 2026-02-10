@@ -170,7 +170,7 @@ export default function Edit({ bus, routes, drivers }: Props) {
 
                             <div className="flex justify-end gap-4 pt-4">
                                 <Link
-                                    href={`/buses/${bus.id}`}
+                                    href={`/buses`}
                                     className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
                                 >
                                     Cancelar

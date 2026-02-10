@@ -13,10 +13,10 @@ export default function Authenticated({
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+        <div className="h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
             {/* Sidebar (Desktop) */}
-            <aside className="hidden md:flex flex-col w-64 bg-blue-900 text-white min-h-screen shadow-2xl z-20">
-                <div className="flex items-center justify-center h-16 border-b border-blue-800/50 bg-blue-950/30 backdrop-blur-sm">
+            <aside className="hidden md:flex flex-col w-64 bg-blue-900 text-white h-full shadow-2xl z-20">
+                <div className="flex items-center justify-center h-16 border-b border-blue-800/50 bg-blue-950/30 backdrop-blur-sm shrink-0">
                     <Link href="/" className="flex items-center gap-2">
                         <div className="bg-white p-1 rounded-lg">
                             <ApplicationLogo className="block h-8 w-auto fill-current text-blue-900" />
@@ -25,7 +25,7 @@ export default function Authenticated({
                     </Link>
                 </div>
 
-                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-transparent">
                     <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-2">
                         Principal
                     </p>
@@ -53,7 +53,7 @@ export default function Authenticated({
                     </NavLink>
                 </nav>
 
-                <div className="p-4 border-t border-blue-800/50 bg-blue-950/30">
+                <div className="p-4 border-t border-blue-800/50 bg-blue-950/30 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold shadow-lg">
                             {user.name.charAt(0)}
@@ -67,9 +67,9 @@ export default function Authenticated({
             </aside>
 
             {/* Mobile Header & Main Content */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                 {/* Mobile Header */}
-                <header className="md:hidden bg-blue-900 text-white shadow-md z-10">
+                <header className="md:hidden bg-blue-900 text-white shadow-md z-10 shrink-0">
                     <div className="flex items-center justify-between px-4 h-16">
                         <Link href="/" className="flex items-center gap-2">
                             <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
@@ -110,7 +110,7 @@ export default function Authenticated({
                 </header>
 
                 {/* Top Bar (Desktop) - User Dropdown & Title */}
-                <header className="hidden md:flex bg-white shadow-sm h-16 items-center justify-between px-8 z-10">
+                <header className="hidden md:flex bg-white shadow-sm h-16 items-center justify-between px-8 z-10 shrink-0">
                     <div className="flex items-center">
                         {header && <div className="text-xl font-bold text-gray-800">{header}</div>}
                     </div>
@@ -136,7 +136,7 @@ export default function Authenticated({
                 </header>
 
                 {/* Main Content Area */}
-                <main className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8">
+                <main className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8 scroll-smooth">
                     {children}
                 </main>
             </div>
