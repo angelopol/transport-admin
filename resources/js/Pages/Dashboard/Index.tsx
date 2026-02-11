@@ -148,7 +148,6 @@ export default function Index({ stats, hourlyData, buses, isAdmin }: Props) {
                                             <td className="px-6 py-4 text-gray-600">{bus.driver || '—'}</td>
                                             <td className="px-6 py-4">
                                                 <span className="font-medium">{bus.today_passengers}</span>
-                                                <span className="text-gray-400 text-sm">/{bus.capacity}</span>
                                             </td>
                                             <td className="px-6 py-4 text-gray-500 text-sm">{bus.last_seen || 'Nunca'}</td>
                                         </tr>
