@@ -48,12 +48,22 @@ export default function Authenticated({
                     <NavLink href={route('drivers.index')} active={route().current('drivers.*')} className="w-full">
                         <span className="mr-3">👔</span> Conductores
                     </NavLink>
-                    <NavLink href={route('users.index')} active={route().current('users.*')} className="w-full">
-                        <span className="mr-3">👥</span> Usuarios
+                    <NavLink href={route('collectors.index')} active={route().current('collectors.*')} className="w-full">
+                        <span className="mr-3">🎫</span> Colectores
                     </NavLink>
-                    <NavLink href={route('devices.index')} active={route().current('devices.*')} className="w-full">
-                        <span className="mr-3">📡</span> Dispositivos
+                    <NavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')} className="w-full">
+                        <span className="mr-3">💰</span> Ingresos
                     </NavLink>
+                    {user.role === 'admin' && (
+                        <>
+                            <NavLink href={route('users.index')} active={route().current('users.*')} className="w-full">
+                                <span className="mr-3">👥</span> Usuarios
+                            </NavLink>
+                            <NavLink href={route('devices.index')} active={route().current('devices.*')} className="w-full">
+                                <span className="mr-3">📡</span> Dispositivos
+                            </NavLink>
+                        </>
+                    )}
                 </nav>
 
                 <div className="p-4 border-t border-blue-800/50 bg-blue-950/30 shrink-0">
@@ -97,8 +107,14 @@ export default function Authenticated({
                             <ResponsiveNavLink href={route('buses.index')} active={route().current('buses.*')}>Autobuses</ResponsiveNavLink>
                             <ResponsiveNavLink href={route('routes.index')} active={route().current('routes.*')}>Rutas</ResponsiveNavLink>
                             <ResponsiveNavLink href={route('drivers.index')} active={route().current('drivers.*')}>Conductores</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('devices.index')} active={route().current('devices.*')}>Dispositivos</ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('collectors.index')} active={route().current('collectors.*')}>Colectores</ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')}>Ingresos</ResponsiveNavLink>
+                            {user.role === 'admin' && (
+                                <>
+                                    <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('devices.index')} active={route().current('devices.*')}>Dispositivos</ResponsiveNavLink>
+                                </>
+                            )}
                         </div>
                         <div className="pt-4 pb-1 border-t border-blue-700">
                             <div className="px-4">

@@ -16,7 +16,9 @@ class RouteController extends Controller
      */
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $routes = Route::withCount('buses')
+            ->forUser($user)
             ->orderBy('name')
             ->paginate(15);
 
@@ -43,7 +45,13 @@ class RouteController extends Controller
             'origin' => ['required', 'string', 'max:100'],
             'destination' => ['required', 'string', 'max:100'],
             'fare' => ['required', 'numeric', 'min:0'],
+            'fare_student' => ['nullable', 'numeric', 'min:0'],
+            'fare_senior' => ['nullable', 'numeric', 'min:0'],
+            'fare_disabled' => ['nullable', 'numeric', 'min:0'],
+            'fare_sunday' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        $validated['owner_id'] = $request->user()->id;
 
         Route::create($validated);
 
@@ -54,8 +62,13 @@ class RouteController extends Controller
     /**
      * Show the form for editing the route.
      */
-    public function edit(Route $route): Response
+    public function edit(Request $request, Route $route): Response
     {
+        $user = $request->user();
+        if (!$user->isAdmin() && $route->owner_id !== $user->id) {
+            abort(403);
+        }
+
         return Inertia::render('Routes/Edit', [
             'route' => $route,
         ]);
@@ -66,11 +79,20 @@ class RouteController extends Controller
      */
     public function update(Request $request, Route $route): RedirectResponse
     {
+        $user = $request->user();
+        if (!$user->isAdmin() && $route->owner_id !== $user->id) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'origin' => ['required', 'string', 'max:100'],
             'destination' => ['required', 'string', 'max:100'],
             'fare' => ['required', 'numeric', 'min:0'],
+            'fare_student' => ['nullable', 'numeric', 'min:0'],
+            'fare_senior' => ['nullable', 'numeric', 'min:0'],
+            'fare_disabled' => ['nullable', 'numeric', 'min:0'],
+            'fare_sunday' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['boolean'],
         ]);
 
@@ -83,8 +105,13 @@ class RouteController extends Controller
     /**
      * Remove the specified route.
      */
-    public function destroy(Route $route): RedirectResponse
+    public function destroy(Request $request, Route $route): RedirectResponse
     {
+        $user = $request->user();
+        if (!$user->isAdmin() && $route->owner_id !== $user->id) {
+            abort(403);
+        }
+
         $route->delete();
 
         return redirect()->route('routes.index')

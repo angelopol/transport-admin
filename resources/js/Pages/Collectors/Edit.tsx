@@ -2,41 +2,39 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
-interface Driver {
+interface Collector {
     id: number;
     name: string;
     cedula: string;
     phone: string | null;
-    license_number: string | null;
     is_active: boolean;
     photo_url?: string;
 }
 
 interface Props {
-    driver: Driver;
+    collector: Collector;
 }
 
-export default function Edit({ driver }: Props) {
+export default function Edit({ collector }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         _method: 'put',
-        name: driver.name,
-        cedula: driver.cedula,
-        phone: driver.phone || '',
-        license_number: driver.license_number || '',
-        is_active: driver.is_active,
+        name: collector.name,
+        cedula: collector.cedula,
+        phone: collector.phone || '',
+        is_active: collector.is_active,
         photo: null as File | null,
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(`/drivers/${driver.id}`);
+        post(`/collectors/${collector.id}`);
     };
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Editar Conductor: {driver.name}</h2>}
+            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Editar Colector: {collector.name}</h2>}
         >
-            <Head title={`Editar ${driver.name}`} />
+            <Head title={`Editar ${collector.name}`} />
 
             <div className="py-6">
                 <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
@@ -44,11 +42,11 @@ export default function Edit({ driver }: Props) {
                         <form onSubmit={submit} className="space-y-6">
 
                             {/* Mostrar foto actual si existe */}
-                            {driver.photo_url && (
+                            {collector.photo_url && (
                                 <div className="flex justify-center mb-6">
                                     <img
-                                        src={driver.photo_url}
-                                        alt={driver.name}
+                                        src={collector.photo_url}
+                                        alt={collector.name}
                                         className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 shadow-sm"
                                     />
                                 </div>
@@ -65,7 +63,6 @@ export default function Edit({ driver }: Props) {
                                 />
                             </div>
 
-                            {/* ... fields ... */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Cédula *</label>
@@ -89,16 +86,6 @@ export default function Edit({ driver }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Número de Licencia</label>
-                                <input
-                                    type="text"
-                                    value={data.license_number}
-                                    onChange={(e) => setData('license_number', e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-
-                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Actualizar Foto</label>
                                 <input
                                     type="file"
@@ -117,12 +104,12 @@ export default function Edit({ driver }: Props) {
                                         onChange={(e) => setData('is_active', e.target.checked)}
                                         className="w-4 h-4 rounded border-gray-300 text-blue-600"
                                     />
-                                    <span className="text-sm text-gray-700">Conductor activo</span>
+                                    <span className="text-sm text-gray-700">Colector activo</span>
                                 </label>
                             </div>
 
                             <div className="flex justify-end gap-4">
-                                <Link href="/drivers" className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</Link>
+                                <Link href="/collectors" className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</Link>
                                 <button type="submit" disabled={processing} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
                                     {processing ? 'Guardando...' : 'Guardar Cambios'}
                                 </button>

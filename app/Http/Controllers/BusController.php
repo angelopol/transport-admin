@@ -22,9 +22,7 @@ class BusController extends Controller
         $user = $request->user();
 
         $buses = Bus::with(['owner', 'route', 'driver'])
-            ->when(!$user->isAdmin(), function ($query) use ($user) {
-                $query->where('owner_id', $user->id);
-            })
+            ->forUser($user)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -39,14 +37,16 @@ class BusController extends Controller
      */
     public function create(Request $request): Response
     {
+        $user = $request->user();
+
         // Get devices not currently linked to any bus
         $availableDevices = \App\Models\Device::whereDoesntHave('bus')
             ->where('is_active', true)
             ->get(['id', 'mac_address']);
 
         return Inertia::render('Buses/Create', [
-            'routes' => Route::active()->get(['id', 'name', 'origin', 'destination']),
-            'drivers' => Driver::active()->get(['id', 'name', 'cedula']),
+            'routes' => Route::active()->forUser($user)->get(['id', 'name', 'origin', 'destination']),
+            'drivers' => Driver::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'availableDevices' => $availableDevices,
         ]);
     }
@@ -65,7 +65,7 @@ class BusController extends Controller
             'driver_id' => ['nullable', 'exists:drivers,id'],
         ]);
 
-        $validated['owner_id'] = $request->user()->id;
+        $validated['owner_id'] = $request->user()->id; // TODO: Allow Admin to select owner
         $validated['api_token'] = Str::random(64);
         if (!empty($validated['device_mac'])) {
             $validated['device_mac'] = strtolower($validated['device_mac']);
@@ -132,8 +132,8 @@ class BusController extends Controller
 
         return Inertia::render('Buses/Edit', [
             'bus' => $bus,
-            'routes' => Route::active()->get(['id', 'name', 'origin', 'destination']),
-            'drivers' => Driver::active()->get(['id', 'name', 'cedula']),
+            'routes' => Route::active()->forUser($user)->get(['id', 'name', 'origin', 'destination']),
+            'drivers' => Driver::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'availableDevices' => $availableDevices,
         ]);
     }

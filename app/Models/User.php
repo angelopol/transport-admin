@@ -57,6 +57,21 @@ class User extends Authenticatable
         return $this->hasMany(Bus::class, 'owner_id');
     }
 
+    public function drivers(): HasMany
+    {
+        return $this->hasMany(Driver::class, 'owner_id');
+    }
+
+    public function collectors(): HasMany
+    {
+        return $this->hasMany(Collector::class, 'owner_id');
+    }
+
+    public function routes(): HasMany
+    {
+        return $this->hasMany(Route::class, 'owner_id');
+    }
+
     /**
      * Check if user is an admin.
      */

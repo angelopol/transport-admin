@@ -4,21 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
-class Route extends Model
+class Collector extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
-        'origin',
-        'destination',
-        'fare',
-        'fare_student',
-        'fare_senior',
-        'fare_disabled',
-        'fare_sunday',
+        'cedula',
+        'phone',
+        'photo_path',
         'is_active',
         'owner_id',
     ];
@@ -36,28 +32,26 @@ class Route extends Model
         return $query->where('owner_id', $user->id);
     }
 
+    protected $appends = [
+        'photo_url',
+    ];
+
     protected function casts(): array
     {
         return [
-            'fare' => 'decimal:2',
-            'fare_student' => 'decimal:2',
-            'fare_senior' => 'decimal:2',
-            'fare_disabled' => 'decimal:2',
-            'fare_sunday' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }
 
-    /**
-     * Get the buses assigned to this route.
-     */
-    public function buses(): HasMany
+    public function getPhotoUrlAttribute(): ?string
     {
-        return $this->hasMany(Bus::class);
+        return $this->photo_path
+            ? asset('storage/' . $this->photo_path)
+            : null;
     }
 
     /**
-     * Scope for active routes.
+     * Scope for active collectors.
      */
     public function scopeActive($query)
     {

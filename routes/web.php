@@ -27,11 +27,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/buses/{bus}/regenerate-token', [BusController::class, 'regenerateToken'])
         ->name('buses.regenerate-token');
 
+    Route::resource('manual-entries', \App\Http\Controllers\ManualRevenueEntryController::class)->only(['index', 'create', 'store']);
+
     // Admin-only routes
     Route::middleware('admin')->group(function () {
         Route::resource('routes', RouteController::class)->except(['show']);
         Route::resource('drivers', DriverController::class)->except(['show']);
         Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+        Route::resource('collectors', \App\Http\Controllers\CollectorController::class)->except(['show']);
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 
         // Device Management

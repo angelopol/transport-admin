@@ -16,6 +16,25 @@ class Driver extends Model
         'phone',
         'license_number',
         'is_active',
+        'photo_path',
+        'owner_id',
+    ];
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function scopeForUser($query, $user)
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+        return $query->where('owner_id', $user->id);
+    }
+
+    protected $appends = [
+        'photo_url',
     ];
 
     protected function casts(): array
@@ -23,6 +42,13 @@ class Driver extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path
+            ? asset('storage/' . $this->photo_path)
+            : null;
     }
 
     /**

@@ -97,6 +97,14 @@ class Bus extends Model
         return $query->where('owner_id', $userId);
     }
 
+    public function scopeForUser($query, $user)
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+        return $query->where('owner_id', $user->id);
+    }
+
     /**
      * Check if the bus is online (seen in last 5 minutes).
      */

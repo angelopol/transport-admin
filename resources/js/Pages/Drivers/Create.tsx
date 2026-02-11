@@ -8,6 +8,7 @@ export default function Create() {
         cedula: '',
         phone: '',
         license_number: '',
+        photo: null as File | null,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -72,6 +73,17 @@ export default function Create() {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     placeholder="LIC-123456"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Foto de Perfil</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setData('photo', e.target.files ? e.target.files[0] : null)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                />
+                                {errors.photo && <p className="text-red-500 text-sm mt-1">{errors.photo}</p>}
                             </div>
 
                             <div className="flex justify-end gap-4">

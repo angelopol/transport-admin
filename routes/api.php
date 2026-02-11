@@ -21,6 +21,8 @@ Route::prefix('v1')->group(function () {
 
     // Authenticated endpoints (for web dashboard API calls)
     Route::post('/device/auth', [\App\Http\Controllers\Api\DeviceAuthController::class, 'authenticate']);
+    Route::get('/drivers/excluded', [\App\Http\Controllers\Api\DriverController::class, 'getExcludedFaces']);
+    Route::get('/collectors/excluded', [\App\Http\Controllers\Api\CollectorController::class, 'getExcludedFaces']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/events/{bus}', [TelemetryController::class, 'events']);

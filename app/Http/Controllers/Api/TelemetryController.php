@@ -39,7 +39,7 @@ class TelemetryController extends Controller
         // Validate payload
         try {
             $validated = $request->validate([
-                'events' => 'required|array',
+                'events' => 'present|array',
                 'events.*.timestamp' => 'required|date',
                 'events.*.count' => 'required|integer',
                 'events.*.location' => 'nullable|array',

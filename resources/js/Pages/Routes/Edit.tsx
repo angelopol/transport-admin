@@ -8,6 +8,10 @@ interface Route {
     origin: string;
     destination: string;
     fare: number;
+    fare_student: number;
+    fare_senior: number;
+    fare_disabled: number;
+    fare_sunday: number;
     is_active: boolean;
 }
 
@@ -21,6 +25,10 @@ export default function Edit({ route }: Props) {
         origin: route.origin,
         destination: route.destination,
         fare: route.fare.toString(),
+        fare_student: route.fare_student.toString(),
+        fare_senior: route.fare_senior.toString(),
+        fare_disabled: route.fare_disabled.toString(),
+        fare_sunday: route.fare_sunday.toString(),
         is_active: route.is_active,
     });
 
@@ -74,7 +82,7 @@ export default function Edit({ route }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa ($) *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa General ($) *</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -83,6 +91,49 @@ export default function Edit({ route }: Props) {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     required
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Estudiante ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_student}
+                                        onChange={(e) => setData('fare_student', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Adulto Mayor ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_senior}
+                                        onChange={(e) => setData('fare_senior', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Discapacitado ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_disabled}
+                                        onChange={(e) => setData('fare_disabled', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Domingo ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_sunday}
+                                        onChange={(e) => setData('fare_sunday', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
                             </div>
 
                             <div>

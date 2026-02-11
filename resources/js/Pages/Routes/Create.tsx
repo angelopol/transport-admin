@@ -8,6 +8,10 @@ export default function Create() {
         origin: '',
         destination: '',
         fare: '',
+        fare_student: '',
+        fare_senior: '',
+        fare_disabled: '',
+        fare_sunday: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -64,7 +68,7 @@ export default function Create() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa ($) *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa General ($) *</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -75,6 +79,53 @@ export default function Create() {
                                     required
                                 />
                                 {errors.fare && <p className="text-red-500 text-sm mt-1">{errors.fare}</p>}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Estudiante ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_student}
+                                        onChange={(e) => setData('fare_student', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Adulto Mayor ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_senior}
+                                        onChange={(e) => setData('fare_senior', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Discapacitado ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_disabled}
+                                        onChange={(e) => setData('fare_disabled', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Domingo ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare_sunday}
+                                        onChange={(e) => setData('fare_sunday', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="0.00"
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex justify-end gap-4">
