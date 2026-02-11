@@ -15,12 +15,18 @@ interface Driver {
     cedula: string;
 }
 
+interface AvailableDevice {
+    id: number;
+    mac_address: string;
+}
+
 interface Props {
     routes: Route[];
     drivers: Driver[];
+    availableDevices: AvailableDevice[];
 }
 
-export default function Create({ routes, drivers }: Props) {
+export default function Create({ routes, drivers, availableDevices }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         device_mac: '',
         plate: '',
@@ -66,16 +72,25 @@ export default function Create({ routes, drivers }: Props) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        MAC del Dispositivo *
+                                        Dispositivo
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={data.device_mac}
-                                        onChange={(e) => setData('device_mac', e.target.value.toLowerCase())}
+                                        onChange={(e) => setData('device_mac', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                                        placeholder="aa:bb:cc:dd:ee:ff"
-                                        required
-                                    />
+                                    >
+                                        <option value="">Sin dispositivo</option>
+                                        {availableDevices.map((device) => (
+                                            <option key={device.id} value={device.mac_address}>
+                                                {device.mac_address}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {availableDevices.length === 0 && (
+                                        <p className="text-yellow-600 text-xs mt-1">
+                                            No hay dispositivos disponibles. Ejecute el monitor para registrar uno.
+                                        </p>
+                                    )}
                                     {errors.device_mac && <p className="text-red-500 text-sm mt-1">{errors.device_mac}</p>}
                                 </div>
                             </div>

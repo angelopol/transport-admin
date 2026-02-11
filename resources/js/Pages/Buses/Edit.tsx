@@ -15,9 +15,14 @@ interface Driver {
     cedula: string;
 }
 
+interface AvailableDevice {
+    id: number;
+    mac_address: string;
+}
+
 interface Bus {
     id: number;
-    device_mac: string;
+    device_mac: string | null;
     plate: string;
     model: string | null;
     capacity: number;
@@ -30,11 +35,12 @@ interface Props {
     bus: Bus;
     routes: Route[];
     drivers: Driver[];
+    availableDevices: AvailableDevice[];
 }
 
-export default function Edit({ bus, routes, drivers }: Props) {
+export default function Edit({ bus, routes, drivers, availableDevices }: Props) {
     const { data, setData, put, processing, errors } = useForm({
-        device_mac: bus.device_mac,
+        device_mac: bus.device_mac || '',
         plate: bus.plate,
         model: bus.model || '',
         capacity: bus.capacity,
@@ -78,15 +84,20 @@ export default function Edit({ bus, routes, drivers }: Props) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        MAC del Dispositivo *
+                                        Dispositivo
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={data.device_mac}
-                                        onChange={(e) => setData('device_mac', e.target.value.toLowerCase())}
+                                        onChange={(e) => setData('device_mac', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                                        required
-                                    />
+                                    >
+                                        <option value="">Sin dispositivo</option>
+                                        {availableDevices.map((device) => (
+                                            <option key={device.id} value={device.mac_address}>
+                                                {device.mac_address}
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.device_mac && <p className="text-red-500 text-sm mt-1">{errors.device_mac}</p>}
                                 </div>
                             </div>

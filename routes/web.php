@@ -33,6 +33,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('drivers', DriverController::class)->except(['show']);
         Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+
+        // Device Management
+        Route::get('/devices', [\App\Http\Controllers\DeviceController::class, 'index'])->name('devices.index');
+        Route::post('/devices/{device}/toggle', [\App\Http\Controllers\DeviceController::class, 'toggleStatus'])->name('devices.toggle');
+        Route::delete('/devices/{device}', [\App\Http\Controllers\DeviceController::class, 'destroy'])->name('devices.destroy');
     });
 });
 

@@ -51,6 +51,9 @@ export default function Authenticated({
                     <NavLink href={route('users.index')} active={route().current('users.*')} className="w-full">
                         <span className="mr-3">👥</span> Usuarios
                     </NavLink>
+                    <NavLink href={route('devices.index')} active={route().current('devices.*')} className="w-full">
+                        <span className="mr-3">📡</span> Dispositivos
+                    </NavLink>
                 </nav>
 
                 <div className="p-4 border-t border-blue-800/50 bg-blue-950/30 shrink-0">
@@ -95,6 +98,7 @@ export default function Authenticated({
                             <ResponsiveNavLink href={route('routes.index')} active={route().current('routes.*')}>Rutas</ResponsiveNavLink>
                             <ResponsiveNavLink href={route('drivers.index')} active={route().current('drivers.*')}>Conductores</ResponsiveNavLink>
                             <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('devices.index')} active={route().current('devices.*')}>Dispositivos</ResponsiveNavLink>
                         </div>
                         <div className="pt-4 pb-1 border-t border-blue-700">
                             <div className="px-4">

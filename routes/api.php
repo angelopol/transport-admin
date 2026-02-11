@@ -20,6 +20,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/status', [TelemetryController::class, 'status']);
 
     // Authenticated endpoints (for web dashboard API calls)
+    Route::post('/device/auth', [\App\Http\Controllers\Api\DeviceAuthController::class, 'authenticate']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/events/{bus}', [TelemetryController::class, 'events']);
     });

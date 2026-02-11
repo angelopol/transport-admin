@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
 
 interface Bus {
     id: number;
@@ -38,22 +37,14 @@ interface Props {
 }
 
 export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) {
-    const [showToken, setShowToken] = useState(false);
-
-    const handleRegenerateToken = () => {
-        if (confirm('¿Regenerar el token API? El dispositivo necesitará la nueva configuración.')) {
-            router.post(`/buses/${bus.id}/regenerate-token`);
-        }
-    };
-
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-4">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Unidad: {bus.plate}
                     </h2>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                         <Link
                             href={`/buses/${bus.id}/edit`}
                             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
@@ -90,74 +81,43 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                         </div>
                     </div>
 
-                    {/* Info + Token */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-xl shadow-lg p-6">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Información</h3>
-                            <dl className="space-y-3">
-                                <div className="flex justify-between border-b pb-2">
-                                    <dt className="text-gray-500">Placa</dt>
-                                    <dd className="font-medium">{bus.plate}</dd>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <dt className="text-gray-500">Modelo</dt>
-                                    <dd>{bus.model || '—'}</dd>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <dt className="text-gray-500">MAC</dt>
-                                    <dd><code className="bg-gray-100 px-2 py-1 rounded text-sm">{bus.device_mac}</code></dd>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <dt className="text-gray-500">Ruta</dt>
-                                    <dd>{bus.route?.name || '—'}</dd>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <dt className="text-gray-500">Conductor</dt>
-                                    <dd>{bus.driver?.name || '—'}</dd>
-                                </div>
-                                <div className="flex justify-between">
-                                    <dt className="text-gray-500">Estado</dt>
-                                    <dd>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${bus.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                            }`}>
-                                            {bus.is_active ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </dd>
-                                </div>
-                            </dl>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-lg p-6">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Configuración API</h3>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Use este token en el archivo config.yaml del dispositivo edge.
-                            </p>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm text-gray-500">API Token</label>
-                                    <div className="flex gap-2 mt-1">
-                                        <input
-                                            type={showToken ? 'text' : 'password'}
-                                            value={bus.api_token}
-                                            readOnly
-                                            className="flex-1 px-3 py-2 bg-gray-50 border rounded-lg font-mono text-sm"
-                                        />
-                                        <button
-                                            onClick={() => setShowToken(!showToken)}
-                                            className="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-                                        >
-                                            {showToken ? 'Ocultar' : 'Mostrar'}
-                                        </button>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleRegenerateToken}
-                                    className="w-full px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200"
-                                >
-                                    Regenerar Token
-                                </button>
+                    {/* Bus Information */}
+                    <div className="bg-white rounded-xl shadow-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Información</h3>
+                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Placa</dt>
+                                <dd className="font-medium">{bus.plate}</dd>
                             </div>
-                        </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Modelo</dt>
+                                <dd>{bus.model || '—'}</dd>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Dispositivo</dt>
+                                <dd>{bus.device_mac
+                                    ? <code className="bg-gray-100 px-2 py-1 rounded text-sm">{bus.device_mac}</code>
+                                    : <span className="text-gray-400">Sin dispositivo</span>
+                                }</dd>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Ruta</dt>
+                                <dd>{bus.route?.name || '—'}</dd>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Conductor</dt>
+                                <dd>{bus.driver?.name || '—'}</dd>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Estado</dt>
+                                <dd>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${bus.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                        }`}>
+                                        {bus.is_active ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                </dd>
+                            </div>
+                        </dl>
                     </div>
 
                     {/* Recent Events */}

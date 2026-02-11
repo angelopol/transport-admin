@@ -39,9 +39,15 @@ class BusController extends Controller
      */
     public function create(Request $request): Response
     {
+        // Get devices not currently linked to any bus
+        $availableDevices = \App\Models\Device::whereDoesntHave('bus')
+            ->where('is_active', true)
+            ->get(['id', 'mac_address']);
+
         return Inertia::render('Buses/Create', [
             'routes' => Route::active()->get(['id', 'name', 'origin', 'destination']),
             'drivers' => Driver::active()->get(['id', 'name', 'cedula']),
+            'availableDevices' => $availableDevices,
         ]);
     }
 
@@ -51,7 +57,7 @@ class BusController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'device_mac' => ['required', 'string', 'max:17', 'unique:buses,device_mac'],
+            'device_mac' => ['nullable', 'string', 'max:17', 'unique:buses,device_mac'],
             'plate' => ['required', 'string', 'max:10', 'unique:buses,plate'],
             'model' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
@@ -61,7 +67,9 @@ class BusController extends Controller
 
         $validated['owner_id'] = $request->user()->id;
         $validated['api_token'] = Str::random(64);
-        $validated['device_mac'] = strtolower($validated['device_mac']);
+        if (!empty($validated['device_mac'])) {
+            $validated['device_mac'] = strtolower($validated['device_mac']);
+        }
 
         $bus = Bus::create($validated);
 
@@ -114,10 +122,19 @@ class BusController extends Controller
             abort(403);
         }
 
+        // Get available devices (unlinked) + the one currently linked to this bus
+        $availableDevices = \App\Models\Device::where(function ($q) use ($bus) {
+            $q->whereDoesntHave('bus');
+            if ($bus->device_mac) {
+                $q->orWhere('mac_address', $bus->device_mac);
+            }
+        })->where('is_active', true)->get(['id', 'mac_address']);
+
         return Inertia::render('Buses/Edit', [
             'bus' => $bus,
             'routes' => Route::active()->get(['id', 'name', 'origin', 'destination']),
             'drivers' => Driver::active()->get(['id', 'name', 'cedula']),
+            'availableDevices' => $availableDevices,
         ]);
     }
 
@@ -133,7 +150,7 @@ class BusController extends Controller
         }
 
         $validated = $request->validate([
-            'device_mac' => ['required', 'string', 'max:17', Rule::unique('buses')->ignore($bus->id)],
+            'device_mac' => ['nullable', 'string', 'max:17', Rule::unique('buses')->ignore($bus->id)],
             'plate' => ['required', 'string', 'max:10', Rule::unique('buses')->ignore($bus->id)],
             'model' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
@@ -142,7 +159,9 @@ class BusController extends Controller
             'is_active' => ['boolean'],
         ]);
 
-        $validated['device_mac'] = strtolower($validated['device_mac']);
+        if (!empty($validated['device_mac'])) {
+            $validated['device_mac'] = strtolower($validated['device_mac']);
+        }
 
         $bus->update($validated);
 

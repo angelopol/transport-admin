@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Device;
 use App\Models\Bus;
 use App\Models\TelemetryEvent;
 use Illuminate\Http\Request;
@@ -19,10 +20,20 @@ class TelemetryController extends Controller
             return response()->json(['message' => 'Token not provided'], 401);
         }
 
-        $bus = Bus::where('api_token', $token)->first();
+        // Find Device by token
+        $device = Device::where('api_token', $token)->first();
+
+        if (!$device) {
+            return response()->json(['message' => 'Unauthorized Device'], 401);
+        }
+
+        // Find linked Bus
+        $bus = Bus::where('device_mac', $device->mac_address)
+            ->where('is_active', true)
+            ->first();
 
         if (!$bus) {
-            return response()->json(['message' => 'Unauthorized Device'], 401);
+            return response()->json(['message' => 'Device not linked to an active bus'], 403);
         }
 
         // Validate payload
