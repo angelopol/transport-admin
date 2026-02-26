@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ManualRevenueEntry;
 use App\Models\Route;
+use App\Models\Bus;
+use App\Models\Driver;
+use App\Models\Collector;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,7 +18,7 @@ class ManualRevenueEntryController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $entries = ManualRevenueEntry::with(['route'])
+        $entries = ManualRevenueEntry::with(['route', 'bus'])
             ->forUser($user)
             ->orderBy('registered_at', 'desc')
             ->paginate(15);
@@ -28,69 +31,124 @@ class ManualRevenueEntryController extends Controller
     public function create(Request $request): Response
     {
         $user = $request->user();
+
+        $buses = collect();
+        if ($user->isOperative()) {
+            $driver = Driver::with('buses.route')->where('user_id', $user->id)->first();
+            $collector = Collector::with('buses.route')->where('user_id', $user->id)->first();
+
+            if ($driver) {
+                $buses = $buses->merge($driver->buses);
+            }
+            if ($collector) {
+                $buses = $buses->merge($collector->buses);
+            }
+            $buses = $buses->unique('id')->values();
+        } else {
+            $buses = Bus::active()->forUser($user)->with('route')->get();
+        }
+
         return Inertia::render('ManualEntries/Create', [
-            'routes' => Route::active()->forUser($user)->get(),
+            'buses' => $buses,
+            'isOperative' => $user->isOperative(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'route_id' => ['required', 'exists:routes,id'],
+            'bus_id' => ['required', 'exists:buses,id'],
             'user_type' => ['required', 'in:general,student,senior,disabled'],
             'payment_method' => ['required', 'in:cash,digital'],
             'registered_at' => ['nullable', 'date'],
+            'reference_number' => ['required_if:payment_method,digital', 'nullable', 'string', 'max:100'],
+            'identification' => ['nullable', 'string', 'max:20'],
+            'phone_or_account' => ['nullable', 'string', 'max:50'],
+            'reference_image' => ['required_if:payment_method,digital', 'image', 'max:5120'],
         ]);
 
-        $route = Route::findOrFail($validated['route_id']);
-        $date = $validated['registered_at'] ? Carbon::parse($validated['registered_at']) : now();
+        $bus = Bus::with('route')->findOrFail($validated['bus_id']);
+        $route = $bus->route;
 
-        // Calculate amount
-        $amount = 0;
+        if (!$route) {
+            abort(400, 'El autobús seleccionado no tiene una ruta asignada. Por favor, asigne una ruta al autobús primero.');
+        }
 
-        // Check for Sunday tariff
-        if ($date->isSunday() && $route->fare_sunday > 0) {
-            $amount = $route->fare_sunday;
-        } else {
-            // Standard tariffs
-            switch ($validated['user_type']) {
-                case 'student':
-                    $amount = $route->fare_student > 0 ? $route->fare_student : $route->fare;
-                    break;
-                case 'senior':
-                    $amount = $route->fare_senior > 0 ? $route->fare_senior : $route->fare;
-                    break;
-                case 'disabled':
-                    $amount = $route->fare_disabled > 0 ? $route->fare_disabled : $route->fare;
-                    break;
-                default:
-                    $amount = $route->fare;
-                    break;
+        $validated['route_id'] = $route->id;
+
+        $user = $request->user();
+
+        if ($user->isOperative()) {
+            $validated['payment_method'] = 'digital';
+
+            // Verify operative has access to this bus
+            $buses = collect();
+            $driver = \App\Models\Driver::with('buses')->where('user_id', $user->id)->first();
+            $collector = \App\Models\Collector::with('buses')->where('user_id', $user->id)->first();
+
+            if ($driver) {
+                $buses = $buses->merge($driver->buses);
+            }
+            if ($collector) {
+                $buses = $buses->merge($collector->buses);
+            }
+
+            if (!$buses->contains('id', $bus->id)) {
+                abort(403, 'No tienes permiso para registrar pasajes en esta unidad.');
             }
         }
 
-        // If specific fare types are 0, fallback to general fare is handled above logic? 
-        // Logic specific:
-        // If Sunday tariff exists (>0) AND it is Sunday -> Use Sunday Tariff regardless of user type? 
-        // Or is Sunday tariff only for General? 
-        // User request: "poner la tarifa para domingos". Usually sunday tariff overrides everything or specific sunday tariff.
-        // I will assume Sunday Tariff overrides General, but maybe not special types unless specified.
-        // But for simplicity and common practice in some regions, Sunday surcharge applies to all or creates a flat rate.
-        // Let's implement: If Sunday & fare_sunday > 0 => use fare_sunday. 
-        // THIS MIGHT BE WRONG if students still get discount on Sunday.
-        // User said: "poner la tarifa de estudiantes... ademas de poner la tarifa para domingos".
-        // I'll stick to: If Sunday Tariff > 0, it overrides. If not, use User Type tariff.
+        $date = $validated['registered_at'] ? Carbon::parse($validated['registered_at']) : now();
 
-        $entry = ManualRevenueEntry::create([
-            'owner_id' => $request->user()->id,
+        // Calculate amount
+        $baseFare = ($date->isSunday() && $route->fare_sunday > 0) ? $route->fare_sunday : $route->fare;
+        $amount = $baseFare;
+
+        if ($validated['user_type'] === 'student') {
+            if ($route->is_student_percentage) {
+                $discount = $route->fare_student ?? 0;
+                $amount = $baseFare - ($baseFare * ($discount / 100));
+            } else {
+                $amount = $route->fare_student > 0 ? $route->fare_student : $baseFare;
+            }
+        } elseif ($validated['user_type'] === 'senior') {
+            if ($route->is_senior_percentage) {
+                $discount = $route->fare_senior ?? 0;
+                $amount = $baseFare - ($baseFare * ($discount / 100));
+            } else {
+                $amount = $route->fare_senior > 0 ? $route->fare_senior : $baseFare;
+            }
+        } elseif ($validated['user_type'] === 'disabled') {
+            if ($route->is_disabled_percentage) {
+                $discount = $route->fare_disabled ?? 0;
+                $amount = $baseFare - ($baseFare * ($discount / 100));
+            } else {
+                $amount = $route->fare_disabled > 0 ? $route->fare_disabled : $baseFare;
+            }
+        }
+
+        $amount = max(0, $amount);
+
+        $imagePath = null;
+        if ($request->hasFile('reference_image')) {
+            $imagePath = $request->file('reference_image')->store('reference_images', 'public');
+        }
+
+        ManualRevenueEntry::create([
+            'owner_id' => $bus->owner_id, // Tie to the owner of the bus
             'route_id' => $validated['route_id'],
+            'bus_id' => $validated['bus_id'],
             'amount' => $amount,
             'user_type' => $validated['user_type'],
             'payment_method' => $validated['payment_method'],
             'registered_at' => $date,
+            'reference_number' => $validated['reference_number'] ?? null,
+            'identification' => $validated['identification'] ?? null,
+            'phone_or_account' => $validated['phone_or_account'] ?? null,
+            'reference_image_path' => $imagePath,
         ]);
 
         return redirect()->route('manual-entries.index')
-            ->with('success', 'Ingreso registrado exitosamente. Monto: ' . $amount);
+            ->with('success', 'Ingreso registrado exitosamente. Monto: ' . number_format($amount, 2));
     }
 }

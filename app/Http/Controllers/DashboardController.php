@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         // Get buses based on role
-        $busesQuery = Bus::with(['route', 'driver'])
+        $busesQuery = Bus::with(['route', 'drivers'])
             ->when(!$user->isAdmin(), function ($query) use ($user) {
                 $query->where('owner_id', $user->id);
             });
@@ -75,7 +75,7 @@ class DashboardController extends Controller
                 'plate' => $bus->plate,
                 'model' => $bus->model,
                 'route' => $bus->route?->name,
-                'driver' => $bus->driver?->name,
+                'driver' => $bus->drivers->pluck('name')->join(', '),
                 'is_online' => $bus->isOnline(),
                 'last_seen' => $bus->last_seen_at?->diffForHumans(),
                 'today_passengers' => $todayPassengers,

@@ -26,33 +26,45 @@ export default function Authenticated({
                 </div>
 
                 <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-transparent">
-                    <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-2">
-                        Principal
-                    </p>
-                    <NavLink href={route('dashboard')} active={route().current('dashboard')} className="w-full">
-                        <span className="mr-3">📊</span> Dashboard
-                    </NavLink>
-                    <NavLink href={route('reports.index')} active={route().current('reports.index')} className="w-full">
-                        <span className="mr-3">📈</span> Reportes
-                    </NavLink>
+                    {user.role !== 'operative' && (
+                        <>
+                            <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-2">
+                                Principal
+                            </p>
+                            <NavLink href={route('dashboard')} active={route().current('dashboard')} className="w-full">
+                                <span className="mr-3">📊</span> Dashboard
+                            </NavLink>
+                            <NavLink href={route('reports.index')} active={route().current('reports.index')} className="w-full">
+                                <span className="mr-3">📈</span> Reportes
+                            </NavLink>
+                        </>
+                    )}
+
+                    {user.role !== 'operative' && (
+                        <>
+                            <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mt-8 mb-2">
+                                Administración
+                            </p>
+                            <NavLink href={route('buses.index')} active={route().current('buses.*')} className="w-full">
+                                <span className="mr-3">🚌</span> Autobuses
+                            </NavLink>
+                            <NavLink href={route('routes.index')} active={route().current('routes.*')} className="w-full">
+                                <span className="mr-3">🛣️</span> Rutas
+                            </NavLink>
+                            <NavLink href={route('drivers.index')} active={route().current('drivers.*')} className="w-full">
+                                <span className="mr-3">👔</span> Conductores
+                            </NavLink>
+                            <NavLink href={route('collectors.index')} active={route().current('collectors.*')} className="w-full">
+                                <span className="mr-3">🎫</span> Colectores
+                            </NavLink>
+                        </>
+                    )}
 
                     <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mt-8 mb-2">
-                        Administración
+                        Operaciones
                     </p>
-                    <NavLink href={route('buses.index')} active={route().current('buses.*')} className="w-full">
-                        <span className="mr-3">🚌</span> Autobuses
-                    </NavLink>
-                    <NavLink href={route('routes.index')} active={route().current('routes.*')} className="w-full">
-                        <span className="mr-3">🛣️</span> Rutas
-                    </NavLink>
-                    <NavLink href={route('drivers.index')} active={route().current('drivers.*')} className="w-full">
-                        <span className="mr-3">👔</span> Conductores
-                    </NavLink>
-                    <NavLink href={route('collectors.index')} active={route().current('collectors.*')} className="w-full">
-                        <span className="mr-3">🎫</span> Colectores
-                    </NavLink>
                     <NavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')} className="w-full">
-                        <span className="mr-3">💰</span> Ingresos
+                        <span className="mr-3">💰</span> {user.role === 'operative' ? 'Pasaje' : 'Ingresos'}
                     </NavLink>
                     {user.role === 'admin' && (
                         <>
@@ -102,13 +114,17 @@ export default function Authenticated({
                     {/* Mobile Navigation Menu */}
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' md:hidden bg-blue-800 border-t border-blue-700'}>
                         <div className="pt-2 pb-3 space-y-1">
-                            <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Dashboard</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>Reportes</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('buses.index')} active={route().current('buses.*')}>Autobuses</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('routes.index')} active={route().current('routes.*')}>Rutas</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('drivers.index')} active={route().current('drivers.*')}>Conductores</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('collectors.index')} active={route().current('collectors.*')}>Colectores</ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')}>Ingresos</ResponsiveNavLink>
+                            {user.role !== 'operative' && (
+                                <>
+                                    <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Dashboard</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>Reportes</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('buses.index')} active={route().current('buses.*')}>Autobuses</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('routes.index')} active={route().current('routes.*')}>Rutas</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('drivers.index')} active={route().current('drivers.*')}>Conductores</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('collectors.index')} active={route().current('collectors.*')}>Colectores</ResponsiveNavLink>
+                                </>
+                            )}
+                            <ResponsiveNavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')}>{user.role === 'operative' ? 'Pasaje' : 'Ingresos'}</ResponsiveNavLink>
                             {user.role === 'admin' && (
                                 <>
                                     <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -19,7 +20,6 @@ class Bus extends Model
         'model',
         'capacity',
         'route_id',
-        'driver_id',
         'api_token',
         'is_active',
         'last_seen_at',
@@ -66,11 +66,19 @@ class Bus extends Model
     }
 
     /**
-     * Get the driver assigned to this bus.
+     * Get the drivers assigned to this bus.
      */
-    public function driver(): BelongsTo
+    public function drivers(): BelongsToMany
     {
-        return $this->belongsTo(Driver::class);
+        return $this->belongsToMany(Driver::class);
+    }
+
+    /**
+     * Get the collectors assigned to this bus.
+     */
+    public function collectors(): BelongsToMany
+    {
+        return $this->belongsToMany(Collector::class);
     }
 
     /**

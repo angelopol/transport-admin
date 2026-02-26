@@ -87,5 +87,13 @@ class User extends Authenticatable
     {
         return $this->role === 'owner';
     }
+
+    /**
+     * Check if user is an operative (driver/collector).
+     */
+    public function isOperative(): bool
+    {
+        return $this->role === 'operative';
+    }
 }
 

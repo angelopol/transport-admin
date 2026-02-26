@@ -15,6 +15,12 @@ interface Driver {
     cedula: string;
 }
 
+interface Collector {
+    id: number;
+    name: string;
+    cedula: string;
+}
+
 interface AvailableDevice {
     id: number;
     mac_address: string;
@@ -27,7 +33,8 @@ interface Bus {
     model: string | null;
     capacity: number;
     route_id: number | null;
-    driver_id: number | null;
+    drivers?: Driver[];
+    collectors?: Collector[];
     is_active: boolean;
 }
 
@@ -35,17 +42,19 @@ interface Props {
     bus: Bus;
     routes: Route[];
     drivers: Driver[];
+    collectors: Collector[];
     availableDevices: AvailableDevice[];
 }
 
-export default function Edit({ bus, routes, drivers, availableDevices }: Props) {
+export default function Edit({ bus, routes, drivers, collectors, availableDevices }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         device_mac: bus.device_mac || '',
         plate: bus.plate,
         model: bus.model || '',
         capacity: bus.capacity,
         route_id: bus.route_id?.toString() || '',
-        driver_id: bus.driver_id?.toString() || '',
+        driver_ids: bus.drivers?.map(d => d.id) || ([] as number[]),
+        collector_ids: bus.collectors?.map(c => c.id) || ([] as number[]),
         is_active: bus.is_active,
     });
 
@@ -148,22 +157,60 @@ export default function Edit({ bus, routes, drivers, availableDevices }: Props) 
                                         ))}
                                     </select>
                                 </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Conductor
+                                        Conductores
                                     </label>
-                                    <select
-                                        value={data.driver_id}
-                                        onChange={(e) => setData('driver_id', e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                        <option value="">Sin asignar</option>
+                                    <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 space-y-2 bg-gray-50">
+                                        {drivers.length === 0 && <span className="text-sm text-gray-500">No hay conductores registrados</span>}
                                         {drivers.map((driver) => (
-                                            <option key={driver.id} value={driver.id}>
-                                                {driver.name}
-                                            </option>
+                                            <label key={driver.id} className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value={driver.id}
+                                                    checked={data.driver_ids.includes(driver.id)}
+                                                    onChange={(e) => {
+                                                        const id = Number(e.target.value);
+                                                        setData('driver_ids', e.target.checked
+                                                            ? [...data.driver_ids, id]
+                                                            : data.driver_ids.filter(d => d !== id));
+                                                    }}
+                                                    className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                                                />
+                                                <span className="ml-2 text-sm text-gray-700">{driver.name} ({driver.cedula})</span>
+                                            </label>
                                         ))}
-                                    </select>
+                                    </div>
+                                    {errors.driver_ids && <p className="text-red-500 text-sm mt-1">{errors.driver_ids}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Colectores
+                                    </label>
+                                    <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 space-y-2 bg-gray-50">
+                                        {collectors.length === 0 && <span className="text-sm text-gray-500">No hay colectores registrados</span>}
+                                        {collectors.map((collector) => (
+                                            <label key={collector.id} className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value={collector.id}
+                                                    checked={data.collector_ids.includes(collector.id)}
+                                                    onChange={(e) => {
+                                                        const id = Number(e.target.value);
+                                                        setData('collector_ids', e.target.checked
+                                                            ? [...data.collector_ids, id]
+                                                            : data.collector_ids.filter(d => d !== id));
+                                                    }}
+                                                    className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                                                />
+                                                <span className="ml-2 text-sm text-gray-700">{collector.name} ({collector.cedula})</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    {errors.collector_ids && <p className="text-red-500 text-sm mt-1">{errors.collector_ids}</p>}
                                 </div>
                             </div>
 

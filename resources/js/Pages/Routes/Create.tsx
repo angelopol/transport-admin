@@ -12,6 +12,9 @@ export default function Create() {
         fare_senior: '',
         fare_disabled: '',
         fare_sunday: '',
+        is_student_percentage: false,
+        is_senior_percentage: false,
+        is_disabled_percentage: false,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -83,36 +86,54 @@ export default function Create() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Estudiante ($)</label>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <label className="block text-sm font-medium text-gray-700">Tarifa Estudiante</label>
+                                        <label className="flex items-center gap-1 text-xs text-gray-500">
+                                            <input type="checkbox" checked={data.is_student_percentage} onChange={e => setData('is_student_percentage', e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-blue-600" />
+                                            %
+                                        </label>
+                                    </div>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={data.fare_student}
                                         onChange={(e) => setData('fare_student', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="0.00"
+                                        placeholder={data.is_student_percentage ? "50" : "0.00"}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Adulto Mayor ($)</label>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <label className="block text-sm font-medium text-gray-700">Tarifa Adulto Mayor</label>
+                                        <label className="flex items-center gap-1 text-xs text-gray-500">
+                                            <input type="checkbox" checked={data.is_senior_percentage} onChange={e => setData('is_senior_percentage', e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-blue-600" />
+                                            %
+                                        </label>
+                                    </div>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={data.fare_senior}
                                         onChange={(e) => setData('fare_senior', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="0.00"
+                                        placeholder={data.is_senior_percentage ? "50" : "0.00"}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Discapacitado ($)</label>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <label className="block text-sm font-medium text-gray-700">Tarifa Discapacitado</label>
+                                        <label className="flex items-center gap-1 text-xs text-gray-500">
+                                            <input type="checkbox" checked={data.is_disabled_percentage} onChange={e => setData('is_disabled_percentage', e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-blue-600" />
+                                            %
+                                        </label>
+                                    </div>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={data.fare_disabled}
                                         onChange={(e) => setData('fare_disabled', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="0.00"
+                                        placeholder={data.is_disabled_percentage ? "50" : "0.00"}
                                     />
                                 </div>
                                 <div>

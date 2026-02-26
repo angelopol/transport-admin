@@ -11,7 +11,8 @@ interface Bus {
     last_seen_at: string | null;
     owner?: { name: string };
     route?: { name: string };
-    driver?: { name: string };
+    drivers?: { name: string }[];
+    collectors?: { name: string }[];
 }
 
 interface PaginatedBuses {
@@ -87,7 +88,7 @@ export default function Index({ buses, isAdmin }: Props) {
                                                 </code>
                                             </td>
                                             <td className="px-6 py-4 text-gray-600">{bus.route?.name || '—'}</td>
-                                            <td className="px-6 py-4 text-gray-600">{bus.driver?.name || '—'}</td>
+                                            <td className="px-6 py-4 text-gray-600">{bus.drivers?.map(d => d.name).join(', ') || '—'}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${bus.is_active
                                                     ? 'bg-green-100 text-green-700'
@@ -152,7 +153,7 @@ export default function Index({ buses, isAdmin }: Props) {
                                         </div>
                                         <div>
                                             <span className="block text-xs font-semibold text-gray-500 uppercase">Conductor</span>
-                                            <span className="text-gray-800">{bus.driver?.name || '—'}</span>
+                                            <span className="text-gray-800">{bus.drivers?.map(d => d.name).join(', ') || '—'}</span>
                                         </div>
                                         <div className="col-span-2 mt-1">
                                             <span className="block text-xs font-semibold text-gray-500 uppercase">MAC</span>

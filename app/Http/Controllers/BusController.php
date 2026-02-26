@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bus;
+use App\Models\Collector;
 use App\Models\Driver;
 use App\Models\Route;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +22,7 @@ class BusController extends Controller
     {
         $user = $request->user();
 
-        $buses = Bus::with(['owner', 'route', 'driver'])
+        $buses = Bus::with(['owner', 'route', 'drivers', 'collectors'])
             ->forUser($user)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -47,6 +48,7 @@ class BusController extends Controller
         return Inertia::render('Buses/Create', [
             'routes' => Route::active()->forUser($user)->get(['id', 'name', 'origin', 'destination']),
             'drivers' => Driver::active()->forUser($user)->get(['id', 'name', 'cedula']),
+            'collectors' => Collector::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'availableDevices' => $availableDevices,
         ]);
     }
@@ -62,7 +64,10 @@ class BusController extends Controller
             'model' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'route_id' => ['nullable', 'exists:routes,id'],
-            'driver_id' => ['nullable', 'exists:drivers,id'],
+            'driver_ids' => ['nullable', 'array'],
+            'driver_ids.*' => ['exists:drivers,id'],
+            'collector_ids' => ['nullable', 'array'],
+            'collector_ids.*' => ['exists:collectors,id'],
         ]);
 
         $validated['owner_id'] = $request->user()->id; // TODO: Allow Admin to select owner
@@ -71,7 +76,15 @@ class BusController extends Controller
             $validated['device_mac'] = strtolower($validated['device_mac']);
         }
 
-        $bus = Bus::create($validated);
+        $busInput = collect($validated)->except(['driver_ids', 'collector_ids'])->toArray();
+        $bus = Bus::create($busInput);
+
+        if (isset($validated['driver_ids'])) {
+            $bus->drivers()->sync($validated['driver_ids']);
+        }
+        if (isset($validated['collector_ids'])) {
+            $bus->collectors()->sync($validated['collector_ids']);
+        }
 
         return redirect()->route('buses.show', $bus)
             ->with('success', 'Unidad registrada exitosamente.');
@@ -89,7 +102,7 @@ class BusController extends Controller
             abort(403);
         }
 
-        $bus->load(['owner', 'route', 'driver']);
+        $bus->load(['owner', 'route', 'drivers', 'collectors']);
 
         // Get recent events
         $recentEvents = $bus->telemetryEvents()
@@ -130,10 +143,13 @@ class BusController extends Controller
             }
         })->where('is_active', true)->get(['id', 'mac_address']);
 
+        $bus->load(['drivers:id', 'collectors:id']);
+
         return Inertia::render('Buses/Edit', [
             'bus' => $bus,
             'routes' => Route::active()->forUser($user)->get(['id', 'name', 'origin', 'destination']),
             'drivers' => Driver::active()->forUser($user)->get(['id', 'name', 'cedula']),
+            'collectors' => Collector::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'availableDevices' => $availableDevices,
         ]);
     }
@@ -155,7 +171,10 @@ class BusController extends Controller
             'model' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'route_id' => ['nullable', 'exists:routes,id'],
-            'driver_id' => ['nullable', 'exists:drivers,id'],
+            'driver_ids' => ['nullable', 'array'],
+            'driver_ids.*' => ['exists:drivers,id'],
+            'collector_ids' => ['nullable', 'array'],
+            'collector_ids.*' => ['exists:collectors,id'],
             'is_active' => ['boolean'],
         ]);
 
@@ -163,7 +182,15 @@ class BusController extends Controller
             $validated['device_mac'] = strtolower($validated['device_mac']);
         }
 
-        $bus->update($validated);
+        $busInput = collect($validated)->except(['driver_ids', 'collector_ids'])->toArray();
+        $bus->update($busInput);
+
+        if (array_key_exists('driver_ids', $validated)) {
+            $bus->drivers()->sync($validated['driver_ids'] ?? []);
+        }
+        if (array_key_exists('collector_ids', $validated)) {
+            $bus->collectors()->sync($validated['collector_ids'] ?? []);
+        }
 
         return redirect()->route('buses.show', $bus)
             ->with('success', 'Unidad actualizada exitosamente.');

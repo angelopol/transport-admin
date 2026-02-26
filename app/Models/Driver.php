@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Driver extends Model
 {
@@ -18,7 +18,13 @@ class Driver extends Model
         'is_active',
         'photo_path',
         'owner_id',
+        'user_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function owner()
     {
@@ -54,9 +60,9 @@ class Driver extends Model
     /**
      * Get the buses driven by this driver.
      */
-    public function buses(): HasMany
+    public function buses(): BelongsToMany
     {
-        return $this->hasMany(Bus::class);
+        return $this->belongsToMany(Bus::class);
     }
 
     /**

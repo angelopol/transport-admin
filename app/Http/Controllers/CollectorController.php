@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Collector;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class CollectorController extends Controller
 {
@@ -18,7 +21,8 @@ class CollectorController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $collectors = Collector::forUser($user)
+        $collectors = Collector::with(['buses:id,plate'])
+            ->forUser($user)
             ->orderBy('name')
             ->paginate(15);
 
@@ -46,6 +50,8 @@ class CollectorController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
             'photo' => ['nullable', 'image', 'max:5120'], // 5MB
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
 
         $validated['owner_id'] = $request->user()->id;
@@ -55,7 +61,23 @@ class CollectorController extends Controller
             $validated['photo_path'] = $path;
         }
 
-        Collector::create($validated);
+        DB::transaction(function () use ($validated, $request) {
+            $userId = null;
+            if (!empty($validated['email']) && !empty($validated['password'])) {
+                $user = User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'role' => 'operative',
+                    'phone' => $validated['phone'],
+                ]);
+                $userId = $user->id;
+            }
+            $validated['user_id'] = $userId;
+            unset($validated['email'], $validated['password']);
+
+            Collector::create($validated);
+        });
 
         return redirect()->route('collectors.index')
             ->with('success', 'Colector registrado exitosamente.');
@@ -70,6 +92,8 @@ class CollectorController extends Controller
         if (!$user->isAdmin() && $collector->owner_id !== $user->id) {
             abort(403);
         }
+
+        $collector->load('user');
 
         return Inertia::render('Collectors/Edit', [
             'collector' => $collector,
@@ -92,6 +116,8 @@ class CollectorController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
             'photo' => ['nullable', 'image', 'max:5120'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($collector->user_id)],
+            'password' => ['nullable', 'string', 'min:8'],
         ]);
 
         if ($request->hasFile('photo')) {
@@ -102,7 +128,39 @@ class CollectorController extends Controller
             $validated['photo_path'] = $path;
         }
 
-        $collector->update($validated);
+        DB::transaction(function () use ($validated, $collector) {
+            $userId = $collector->user_id;
+
+            if ($collector->user_id) {
+                // Update existing user
+                $updateData = [
+                    'name' => $validated['name'],
+                    'phone' => $validated['phone'],
+                ];
+                if (!empty($validated['email'])) {
+                    $updateData['email'] = $validated['email'];
+                }
+                if (!empty($validated['password'])) {
+                    $updateData['password'] = Hash::make($validated['password']);
+                }
+                User::where('id', $collector->user_id)->update($updateData);
+            } else if (!empty($validated['email']) && !empty($validated['password'])) {
+                // Create new user
+                $newUser = User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'role' => 'operative',
+                    'phone' => $validated['phone'],
+                ]);
+                $userId = $newUser->id;
+            }
+
+            $validated['user_id'] = $userId;
+            unset($validated['email'], $validated['password']);
+
+            $collector->update($validated);
+        });
 
         return redirect()->route('collectors.index')
             ->with('success', 'Colector actualizado exitosamente.');
@@ -121,7 +179,14 @@ class CollectorController extends Controller
         if ($collector->photo_path) {
             Storage::disk('public')->delete($collector->photo_path);
         }
-        $collector->delete();
+
+        DB::transaction(function () use ($collector) {
+            $userId = $collector->user_id;
+            $collector->delete();
+            if ($userId) {
+                User::where('id', $userId)->delete();
+            }
+        });
 
         return redirect()->route('collectors.index')
             ->with('success', 'Colector eliminado exitosamente.');

@@ -9,6 +9,9 @@ interface Collector {
     phone: string | null;
     is_active: boolean;
     photo_url?: string;
+    user?: {
+        email: string;
+    };
 }
 
 interface Props {
@@ -19,6 +22,8 @@ export default function Edit({ collector }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         _method: 'put',
         name: collector.name,
+        email: collector.user?.email || '',
+        password: '',
         cedula: collector.cedula,
         phone: collector.phone || '',
         is_active: collector.is_active,
@@ -39,7 +44,10 @@ export default function Edit({ collector }: Props) {
             <div className="py-6">
                 <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
                     <div className="bg-white rounded-xl shadow-lg p-6">
-                        <form onSubmit={submit} className="space-y-6">
+                        <form onSubmit={submit} className="space-y-6" autoComplete="off">
+                            {/* Campos señuelo para evitar el autocompletado agresivo del navegador */}
+                            <input type="text" name="fake_username_autofill" className="hidden" tabIndex={-1} autoComplete="username" />
+                            <input type="password" name="fake_password_autofill" className="hidden" tabIndex={-1} autoComplete="current-password" />
 
                             {/* Mostrar foto actual si existe */}
                             {collector.photo_url && (
@@ -61,6 +69,35 @@ export default function Edit({ collector }: Props) {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     required
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Correo (Acceso Operativo) *</label>
+                                    <input
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="correo@ejemplo.com"
+                                        autoComplete="new-password"
+                                        name="user_email_random"
+                                        required
+                                    />
+                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña (Opcional)</label>
+                                    <input
+                                        type="password"
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Dejar en blanco para mantener actual"
+                                        autoComplete="new-password"
+                                    />
+                                    {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">

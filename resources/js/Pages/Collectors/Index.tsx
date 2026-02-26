@@ -7,6 +7,7 @@ interface Collector {
     cedula: string;
     phone: string | null;
     is_active: boolean;
+    buses?: { id: number; plate: string }[];
     photo_url?: string;
 }
 
@@ -52,6 +53,7 @@ export default function Index({ collectors }: Props) {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cédula</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unidades</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
                                     </tr>
@@ -71,6 +73,9 @@ export default function Index({ collectors }: Props) {
                                             </td>
                                             <td className="px-6 py-4">{collector.cedula}</td>
                                             <td className="px-6 py-4 text-gray-600">{collector.phone || '—'}</td>
+                                            <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={collector.buses?.map(b => b.plate).join(', ')}>
+                                                {collector.buses?.map(b => b.plate).join(', ') || '—'}
+                                            </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${collector.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                                     }`}>
@@ -121,6 +126,10 @@ export default function Index({ collectors }: Props) {
                                         <div>
                                             <span className="block text-xs font-semibold text-gray-500 uppercase">Teléfono</span>
                                             <span>{collector.phone || '—'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-xs font-semibold text-gray-500 uppercase">Unidades</span>
+                                            <span>{collector.buses?.map(b => b.plate).join(', ') || '—'}</span>
                                         </div>
                                     </div>
 

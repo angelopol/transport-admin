@@ -5,7 +5,7 @@ interface User {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'owner';
+    role: 'admin' | 'owner' | 'operative';
     phone: string | null;
     created_at: string;
 }
@@ -105,10 +105,16 @@ export default function Index({ users, filters }: Props) {
                                             <td className="px-6 py-4 text-gray-600">{user.email}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'admin'
-                                                    ? 'bg-purple-100 text-purple-700 border-purple-200'
-                                                    : 'bg-blue-100 text-blue-700 border-blue-200'
+                                                        ? 'bg-purple-100 text-purple-700 border-purple-200'
+                                                        : user.role === 'operative'
+                                                            ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                            : 'bg-blue-100 text-blue-700 border-blue-200'
                                                     }`}>
-                                                    {user.role === 'admin' ? 'Administrador' : 'Dueño'}
+                                                    {user.role === 'admin'
+                                                        ? 'Administrador'
+                                                        : user.role === 'operative'
+                                                            ? 'Personal Operativo'
+                                                            : 'Dueño'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-gray-600">{user.phone || '—'}</td>
@@ -146,10 +152,16 @@ export default function Index({ users, filters }: Props) {
                                     <div className="flex justify-between items-start">
                                         <h3 className="text-lg font-bold text-gray-900">{user.name}</h3>
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'admin'
-                                            ? 'bg-purple-100 text-purple-700 border-purple-200'
-                                            : 'bg-blue-100 text-blue-700 border-blue-200'
+                                                ? 'bg-purple-100 text-purple-700 border-purple-200'
+                                                : user.role === 'operative'
+                                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                    : 'bg-blue-100 text-blue-700 border-blue-200'
                                             }`}>
-                                            {user.role === 'admin' ? 'Admin' : 'Dueño'}
+                                            {user.role === 'admin'
+                                                ? 'Admin'
+                                                : user.role === 'operative'
+                                                    ? 'Personal Operativo'
+                                                    : 'Dueño'}
                                         </span>
                                     </div>
 

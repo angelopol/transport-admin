@@ -19,13 +19,14 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Fleet Management & Dashboard (all authenticated users except operatives)
+    Route::middleware([\App\Http\Middleware\PreventOperativeAccess::class])->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Fleet Management (all authenticated users)
-    Route::resource('buses', BusController::class);
-    Route::post('/buses/{bus}/regenerate-token', [BusController::class, 'regenerateToken'])
-        ->name('buses.regenerate-token');
+        Route::resource('buses', BusController::class);
+        Route::post('/buses/{bus}/regenerate-token', [BusController::class, 'regenerateToken'])
+            ->name('buses.regenerate-token');
+    });
 
     Route::resource('manual-entries', \App\Http\Controllers\ManualRevenueEntryController::class)->only(['index', 'create', 'store']);
 

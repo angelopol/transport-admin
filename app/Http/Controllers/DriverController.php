@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Driver;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DriverController extends Controller
 {
@@ -19,7 +21,8 @@ class DriverController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $drivers = Driver::withCount('buses')
+        $drivers = Driver::with(['buses:id,plate'])
+            ->withCount('buses')
             ->forUser($user)
             ->orderBy('name')
             ->paginate(15);
@@ -49,6 +52,8 @@ class DriverController extends Controller
             'license_number' => ['nullable', 'string', 'max:50'],
             'is_active' => ['boolean'],
             'photo' => ['nullable', 'image', 'max:5120'], // 5MB
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
 
         $validated['owner_id'] = $request->user()->id;
@@ -58,7 +63,23 @@ class DriverController extends Controller
             $validated['photo_path'] = $path;
         }
 
-        Driver::create($validated);
+        DB::transaction(function () use ($validated, $request) {
+            $userId = null;
+            if (!empty($validated['email']) && !empty($validated['password'])) {
+                $user = User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'role' => 'operative',
+                    'phone' => $validated['phone'],
+                ]);
+                $userId = $user->id;
+            }
+            $validated['user_id'] = $userId;
+            unset($validated['email'], $validated['password']);
+
+            Driver::create($validated);
+        });
 
         return redirect()->route('drivers.index')
             ->with('success', 'Conductor registrado exitosamente.');
@@ -73,6 +94,8 @@ class DriverController extends Controller
         if (!$user->isAdmin() && $driver->owner_id !== $user->id) {
             abort(403);
         }
+
+        $driver->load('user');
 
         return Inertia::render('Drivers/Edit', [
             'driver' => $driver,
@@ -96,6 +119,8 @@ class DriverController extends Controller
             'license_number' => ['nullable', 'string', 'max:50'],
             'is_active' => ['boolean'],
             'photo' => ['nullable', 'image', 'max:5120'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($driver->user_id)],
+            'password' => ['nullable', 'string', 'min:8'],
         ]);
 
         if ($request->hasFile('photo')) {
@@ -106,7 +131,39 @@ class DriverController extends Controller
             $validated['photo_path'] = $path;
         }
 
-        $driver->update($validated);
+        DB::transaction(function () use ($validated, $driver) {
+            $userId = $driver->user_id;
+
+            if ($driver->user_id) {
+                // Update existing user
+                $updateData = [
+                    'name' => $validated['name'],
+                    'phone' => $validated['phone'],
+                ];
+                if (!empty($validated['email'])) {
+                    $updateData['email'] = $validated['email'];
+                }
+                if (!empty($validated['password'])) {
+                    $updateData['password'] = Hash::make($validated['password']);
+                }
+                User::where('id', $driver->user_id)->update($updateData);
+            } else if (!empty($validated['email']) && !empty($validated['password'])) {
+                // Create new user
+                $newUser = User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'role' => 'operative',
+                    'phone' => $validated['phone'],
+                ]);
+                $userId = $newUser->id;
+            }
+
+            $validated['user_id'] = $userId;
+            unset($validated['email'], $validated['password']);
+
+            $driver->update($validated);
+        });
 
         return redirect()->route('drivers.index')
             ->with('success', 'Conductor actualizado exitosamente.');
@@ -125,7 +182,14 @@ class DriverController extends Controller
         if ($driver->photo_path) {
             Storage::disk('public')->delete($driver->photo_path);
         }
-        $driver->delete();
+
+        DB::transaction(function () use ($driver) {
+            $userId = $driver->user_id;
+            $driver->delete();
+            if ($userId) {
+                User::where('id', $userId)->delete();
+            }
+        });
 
         return redirect()->route('drivers.index')
             ->with('success', 'Conductor eliminado exitosamente.');

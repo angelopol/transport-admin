@@ -7,6 +7,10 @@ interface Route {
     name: string;
 }
 
+interface Bus {
+    plate: string;
+}
+
 interface ManualEntry {
     id: number;
     amount: number;
@@ -14,6 +18,11 @@ interface ManualEntry {
     payment_method: string;
     registered_at: string;
     route: Route;
+    bus?: Bus;
+    reference_number?: string;
+    identification?: string;
+    phone_or_account?: string;
+    reference_image_path?: string;
     owner?: User;
 }
 
@@ -22,9 +31,14 @@ interface Props {
         data: ManualEntry[];
         links: any[];
     };
+    auth: {
+        user: User;
+    };
 }
 
-export default function Index({ entries }: Props) {
+export default function Index({ entries, auth }: Props) {
+    const isOperative = auth?.user?.role === 'operative';
+
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('es-MX', {
             style: 'currency',
@@ -62,47 +76,53 @@ export default function Index({ entries }: Props) {
             header={
                 <div className="flex justify-between items-center gap-4">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                        Ingresos
+                        {isOperative ? 'Pasaje' : 'Ingresos'}
                     </h2>
                     <Link
                         href={route('manual-entries.create')}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                     >
-                        Registrar Ingreso
+                        {isOperative ? 'Registrar Pasaje' : 'Registrar Ingreso'}
                     </Link>
                 </div>
             }
         >
-            <Head title="Ingresos" />
+            <Head title={isOperative ? 'Pasaje' : 'Ingresos'} />
 
             <div className="py-6">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left text-gray-500">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3">Fecha</th>
-                                        <th className="px-6 py-3">Ruta</th>
-                                        <th className="px-6 py-3">Tipo Usuario</th>
-                                        <th className="px-6 py-3">Método Pago</th>
-                                        <th className="px-6 py-3 text-right">Monto</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruta</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Usuario</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método Pago</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalles Ref.</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Comprobante</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="bg-white divide-y divide-gray-200">
                                     {entries.data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                                            <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                                                 No hay ingresos registrados.
                                             </td>
                                         </tr>
                                     ) : (
                                         entries.data.map((entry) => (
-                                            <tr key={entry.id} className="bg-white border-b hover:bg-gray-50">
-                                                <td className="px-6 py-4 font-medium text-gray-900">
+                                            <tr key={entry.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap">
                                                     {formatDate(entry.registered_at)}
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                                                    {entry.bus?.plate || '-'}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-600">
                                                     {entry.route?.name || 'Ruta eliminada'}
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -121,6 +141,21 @@ export default function Index({ entries }: Props) {
                                                     `}>
                                                         {translatePaymentMethod(entry.payment_method)}
                                                     </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                                    {entry.reference_number && <div><span className="font-semibold">Ref:</span> {entry.reference_number}</div>}
+                                                    {entry.identification && <div><span className="font-semibold">C.I:</span> {entry.identification}</div>}
+                                                    {entry.phone_or_account && <div><span className="font-semibold">Tel/Cta:</span> {entry.phone_or_account}</div>}
+                                                    {!entry.reference_number && !entry.identification && !entry.phone_or_account && <span className="text-gray-400">—</span>}
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    {entry.reference_image_path ? (
+                                                        <a href={`/storage/${entry.reference_image_path}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium">
+                                                            Ver Adjunto
+                                                        </a>
+                                                    ) : (
+                                                        <span className="text-gray-400 text-sm">—</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 text-right font-bold text-gray-900">
                                                     {formatCurrency(Number(entry.amount))}

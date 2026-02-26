@@ -19,6 +19,9 @@ class Route extends Model
         'fare_senior',
         'fare_disabled',
         'fare_sunday',
+        'is_student_percentage',
+        'is_senior_percentage',
+        'is_disabled_percentage',
         'is_active',
         'owner_id',
     ];
@@ -44,6 +47,9 @@ class Route extends Model
             'fare_senior' => 'decimal:2',
             'fare_disabled' => 'decimal:2',
             'fare_sunday' => 'decimal:2',
+            'is_student_percentage' => 'boolean',
+            'is_senior_percentage' => 'boolean',
+            'is_disabled_percentage' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

@@ -10,6 +10,7 @@ interface Route {
     fare: number;
     is_active: boolean;
     buses_count: number;
+    buses?: { id: number; plate: string }[];
 }
 
 interface PaginatedRoutes {
@@ -72,7 +73,9 @@ export default function Index({ routes }: Props) {
                                             <td className="px-6 py-4 text-gray-600">{route.origin}</td>
                                             <td className="px-6 py-4 text-gray-600">{route.destination}</td>
                                             <td className="px-6 py-4 font-medium">${parseFloat(route.fare.toString()).toFixed(2)}</td>
-                                            <td className="px-6 py-4">{route.buses_count}</td>
+                                            <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={route.buses?.map(b => b.plate).join(', ')}>
+                                                {route.buses?.map(b => b.plate).join(', ') || '—'}
+                                            </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${route.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                                     }`}>
@@ -125,7 +128,9 @@ export default function Index({ routes }: Props) {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="font-semibold text-gray-500 w-16">Unidades:</span>
-                                            <span>{route.buses_count}</span>
+                                            <span className="truncate max-w-[200px]" title={route.buses?.map(b => b.plate).join(', ')}>
+                                                {route.buses?.map(b => b.plate).join(', ') || '—'}
+                                            </span>
                                         </div>
                                     </div>
 

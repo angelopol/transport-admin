@@ -3,7 +3,7 @@ export interface User {
     name: string;
     email: string;
     email_verified_at?: string;
-    role: 'admin' | 'owner';
+    role: 'admin' | 'owner' | 'operative';
 }
 
 export type PageProps<

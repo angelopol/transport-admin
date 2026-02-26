@@ -17,7 +17,8 @@ class RouteController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $routes = Route::withCount('buses')
+        $routes = Route::with(['buses:id,plate'])
+            ->withCount('buses')
             ->forUser($user)
             ->orderBy('name')
             ->paginate(15);
@@ -49,6 +50,9 @@ class RouteController extends Controller
             'fare_senior' => ['nullable', 'numeric', 'min:0'],
             'fare_disabled' => ['nullable', 'numeric', 'min:0'],
             'fare_sunday' => ['nullable', 'numeric', 'min:0'],
+            'is_student_percentage' => ['boolean'],
+            'is_senior_percentage' => ['boolean'],
+            'is_disabled_percentage' => ['boolean'],
         ]);
 
         $validated['owner_id'] = $request->user()->id;
@@ -93,6 +97,9 @@ class RouteController extends Controller
             'fare_senior' => ['nullable', 'numeric', 'min:0'],
             'fare_disabled' => ['nullable', 'numeric', 'min:0'],
             'fare_sunday' => ['nullable', 'numeric', 'min:0'],
+            'is_student_percentage' => ['boolean'],
+            'is_senior_percentage' => ['boolean'],
+            'is_disabled_percentage' => ['boolean'],
             'is_active' => ['boolean'],
         ]);
 
