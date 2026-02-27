@@ -34,8 +34,11 @@ export default function Index({ collectors }: Props) {
             header={
                 <div className="flex justify-between items-center gap-4">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">Colectores ({collectors.total})</h2>
-                    <Link href="/collectors/create" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        + Nuevo Colector
+                    <Link href="/collectors/create" className="hidden md:inline-flex px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Nuevo Colector
                     </Link>
                 </div>
             }
@@ -158,6 +161,17 @@ export default function Index({ collectors }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* FAB for mobile devices */}
+            <Link
+                href="/collectors/create"
+                className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all z-50"
+                aria-label="Nuevo Colector"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </Link>
         </AuthenticatedLayout>
     );
 }

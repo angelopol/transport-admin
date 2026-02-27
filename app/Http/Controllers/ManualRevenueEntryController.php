@@ -56,7 +56,7 @@ class ManualRevenueEntryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'bus_id' => ['required', 'exists:buses,id'],
             'user_type' => ['required', 'in:general,student,senior,disabled'],
             'payment_method' => ['required', 'in:cash,digital'],
@@ -64,8 +64,14 @@ class ManualRevenueEntryController extends Controller
             'reference_number' => ['required_if:payment_method,digital', 'nullable', 'string', 'max:100'],
             'identification' => ['nullable', 'string', 'max:20'],
             'phone_or_account' => ['nullable', 'string', 'max:50'],
-            'reference_image' => ['required_if:payment_method,digital', 'image', 'max:5120'],
-        ]);
+            'reference_image' => ['nullable', 'image', 'max:5120'],
+        ];
+
+        if ($request->user()->isOperative()) {
+            $rules['reference_image'] = ['required_if:payment_method,digital', 'image', 'max:5120'];
+        }
+
+        $validated = $request->validate($rules);
 
         $bus = Bus::with('route')->findOrFail($validated['bus_id']);
         $route = $bus->route;
@@ -136,6 +142,7 @@ class ManualRevenueEntryController extends Controller
 
         ManualRevenueEntry::create([
             'owner_id' => $bus->owner_id, // Tie to the owner of the bus
+            'user_id' => $user->id,       // The user who registered it
             'route_id' => $validated['route_id'],
             'bus_id' => $validated['bus_id'],
             'amount' => $amount,

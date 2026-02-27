@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('manual-entries', \App\Http\Controllers\ManualRevenueEntryController::class)->only(['index', 'create', 'store']);
+    Route::post('/extract-reference', [\App\Http\Controllers\OcrController::class, 'extractReference'])->name('ocr.extract-reference');
 
     // Admin-only routes
     Route::middleware('admin')->group(function () {

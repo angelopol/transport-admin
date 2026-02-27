@@ -10,4 +10,10 @@ export default defineConfig({
         }),
         react(),
     ],
+    server: {
+        host: '0.0.0.0',
+        hmr: {
+            host: '172.16.0.57',
+        }
+    }
 });

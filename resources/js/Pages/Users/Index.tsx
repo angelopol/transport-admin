@@ -54,9 +54,12 @@ export default function Index({ users, filters }: Props) {
                     </h2>
                     <Link
                         href={route('users.create')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        className="hidden md:inline-flex px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition items-center gap-2"
                     >
-                        + Nuevo Usuario
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Nuevo Usuario
                     </Link>
                 </div>
             }
@@ -105,10 +108,10 @@ export default function Index({ users, filters }: Props) {
                                             <td className="px-6 py-4 text-gray-600">{user.email}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'admin'
-                                                        ? 'bg-purple-100 text-purple-700 border-purple-200'
-                                                        : user.role === 'operative'
-                                                            ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                                                            : 'bg-blue-100 text-blue-700 border-blue-200'
+                                                    ? 'bg-purple-100 text-purple-700 border-purple-200'
+                                                    : user.role === 'operative'
+                                                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                        : 'bg-blue-100 text-blue-700 border-blue-200'
                                                     }`}>
                                                     {user.role === 'admin'
                                                         ? 'Administrador'
@@ -152,10 +155,10 @@ export default function Index({ users, filters }: Props) {
                                     <div className="flex justify-between items-start">
                                         <h3 className="text-lg font-bold text-gray-900">{user.name}</h3>
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'admin'
-                                                ? 'bg-purple-100 text-purple-700 border-purple-200'
-                                                : user.role === 'operative'
-                                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                                                    : 'bg-blue-100 text-blue-700 border-blue-200'
+                                            ? 'bg-purple-100 text-purple-700 border-purple-200'
+                                            : user.role === 'operative'
+                                                ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                : 'bg-blue-100 text-blue-700 border-blue-200'
                                             }`}>
                                             {user.role === 'admin'
                                                 ? 'Admin'
@@ -226,6 +229,17 @@ export default function Index({ users, filters }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* FAB for mobile devices */}
+            <Link
+                href={route('users.create')}
+                className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all z-50"
+                aria-label="Nuevo Usuario"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </Link>
         </AuthenticatedLayout>
     );
 }

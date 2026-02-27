@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import axios from 'axios';
 import { FormEventHandler, useEffect, useState, useRef } from 'react';
 
 interface Route {
@@ -40,27 +41,80 @@ export default function Create({ buses, isOperative }: Props) {
     });
 
     const isFormDisabled = !data.bus_id || !buses.find(b => b.id.toString() === data.bus_id)?.route;
-    const isSubmitDisabled = processing || isFormDisabled || (data.payment_method === 'digital' && !data.reference_image);
+    const isSubmitDisabled = processing || isFormDisabled || (isOperative && data.payment_method === 'digital' && !data.reference_image);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [isExtractingReference, setIsExtractingReference] = useState(false);
+    const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+    const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
-    const openCamera = async () => {
+    const extractReference = async (file: File) => {
+        setIsExtractingReference(true);
+        const formData = new FormData();
+        formData.append('reference_image', file);
+
+        try {
+            const response = await axios.post('/extract-reference', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (response.data && response.data.reference) {
+                // Remove trailing dots or non-alphanumeric weirdness if any, though backend should handle it
+                setData(prevData => ({
+                    ...prevData,
+                    reference_number: response.data.reference
+                }));
+            }
+        } catch (error) {
+            console.error("Error extracted reference via OCR:", error);
+        } finally {
+            setIsExtractingReference(false);
+        }
+    };
+
+    const openCamera = async (deviceId?: string) => {
         setIsCameraOpen(true);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
-            });
+            const constraints: MediaStreamConstraints = {
+                video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' }
+            };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+            }
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const cameras = devices.filter(d => d.kind === 'videoinput');
+            setVideoDevices(cameras);
+
+            if (!deviceId) {
+                const activeTrack = stream.getVideoTracks()[0];
+                const settings = activeTrack.getSettings() as any;
+                if (settings.deviceId) {
+                    setSelectedDeviceId(settings.deviceId);
+                } else if (cameras.length > 0) {
+                    setSelectedDeviceId(cameras[0].deviceId);
+                }
+            } else {
+                setSelectedDeviceId(deviceId);
             }
         } catch (err) {
             console.error("Error accessing camera:", err);
             alert("No se pudo acceder a la cámara. Por favor asegúrese de dar permisos o estar en un dispositivo con cámara.");
             setIsCameraOpen(false);
         }
+    };
+
+    const handleCameraChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newDeviceId = e.target.value;
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+        }
+        openCamera(newDeviceId);
     };
 
     const closeCamera = () => {
@@ -89,6 +143,7 @@ export default function Create({ buses, isOperative }: Props) {
                     .then(blob => {
                         const file = new File([blob], `captura_${Date.now()}.jpg`, { type: 'image/jpeg' });
                         setData('reference_image', file);
+                        extractReference(file);
                     });
 
                 closeCamera();
@@ -99,7 +154,7 @@ export default function Create({ buses, isOperative }: Props) {
     const retakePhoto = () => {
         setPhotoPreview(null);
         setData('reference_image', null);
-        openCamera();
+        openCamera(selectedDeviceId || undefined);
     };
 
     // Cleanup camera on unmount
@@ -287,8 +342,18 @@ export default function Create({ buses, isOperative }: Props) {
                                                     onChange={(e) => setData('reference_number', e.target.value)}
                                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                                     placeholder="Ej. 123456789"
+                                                    disabled={isExtractingReference}
                                                     required
                                                 />
+                                                {isExtractingReference && (
+                                                    <p className="text-blue-600 text-xs mt-1 animate-pulse flex items-center gap-1">
+                                                        <svg className="animate-spin h-3 w-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Extrayendo referencia...
+                                                    </p>
+                                                )}
                                                 {errors.reference_number && <p className="text-red-500 text-sm mt-1">{errors.reference_number}</p>}
                                             </div>
                                             <div>
@@ -317,59 +382,87 @@ export default function Create({ buses, isOperative }: Props) {
                                                 {errors.phone_or_account && <p className="text-red-500 text-sm mt-1">{errors.phone_or_account}</p>}
                                             </div>
                                             <div className="col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Captura de Pantalla (Obligatorio) *</label>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Captura de Pantalla {isOperative ? '(Obligatorio) *' : '(Opcional)'}
+                                                </label>
 
-                                                {!photoPreview && !isCameraOpen && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={openCamera}
-                                                        disabled={isFormDisabled}
-                                                        className="w-full py-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 flex flex-col items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-blue-500 outline-none"
-                                                    >
-                                                        <span className="text-4xl">📸</span>
-                                                        <span className="font-medium">Tomar Fotografía del Pago</span>
-                                                    </button>
-                                                )}
-
-                                                {isCameraOpen && (
-                                                    <div className="relative rounded-lg overflow-hidden bg-black shadow-inner border border-gray-800">
-                                                        <video ref={videoRef} autoPlay playsInline className="w-full h-auto max-h-96 object-cover" />
-                                                        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-6">
+                                                {isOperative ? (
+                                                    <>
+                                                        {!photoPreview && !isCameraOpen && (
                                                             <button
                                                                 type="button"
-                                                                onClick={closeCamera}
-                                                                className="px-5 py-2.5 bg-gray-800/80 hover:bg-gray-700 text-white rounded-full backdrop-blur-sm transition-all shadow-lg"
+                                                                onClick={() => openCamera()}
+                                                                disabled={isFormDisabled}
+                                                                className="w-full py-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 flex flex-col items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-blue-500 outline-none"
                                                             >
-                                                                Cancelar
+                                                                <span className="text-4xl">📸</span>
+                                                                <span className="font-medium">Tomar Fotografía del Pago</span>
                                                             </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={takePhoto}
-                                                                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold backdrop-blur-sm shadow-lg flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
-                                                            >
-                                                                <span>Capturar</span>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                        )}
 
-                                                {photoPreview && (
-                                                    <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                                        <img src={photoPreview} alt="Comprobante" className="w-full h-auto max-h-96 object-contain bg-gray-50" />
-                                                        <button
-                                                            type="button"
-                                                            onClick={retakePhoto}
-                                                            className="absolute bottom-4 right-4 items-center gap-2 px-4 py-2 bg-gray-900/75 hover:bg-gray-900 text-white rounded-lg text-sm transition-all backdrop-blur-sm shadow"
-                                                        >
-                                                            <span>↻</span> Volver a tomar
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                        {isCameraOpen && (
+                                                            <div className="relative rounded-lg overflow-hidden bg-black shadow-inner border border-gray-800">
+                                                                {videoDevices.length > 1 && (
+                                                                    <div className="absolute top-4 left-4 right-4 z-10 drop-shadow-md">
+                                                                        <select
+                                                                            value={selectedDeviceId}
+                                                                            onChange={handleCameraChange}
+                                                                            className="w-full bg-black/60 text-white border border-gray-600 rounded-lg p-2 backdrop-blur-md text-sm focus:ring-2 focus:ring-blue-500 truncate"
+                                                                        >
+                                                                            {videoDevices.map((device, index) => (
+                                                                                <option key={device.deviceId} value={device.deviceId}>
+                                                                                    {device.label || `Cámara ${index + 1}`}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
+                                                                    </div>
+                                                                )}
+                                                                <video ref={videoRef} autoPlay playsInline className="w-full h-auto max-h-96 object-cover" />
+                                                                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-6">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={closeCamera}
+                                                                        className="px-5 py-2.5 bg-gray-800/80 hover:bg-gray-700 text-white rounded-full backdrop-blur-sm transition-all shadow-lg"
+                                                                    >
+                                                                        Cancelar
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={takePhoto}
+                                                                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold backdrop-blur-sm shadow-lg flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
+                                                                    >
+                                                                        <span>Capturar</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
 
-                                                <canvas ref={canvasRef} className="hidden" />
+                                                        {photoPreview && (
+                                                            <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                                                <img src={photoPreview} alt="Comprobante" className="w-full h-auto max-h-96 object-contain bg-gray-50" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={retakePhoto}
+                                                                    className="absolute bottom-4 right-4 items-center gap-2 px-4 py-2 bg-gray-900/75 hover:bg-gray-900 text-white rounded-lg text-sm transition-all backdrop-blur-sm shadow"
+                                                                >
+                                                                    <span>↻</span> Volver a tomar
+                                                                </button>
+                                                            </div>
+                                                        )}
+
+                                                        <canvas ref={canvasRef} className="hidden" />
+                                                    </>
+                                                ) : (
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => setData('reference_image', e.target.files ? e.target.files[0] : null)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+                                                    />
+                                                )}
 
                                                 {errors.reference_image && <p className="text-red-500 text-sm mt-1">{errors.reference_image}</p>}
-                                                {data.payment_method === 'digital' && !data.reference_image && (
+                                                {isOperative && data.payment_method === 'digital' && !data.reference_image && (
                                                     <p className="text-orange-500 text-xs mt-2 font-medium">⚠️ La fotografía del pago es obligatoria.</p>
                                                 )}
                                             </div>
@@ -392,7 +485,7 @@ export default function Create({ buses, isOperative }: Props) {
                                 </Link>
                                 <button
                                     type="submit"
-                                    disabled={isSubmitDisabled}
+                                    disabled={isSubmitDisabled || isExtractingReference}
                                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                                 >
                                     {processing ? 'Guardando...' : 'Registrar'}

@@ -12,11 +12,17 @@ class ManualRevenueEntry extends Model
 
     protected $fillable = [
         'owner_id',
+        'user_id',
         'route_id',
+        'bus_id',
         'amount',
         'user_type',
         'payment_method',
         'registered_at',
+        'reference_number',
+        'identification',
+        'phone_or_account',
+        'reference_image_path',
     ];
 
     protected $casts = [
@@ -34,10 +40,18 @@ class ManualRevenueEntry extends Model
         return $this->belongsTo(Route::class);
     }
 
+    public function bus(): BelongsTo
+    {
+        return $this->belongsTo(Bus::class);
+    }
+
     public function scopeForUser($query, $user)
     {
         if ($user->isAdmin()) {
             return $query;
+        }
+        if ($user->isOperative()) {
+            return $query->where('user_id', $user->id);
         }
         return $query->where('owner_id', $user->id);
     }
