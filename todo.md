@@ -1,1 +1,0 @@
-- Explorar posibilidad de usar deteccion de caras de forma local, para ahorrar costos de aws. Parametro de funcion para decidir entra las dos opciones.
