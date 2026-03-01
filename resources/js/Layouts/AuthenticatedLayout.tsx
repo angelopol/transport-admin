@@ -26,7 +26,7 @@ export default function Authenticated({
                 </div>
 
                 <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-transparent">
-                    {user.role !== 'operative' && (
+                    {user.role === 'owner' && (
                         <>
                             <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-2">
                                 Principal
@@ -40,7 +40,7 @@ export default function Authenticated({
                         </>
                     )}
 
-                    {user.role !== 'operative' && (
+                    {user.role === 'owner' && (
                         <>
                             <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mt-8 mb-2">
                                 Administración
@@ -63,12 +63,16 @@ export default function Authenticated({
                         </>
                     )}
 
-                    <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mt-8 mb-2">
-                        Operaciones
-                    </p>
-                    <NavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')} className="w-full">
-                        <span className="mr-3">💰</span> {user.role === 'operative' ? 'Pasaje' : 'Ingresos'}
-                    </NavLink>
+                    {user.role !== 'admin' && (
+                        <>
+                            <p className="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mt-8 mb-2">
+                                Operaciones
+                            </p>
+                            <NavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')} className="w-full">
+                                <span className="mr-3">💰</span> {user.role === 'operative' ? 'Pasaje' : 'Ingresos'}
+                            </NavLink>
+                        </>
+                    )}
                     {user.role === 'admin' && (
                         <>
                             <NavLink href={route('users.index')} active={route().current('users.*')} className="w-full">
@@ -117,7 +121,7 @@ export default function Authenticated({
                     {/* Mobile Navigation Menu */}
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' md:hidden bg-blue-800 border-t border-blue-700'}>
                         <div className="pt-2 pb-3 space-y-1">
-                            {user.role !== 'operative' && (
+                            {user.role === 'owner' && (
                                 <>
                                     <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Dashboard</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>Reportes</ResponsiveNavLink>
@@ -128,10 +132,11 @@ export default function Authenticated({
                                     <ResponsiveNavLink href={route('bank-accounts.index')} active={route().current('bank-accounts.*')}>Cuentas Bancarias</ResponsiveNavLink>
                                 </>
                             )}
-                            <ResponsiveNavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')}>{user.role === 'operative' ? 'Pasaje' : 'Ingresos'}</ResponsiveNavLink>
+                            {user.role !== 'admin' && (
+                                <ResponsiveNavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')}>{user.role === 'operative' ? 'Pasaje' : 'Ingresos'}</ResponsiveNavLink>
+                            )}
                             {user.role === 'admin' && (
                                 <>
-                                    <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.*')}>Reportes</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('devices.index')} active={route().current('devices.*')}>Dispositivos</ResponsiveNavLink>
                                 </>

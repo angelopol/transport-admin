@@ -19,8 +19,7 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Fleet Management & Dashboard (all authenticated users except operatives)
-    Route::middleware([\App\Http\Middleware\PreventOperativeAccess::class])->group(function () {
+    Route::middleware([\App\Http\Middleware\EnsureUserIsOwner::class])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::resource('buses', BusController::class);
@@ -30,16 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('buses.payment-poster');
 
         Route::resource('bank-accounts', \App\Http\Controllers\BankAccountController::class);
-    });
-
-    Route::resource('manual-entries', \App\Http\Controllers\ManualRevenueEntryController::class)->only(['index', 'create', 'store']);
-    Route::post('/extract-reference', [\App\Http\Controllers\OcrController::class, 'extractReference'])->name('ocr.extract-reference');
-
-    // Admin-only routes
-    Route::middleware('admin')->group(function () {
         Route::resource('routes', RouteController::class)->except(['show']);
         Route::resource('drivers', DriverController::class)->except(['show']);
-        Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
         Route::resource('collectors', \App\Http\Controllers\CollectorController::class)->except(['show']);
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 
@@ -48,6 +39,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/advanced-reports/unit-spacing', [\App\Http\Controllers\Report\AdvancedReportController::class, 'unitSpacing'])->name('advanced-reports.unit-spacing');
         Route::get('/advanced-reports/passengers-area', [\App\Http\Controllers\Report\AdvancedReportController::class, 'passengersPerArea'])->name('advanced-reports.passengers-area');
         Route::get('/advanced-reports/route-times', [\App\Http\Controllers\Report\AdvancedReportController::class, 'routeTimes'])->name('advanced-reports.route-times');
+    });
+
+    Route::resource('manual-entries', \App\Http\Controllers\ManualRevenueEntryController::class)->only(['index', 'create', 'store']);
+    Route::post('/extract-reference', [\App\Http\Controllers\OcrController::class, 'extractReference'])->name('ocr.extract-reference');
+
+    // Admin-only routes
+    Route::middleware('admin')->group(function () {
+        Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+
         // Device Management
         Route::get('/devices', [\App\Http\Controllers\DeviceController::class, 'index'])->name('devices.index');
         Route::post('/devices/{device}/toggle', [\App\Http\Controllers\DeviceController::class, 'toggleStatus'])->name('devices.toggle');

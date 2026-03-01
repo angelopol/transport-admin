@@ -37,6 +37,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('manual-entries.index', absolute: false));
         }
 
+        if ($request->user()->isAdmin()) {
+            return redirect()->intended(route('users.index', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
