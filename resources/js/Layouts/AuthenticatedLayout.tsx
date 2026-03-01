@@ -34,7 +34,10 @@ export default function Authenticated({
                             <NavLink href={route('dashboard')} active={route().current('dashboard')} className="w-full">
                                 <span className="mr-3">📊</span> Dashboard
                             </NavLink>
-                            <NavLink href={route('reports.index')} active={route().current('reports.index')} className="w-full">
+                            <NavLink href={route('maps.index')} active={route().current('maps.*')} className="w-full">
+                                <span className="mr-3">🗺️</span> Mapas
+                            </NavLink>
+                            <NavLink href={route('reports.index')} active={route().current('reports.index') || route().current('advanced-reports.*')} className="w-full">
                                 <span className="mr-3">📈</span> Reportes
                             </NavLink>
                         </>
@@ -124,7 +127,8 @@ export default function Authenticated({
                             {user.role === 'owner' && (
                                 <>
                                     <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Dashboard</ResponsiveNavLink>
-                                    <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>Reportes</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('maps.index')} active={route().current('maps.*')}>Mapas</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index') || route().current('advanced-reports.*')}>Reportes</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('buses.index')} active={route().current('buses.*')}>Autobuses</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('routes.index')} active={route().current('routes.*')}>Rutas</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('drivers.index')} active={route().current('drivers.*')}>Conductores</ResponsiveNavLink>

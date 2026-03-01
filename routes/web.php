@@ -39,6 +39,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/advanced-reports/unit-spacing', [\App\Http\Controllers\Report\AdvancedReportController::class, 'unitSpacing'])->name('advanced-reports.unit-spacing');
         Route::get('/advanced-reports/passengers-area', [\App\Http\Controllers\Report\AdvancedReportController::class, 'passengersPerArea'])->name('advanced-reports.passengers-area');
         Route::get('/advanced-reports/route-times', [\App\Http\Controllers\Report\AdvancedReportController::class, 'routeTimes'])->name('advanced-reports.route-times');
+
+        // Maps
+        Route::get('/maps', [\App\Http\Controllers\MapController::class, 'index'])->name('maps.index');
+        Route::get('/maps/live', [\App\Http\Controllers\MapController::class, 'live'])->name('maps.live');
+        Route::get('/maps/history', [\App\Http\Controllers\MapController::class, 'history'])->name('maps.history');
     });
 
     Route::resource('manual-entries', \App\Http\Controllers\ManualRevenueEntryController::class)->only(['index', 'create', 'store']);

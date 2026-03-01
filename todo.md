@@ -1,4 +1,1 @@
-- Arreglar modulo de reportes y hacer que hayan reportes en los que se compare periodos de tiempo.
-- En la lista de pasajes registrados que solo se pueda ver los del dia actual.
-- Analizar permisos del superadmin, ya que el superadmin puede ver todo, pero no deberia poder ver todo, deberia poder ver solo lo que le corresponde, el que realmente gestionara la plataforma sera el dueño, el superadmin solo sera para poner en funcionamiento la plataforma.
-- Agregar mapa en tiempo real para ver la ubicacion de los vehiculos y pasajeros que se suben en cada ubicacion con timeline. Ver mapas historicos por periodo de tiempo. Mapa por autobus y por autobuses.
+- Explorar posibilidad de usar deteccion de caras de forma local, para ahorrar costos de aws. Parametro de funcion para decidir entra las dos opciones.
