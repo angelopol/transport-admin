@@ -15,7 +15,7 @@ export default function Authenticated({
     return (
         <div className="h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
             {/* Sidebar (Desktop) */}
-            <aside className="hidden md:flex flex-col w-64 bg-blue-900 text-white h-full shadow-2xl z-20">
+            <aside className="hidden md:flex flex-col w-64 bg-blue-900 text-white h-full shadow-2xl z-20 print:hidden">
                 <div className="flex items-center justify-center h-16 border-b border-blue-800/50 bg-blue-950/30 backdrop-blur-sm shrink-0">
                     <Link href="/" className="flex items-center gap-2">
                         <div className="bg-white p-1 rounded-lg">
@@ -57,6 +57,9 @@ export default function Authenticated({
                             <NavLink href={route('collectors.index')} active={route().current('collectors.*')} className="w-full">
                                 <span className="mr-3">🎫</span> Colectores
                             </NavLink>
+                            <NavLink href={route('bank-accounts.index')} active={route().current('bank-accounts.*')} className="w-full">
+                                <span className="mr-3">🏦</span> Cuentas Bancarias
+                            </NavLink>
                         </>
                     )}
 
@@ -94,7 +97,7 @@ export default function Authenticated({
             {/* Mobile Header & Main Content */}
             <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                 {/* Mobile Header */}
-                <header className="md:hidden bg-blue-900 text-white shadow-md z-10 shrink-0">
+                <header className="md:hidden bg-blue-900 text-white shadow-md z-10 shrink-0 print:hidden">
                     <div className="flex items-center justify-between px-4 h-16">
                         <Link href="/" className="flex items-center gap-2">
                             <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
@@ -122,11 +125,13 @@ export default function Authenticated({
                                     <ResponsiveNavLink href={route('routes.index')} active={route().current('routes.*')}>Rutas</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('drivers.index')} active={route().current('drivers.*')}>Conductores</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('collectors.index')} active={route().current('collectors.*')}>Colectores</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('bank-accounts.index')} active={route().current('bank-accounts.*')}>Cuentas Bancarias</ResponsiveNavLink>
                                 </>
                             )}
                             <ResponsiveNavLink href={route('manual-entries.index')} active={route().current('manual-entries.*')}>{user.role === 'operative' ? 'Pasaje' : 'Ingresos'}</ResponsiveNavLink>
                             {user.role === 'admin' && (
                                 <>
+                                    <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.*')}>Reportes</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('devices.index')} active={route().current('devices.*')}>Dispositivos</ResponsiveNavLink>
                                 </>
@@ -146,7 +151,7 @@ export default function Authenticated({
                 </header>
 
                 {/* Top Bar (Desktop) - User Dropdown & Title */}
-                <header className="hidden md:flex bg-white shadow-sm h-16 items-center justify-between px-8 z-10 shrink-0">
+                <header className="hidden md:flex bg-white shadow-sm h-16 items-center justify-between px-8 z-10 shrink-0 print:hidden">
                     <div className="flex items-center">
                         {header && <div className="text-xl font-bold text-gray-800">{header}</div>}
                     </div>

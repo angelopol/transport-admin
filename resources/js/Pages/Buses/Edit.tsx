@@ -26,6 +26,13 @@ interface AvailableDevice {
     mac_address: string;
 }
 
+interface BankAccount {
+    id: number;
+    bank_name: string;
+    account_number: string;
+    phone_number: string;
+}
+
 interface Bus {
     id: number;
     device_mac: string | null;
@@ -33,6 +40,8 @@ interface Bus {
     model: string | null;
     capacity: number;
     route_id: number | null;
+    mobile_payment_account_id: number | null;
+    transfer_account_id: number | null;
     drivers?: Driver[];
     collectors?: Collector[];
     is_active: boolean;
@@ -44,15 +53,18 @@ interface Props {
     drivers: Driver[];
     collectors: Collector[];
     availableDevices: AvailableDevice[];
+    bankAccounts: BankAccount[];
 }
 
-export default function Edit({ bus, routes, drivers, collectors, availableDevices }: Props) {
+export default function Edit({ bus, routes, drivers, collectors, availableDevices, bankAccounts }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         device_mac: bus.device_mac || '',
         plate: bus.plate,
         model: bus.model || '',
         capacity: bus.capacity,
         route_id: bus.route_id?.toString() || '',
+        mobile_payment_account_id: bus.mobile_payment_account_id?.toString() || '',
+        transfer_account_id: bus.transfer_account_id?.toString() || '',
         driver_ids: bus.drivers?.map(d => d.id) || ([] as number[]),
         collector_ids: bus.collectors?.map(c => c.id) || ([] as number[]),
         is_active: bus.is_active,
@@ -156,6 +168,42 @@ export default function Edit({ bus, routes, drivers, collectors, availableDevice
                                             </option>
                                         ))}
                                     </select>
+                                </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Cuenta para Pago Móvil
+                                        </label>
+                                        <select
+                                            value={data.mobile_payment_account_id}
+                                            onChange={(e) => setData('mobile_payment_account_id', e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        >
+                                            <option value="">Ninguna</option>
+                                            {bankAccounts.map((account) => (
+                                                <option key={account.id} value={account.id}>
+                                                    {account.bank_name} - {account.phone_number || account.account_number}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Cuenta para Transferencias
+                                        </label>
+                                        <select
+                                            value={data.transfer_account_id}
+                                            onChange={(e) => setData('transfer_account_id', e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        >
+                                            <option value="">Ninguna</option>
+                                            {bankAccounts.map((account) => (
+                                                <option key={account.id} value={account.id}>
+                                                    {account.bank_name} - {account.account_number || account.phone_number}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 

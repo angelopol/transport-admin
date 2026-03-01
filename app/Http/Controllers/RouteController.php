@@ -17,7 +17,7 @@ class RouteController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $routes = Route::with(['buses:id,plate'])
+        $routes = Route::with(['buses:id,plate,route_id'])
             ->withCount('buses')
             ->forUser($user)
             ->orderBy('name')

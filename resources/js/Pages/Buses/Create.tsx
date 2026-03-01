@@ -26,20 +26,30 @@ interface AvailableDevice {
     mac_address: string;
 }
 
+interface BankAccount {
+    id: number;
+    bank_name: string;
+    account_number: string;
+    phone_number: string;
+}
+
 interface Props {
     routes: Route[];
     drivers: Driver[];
     collectors: Collector[];
     availableDevices: AvailableDevice[];
+    bankAccounts: BankAccount[];
 }
 
-export default function Create({ routes, drivers, collectors, availableDevices }: Props) {
+export default function Create({ routes, drivers, collectors, availableDevices, bankAccounts }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         device_mac: '',
         plate: '',
         model: '',
         capacity: 40,
         route_id: '',
+        mobile_payment_account_id: '',
+        transfer_account_id: '',
         driver_ids: [] as number[],
         collector_ids: [] as number[],
     });

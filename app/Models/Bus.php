@@ -20,6 +20,8 @@ class Bus extends Model
         'model',
         'capacity',
         'route_id',
+        'mobile_payment_account_id',
+        'transfer_account_id',
         'api_token',
         'is_active',
         'last_seen_at',
@@ -63,6 +65,16 @@ class Bus extends Model
     public function route(): BelongsTo
     {
         return $this->belongsTo(Route::class);
+    }
+
+    public function mobilePaymentAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankAccount::class, 'mobile_payment_account_id');
+    }
+
+    public function transferAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankAccount::class, 'transfer_account_id');
     }
 
     /**

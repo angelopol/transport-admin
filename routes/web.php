@@ -26,6 +26,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('buses', BusController::class);
         Route::post('/buses/{bus}/regenerate-token', [BusController::class, 'regenerateToken'])
             ->name('buses.regenerate-token');
+        Route::get('/buses/{bus}/payment-poster', [BusController::class, 'paymentPoster'])
+            ->name('buses.payment-poster');
+
+        Route::resource('bank-accounts', \App\Http\Controllers\BankAccountController::class);
     });
 
     Route::resource('manual-entries', \App\Http\Controllers\ManualRevenueEntryController::class)->only(['index', 'create', 'store']);
@@ -39,6 +43,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('collectors', \App\Http\Controllers\CollectorController::class)->except(['show']);
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 
+        // Advanced Reports
+        Route::get('/advanced-reports', [\App\Http\Controllers\Report\AdvancedReportController::class, 'index'])->name('advanced-reports.index');
+        Route::get('/advanced-reports/unit-spacing', [\App\Http\Controllers\Report\AdvancedReportController::class, 'unitSpacing'])->name('advanced-reports.unit-spacing');
+        Route::get('/advanced-reports/passengers-area', [\App\Http\Controllers\Report\AdvancedReportController::class, 'passengersPerArea'])->name('advanced-reports.passengers-area');
+        Route::get('/advanced-reports/route-times', [\App\Http\Controllers\Report\AdvancedReportController::class, 'routeTimes'])->name('advanced-reports.route-times');
         // Device Management
         Route::get('/devices', [\App\Http\Controllers\DeviceController::class, 'index'])->name('devices.index');
         Route::post('/devices/{device}/toggle', [\App\Http\Controllers\DeviceController::class, 'toggleStatus'])->name('devices.toggle');

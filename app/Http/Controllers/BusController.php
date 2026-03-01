@@ -50,6 +50,7 @@ class BusController extends Controller
             'drivers' => Driver::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'collectors' => Collector::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'availableDevices' => $availableDevices,
+            'bankAccounts' => \App\Models\BankAccount::forUser($user)->get(['id', 'bank_name', 'account_number', 'phone_number']),
         ]);
     }
 
@@ -64,6 +65,8 @@ class BusController extends Controller
             'model' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'route_id' => ['nullable', 'exists:routes,id'],
+            'mobile_payment_account_id' => ['nullable', 'exists:bank_accounts,id'],
+            'transfer_account_id' => ['nullable', 'exists:bank_accounts,id'],
             'driver_ids' => ['nullable', 'array'],
             'driver_ids.*' => ['exists:drivers,id'],
             'collector_ids' => ['nullable', 'array'],
@@ -151,6 +154,7 @@ class BusController extends Controller
             'drivers' => Driver::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'collectors' => Collector::active()->forUser($user)->get(['id', 'name', 'cedula']),
             'availableDevices' => $availableDevices,
+            'bankAccounts' => \App\Models\BankAccount::forUser($user)->get(['id', 'bank_name', 'account_number', 'phone_number']),
         ]);
     }
 
@@ -171,6 +175,8 @@ class BusController extends Controller
             'model' => ['nullable', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'route_id' => ['nullable', 'exists:routes,id'],
+            'mobile_payment_account_id' => ['nullable', 'exists:bank_accounts,id'],
+            'transfer_account_id' => ['nullable', 'exists:bank_accounts,id'],
             'driver_ids' => ['nullable', 'array'],
             'driver_ids.*' => ['exists:drivers,id'],
             'collector_ids' => ['nullable', 'array'],
@@ -213,9 +219,6 @@ class BusController extends Controller
             ->with('success', 'Unidad eliminada exitosamente.');
     }
 
-    /**
-     * Regenerate API token for the bus.
-     */
     public function regenerateToken(Request $request, Bus $bus): RedirectResponse
     {
         $user = $request->user();
@@ -228,5 +231,23 @@ class BusController extends Controller
 
         return redirect()->route('buses.show', $bus)
             ->with('success', 'Token regenerado exitosamente.');
+    }
+
+    /**
+     * Display the payment poster for the bus.
+     */
+    public function paymentPoster(Request $request, Bus $bus): Response
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && $bus->owner_id !== $user->id) {
+            abort(403);
+        }
+
+        $bus->load(['route', 'mobilePaymentAccount', 'transferAccount']);
+
+        return Inertia::render('Buses/PaymentPoster', [
+            'bus' => $bus,
+        ]);
     }
 }

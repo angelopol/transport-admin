@@ -62,4 +62,23 @@ class OcrController extends Controller
             return response()->json(['error' => 'Server error extracting reference'], 500);
         }
     }
+
+    /**
+     * Placeholder function to verify a payment reference with a bank's API.
+     * Currently returns true as the bank API is not yet integrated.
+     */
+    public function verifyPaymentReference(Request $request)
+    {
+        $request->validate([
+            'reference_number' => ['required', 'string'],
+            // 'bank_account_id' => ['required', 'exists:bank_accounts,id'],
+        ]);
+
+        // TODO: Integrate actual Bank API verification logic here
+
+        return response()->json([
+            'verified' => true,
+            'message' => 'Payment reference verification simulated successfully.',
+        ]);
+    }
 }

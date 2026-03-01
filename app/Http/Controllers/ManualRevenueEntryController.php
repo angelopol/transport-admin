@@ -20,6 +20,9 @@ class ManualRevenueEntryController extends Controller
         $user = $request->user();
         $entries = ManualRevenueEntry::with(['route', 'bus'])
             ->forUser($user)
+            ->when($user->isOperative(), function ($query) {
+                $query->whereDate('registered_at', Carbon::today());
+            })
             ->orderBy('registered_at', 'desc')
             ->paginate(15);
 
