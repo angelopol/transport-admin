@@ -107,7 +107,10 @@ export default function MapsIndex({ buses }: Props) {
 
             // Adjust center to first bus if available and we haven't manually moved much (optional)
             if (res.data.length > 0 && liveData.length === 0) {
-                setCenter([res.data[0].latitude, res.data[0].longitude]);
+                const firstValid = res.data.find((b: any) => b.latitude != null && b.longitude != null);
+                if (firstValid) {
+                    setCenter([firstValid.latitude, firstValid.longitude]);
+                }
             }
         } catch (error) {
             console.error("Error fetching live data", error);
@@ -294,7 +297,7 @@ export default function MapsIndex({ buses }: Props) {
                             />
 
                             {/* Live Markers */}
-                            {mode === 'live' && liveData.map(bus => (
+                            {mode === 'live' && liveData.filter(bus => bus.latitude != null && bus.longitude != null).map(bus => (
                                 <Marker
                                     key={`live-${bus.bus_id}`}
                                     position={[bus.latitude, bus.longitude]}
@@ -329,7 +332,7 @@ export default function MapsIndex({ buses }: Props) {
                                     </Marker>
 
                                     {/* Boarding events */}
-                                    {historyBoardings.map(ev => (
+                                    {historyBoardings.filter(ev => ev.lat != null && ev.lng != null).map(ev => (
                                         <Marker
                                             key={`hist-${ev.id}`}
                                             position={[ev.lat, ev.lng]}
