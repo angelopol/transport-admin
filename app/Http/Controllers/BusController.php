@@ -40,9 +40,10 @@ class BusController extends Controller
     {
         $user = $request->user();
 
-        // Get devices not currently linked to any bus
+        // Get devices not currently linked to any bus and owned by the current user
         $availableDevices = \App\Models\Device::whereDoesntHave('bus')
             ->where('is_active', true)
+            ->where('owner_id', $user->id)
             ->get(['id', 'mac_address']);
 
         return Inertia::render('Buses/Create', [
@@ -138,13 +139,15 @@ class BusController extends Controller
             abort(403);
         }
 
-        // Get available devices (unlinked) + the one currently linked to this bus
+        // Get available devices (unlinked) + the one currently linked to this bus, restricted to owner
         $availableDevices = \App\Models\Device::where(function ($q) use ($bus) {
             $q->whereDoesntHave('bus');
             if ($bus->device_mac) {
                 $q->orWhere('mac_address', $bus->device_mac);
             }
-        })->where('is_active', true)->get(['id', 'mac_address']);
+        })->where('is_active', true)
+            ->where('owner_id', $user->id)
+            ->get(['id', 'mac_address']);
 
         $bus->load(['drivers:id', 'collectors:id']);
 

@@ -18,7 +18,7 @@ class DeviceController extends Controller
     {
         $filter = $request->get('filter', 'all');
 
-        $query = Device::orderBy('created_at', 'desc');
+        $query = Device::with('owner')->orderBy('created_at', 'desc');
 
         if ($filter === 'pending') {
             // Devices NOT linked to any bus
@@ -47,11 +47,38 @@ class DeviceController extends Controller
             'linked' => $linkedCount,
         ];
 
+        $owners = \App\Models\User::where('role', 'owner')->get(['id', 'name']);
+
         return Inertia::render('Devices/Index', [
             'devices' => $devices,
             'stats' => $stats,
             'currentFilter' => $filter,
+            'owners' => $owners,
         ]);
+    }
+
+    /**
+     * Update device owner.
+     */
+    public function update(Request $request, Device $device): RedirectResponse
+    {
+        $request->validate([
+            'owner_id' => 'nullable|exists:users,id',
+        ]);
+
+        $newOwnerId = $request->owner_id;
+
+        // If the owner changes or is removed, we must unlink the device from any bus it's currently on
+        if ($device->owner_id !== $newOwnerId) {
+            Bus::where('device_mac', $device->mac_address)->update(['device_mac' => null]);
+        }
+
+        $device->update([
+            'owner_id' => $newOwnerId
+        ]);
+
+        return redirect()->route('devices.index')
+            ->with('success', 'Dueño del dispositivo actualizado correctamente.');
     }
 
     /**

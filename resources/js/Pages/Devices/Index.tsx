@@ -9,11 +9,18 @@ interface LinkedBus {
     route?: { name: string };
 }
 
+interface Owner {
+    id: number;
+    name: string;
+}
+
 interface Device {
     id: number;
     mac_address: string;
     is_active: boolean;
     last_seen_at: string | null;
+    owner_id: number | null;
+    owner?: Owner | null;
     linked_bus: LinkedBus | null;
 }
 
@@ -34,11 +41,29 @@ interface Props {
     devices: PaginatedDevices;
     stats: Stats;
     currentFilter: string;
+    owners: Owner[];
 }
 
-export default function Index({ devices, stats, currentFilter }: Props) {
+export default function Index({ devices, stats, currentFilter, owners }: Props) {
     const handleToggle = (device: Device) => {
         router.post(`/devices/${device.id}/toggle`);
+    };
+
+    const handleOwnerChange = (device: Device, newOwnerId: string) => {
+        const ownerId = newOwnerId === '' ? null : parseInt(newOwnerId);
+        if (ownerId === null && device.linked_bus) {
+            if (!confirm(`Al desvincular al dueño también se desvinculará este dispositivo del autobús ${device.linked_bus.plate}. ¿Continuar?`)) {
+                return;
+            }
+        } else if (device.owner_id && ownerId !== device.owner_id && device.linked_bus) {
+            if (!confirm(`Al cambiar de dueño también se desvinculará este dispositivo del autobús ${device.linked_bus.plate} (pertenece al dueño anterior). ¿Continuar?`)) {
+                return;
+            }
+        }
+
+        router.put(`/devices/${device.id}`, {
+            owner_id: ownerId
+        });
     };
 
     const handleDelete = (device: Device) => {
@@ -100,8 +125,8 @@ export default function Index({ devices, stats, currentFilter }: Props) {
                                 key={f.key}
                                 href={`/devices?filter=${f.key}`}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${currentFilter === f.key
-                                        ? 'bg-blue-600 text-white shadow'
-                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                    ? 'bg-blue-600 text-white shadow'
+                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                                     }`}
                             >
                                 {f.label} ({f.count})
@@ -112,7 +137,7 @@ export default function Index({ devices, stats, currentFilter }: Props) {
                     {/* Info banner */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm text-blue-700">
                         💡 Los dispositivos se registran automáticamente al ejecutar el monitor.
-                        Para vincular un dispositivo, asígnelo al crear o editar un <Link href="/buses" className="underline font-medium">autobús</Link>.
+                        El dueño o propietario asignado es quien puede vincular el dispositivo al crear o editar un autobús.
                     </div>
 
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -151,15 +176,26 @@ export default function Index({ devices, stats, currentFilter }: Props) {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-gray-600">
-                                                {device.linked_bus?.owner?.name || <span className="text-gray-400">—</span>}
+                                                <select
+                                                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm text-sm"
+                                                    value={device.owner_id || ''}
+                                                    onChange={(e) => handleOwnerChange(device, e.target.value)}
+                                                >
+                                                    <option value="">-- Sin dueño --</option>
+                                                    {owners.map(owner => (
+                                                        <option key={owner.id} value={owner.id}>
+                                                            {owner.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </td>
                                             <td className="px-6 py-4 text-gray-500 text-sm">{timeAgo(device.last_seen_at)}</td>
                                             <td className="px-6 py-4 text-right space-x-2">
                                                 <button
                                                     onClick={() => handleToggle(device)}
                                                     className={`px-3 py-1.5 rounded-lg text-sm transition ${device.is_active
-                                                            ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                                                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                        ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                                                        : 'bg-green-100 text-green-700 hover:bg-green-200'
                                                         }`}
                                                 >
                                                     {device.is_active ? 'Desactivar' : 'Activar'}
@@ -204,6 +240,21 @@ export default function Index({ devices, stats, currentFilter }: Props) {
                                             </span>
                                         </div>
                                         <div>
+                                            <span className="block text-xs font-semibold text-gray-500 uppercase">Propietario</span>
+                                            <select
+                                                className="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm text-sm py-1"
+                                                value={device.owner_id || ''}
+                                                onChange={(e) => handleOwnerChange(device, e.target.value)}
+                                            >
+                                                <option value="">Sin dueño</option>
+                                                {owners.map(owner => (
+                                                    <option key={owner.id} value={owner.id}>
+                                                        {owner.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
                                             <span className="block text-xs font-semibold text-gray-500 uppercase">Última conexión</span>
                                             <span className="text-gray-800">{timeAgo(device.last_seen_at)}</span>
                                         </div>
@@ -212,8 +263,8 @@ export default function Index({ devices, stats, currentFilter }: Props) {
                                         <button
                                             onClick={() => handleToggle(device)}
                                             className={`px-3 py-1.5 rounded text-sm ${device.is_active
-                                                    ? 'bg-yellow-100 text-yellow-700'
-                                                    : 'bg-green-100 text-green-700'
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-green-100 text-green-700'
                                                 }`}
                                         >
                                             {device.is_active ? 'Desactivar' : 'Activar'}
@@ -254,6 +305,17 @@ export default function Index({ devices, stats, currentFilter }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Floating reload button */}
+            <button
+                onClick={() => router.reload({ only: ['devices', 'stats'] })}
+                className="fixed bottom-6 right-6 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all z-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center group"
+                title="Recargar lista de dispositivos"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6 group-hover:-rotate-180 transition-transform duration-500">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+            </button>
         </AuthenticatedLayout>
     );
 }

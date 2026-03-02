@@ -55,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Device Management
         Route::get('/devices', [\App\Http\Controllers\DeviceController::class, 'index'])->name('devices.index');
+        Route::put('/devices/{device}', [\App\Http\Controllers\DeviceController::class, 'update'])->name('devices.update');
         Route::post('/devices/{device}/toggle', [\App\Http\Controllers\DeviceController::class, 'toggleStatus'])->name('devices.toggle');
         Route::delete('/devices/{device}', [\App\Http\Controllers\DeviceController::class, 'destroy'])->name('devices.destroy');
     });

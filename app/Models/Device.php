@@ -12,6 +12,7 @@ class Device extends Model
         'api_token',
         'is_active',
         'last_seen_at',
+        'owner_id',
     ];
 
     protected function casts(): array
@@ -39,6 +40,14 @@ class Device extends Model
     public function bus()
     {
         return $this->hasOne(Bus::class, 'device_mac', 'mac_address');
+    }
+
+    /**
+     * Get the owner of this device.
+     */
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     /**

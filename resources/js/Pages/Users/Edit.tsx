@@ -82,6 +82,8 @@ export default function Edit({ user }: Props) {
                                         type="tel"
                                         value={data.phone}
                                         onChange={(e) => setData('phone', e.target.value)}
+                                        placeholder="Ej. 04141234567"
+                                        maxLength={11}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     />
                                     {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
