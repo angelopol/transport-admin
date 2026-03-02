@@ -31,8 +31,8 @@ interface Bus {
     };
     drivers?: { name: string }[];
     collectors?: { name: string }[];
-    mobilePaymentAccount?: BankAccount | null;
-    transferAccount?: BankAccount | null;
+    mobile_payment_account?: BankAccount | null;
+    transfer_account?: BankAccount | null;
 }
 
 interface PaginatedBuses {
@@ -293,7 +293,7 @@ export default function Index({ buses, isAdmin }: Props) {
                         </div>
 
                         {/* Printable Area Wrapper */}
-                        <div ref={posterRef} className="print:m-0 print:p-0">
+                        <div ref={posterRef} className="print:m-0 print:p-0 max-h-[60vh] overflow-y-auto pr-1 print:max-h-none print:overflow-visible print:pr-0">
                             {/* Inner Poster Design */}
                             <div className="bg-white border-2 border-gray-200 rounded-xl p-8 print:border-none print:shadow-none print:rounded-none">
                                 <div className="text-center mb-6 border-b-4 border-blue-600 pb-4">
@@ -359,63 +359,65 @@ export default function Index({ buses, isAdmin }: Props) {
                                         <h2 className="text-2xl font-black text-gray-800 uppercase">Pagos</h2>
                                     </div>
 
-                                    {!(selectedBusForPoster.mobilePaymentAccount || selectedBusForPoster.transferAccount) ? (
+                                    {!(selectedBusForPoster.mobile_payment_account || selectedBusForPoster.transfer_account) ? (
                                         <div className="text-center py-6">
                                             <p className="text-2xl font-bold text-red-600">Solo Efectivo</p>
                                         </div>
                                     ) : (
-                                        <div className="space-y-6 pt-4 text-sm sm:text-base">
-                                            {/* Mobile Payment */}
-                                            {selectedBusForPoster.mobilePaymentAccount?.is_mobile_payment_active && (
-                                                <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4">
-                                                    <div className="flex items-center mb-3">
-                                                        <span className="text-3xl mr-3">📱</span>
-                                                        <h3 className="text-xl font-black text-indigo-900 uppercase">Pago Móvil</h3>
+                                        <div className="overflow-x-auto pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 custom-scrollbar">
+                                            <div className="grid grid-cols-2 gap-4 pt-4 text-sm sm:text-base min-w-[600px] print:min-w-0">
+                                                {/* Mobile Payment */}
+                                                {selectedBusForPoster.mobile_payment_account?.is_mobile_payment_active && (
+                                                    <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4">
+                                                        <div className="flex items-center mb-3">
+                                                            <span className="text-3xl mr-3">📱</span>
+                                                            <h3 className="text-xl font-black text-indigo-900 uppercase">Pago Móvil</h3>
+                                                        </div>
+                                                        <div className="space-y-2 font-medium">
+                                                            <div className="flex justify-between border-b border-indigo-200 pb-1">
+                                                                <span className="text-gray-600">Banco:</span>
+                                                                <span className="font-bold text-gray-900">{selectedBusForPoster.mobile_payment_account.bank_name}</span>
+                                                            </div>
+                                                            <div className="flex justify-between border-b border-indigo-200 pb-1">
+                                                                <span className="text-gray-600">Teléfono:</span>
+                                                                <span className="font-black text-indigo-700 tracking-wider">
+                                                                    {selectedBusForPoster.mobile_payment_account.phone_number.replace(/(\d{4})(\d{7})/, '$1-$2')}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between border-b border-indigo-200 pb-1">
+                                                                <span className="text-gray-600">CI/RIF:</span>
+                                                                <span className="font-bold text-gray-900">{selectedBusForPoster.mobile_payment_account.identification_document}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="space-y-2 font-medium">
-                                                        <div className="flex justify-between border-b border-indigo-200 pb-1">
-                                                            <span className="text-gray-600">Banco:</span>
-                                                            <span className="font-bold text-gray-900">{selectedBusForPoster.mobilePaymentAccount.bank_name}</span>
-                                                        </div>
-                                                        <div className="flex justify-between border-b border-indigo-200 pb-1">
-                                                            <span className="text-gray-600">Teléfono:</span>
-                                                            <span className="font-black text-indigo-700 tracking-wider">
-                                                                {selectedBusForPoster.mobilePaymentAccount.phone_number.replace(/(\d{4})(\d{7})/, '$1-$2')}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex justify-between border-b border-indigo-200 pb-1">
-                                                            <span className="text-gray-600">CI/RIF:</span>
-                                                            <span className="font-bold text-gray-900">{selectedBusForPoster.mobilePaymentAccount.identification_document}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {/* Transfers */}
-                                            {selectedBusForPoster.transferAccount?.is_transfer_active && (
-                                                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                                                    <div className="flex items-center mb-3">
-                                                        <span className="text-3xl mr-3">🏦</span>
-                                                        <h3 className="text-xl font-black text-blue-900 uppercase">Transferencia</h3>
+                                                {/* Transfers */}
+                                                {selectedBusForPoster.transfer_account?.is_transfer_active && (
+                                                    <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                                                        <div className="flex items-center mb-3">
+                                                            <span className="text-3xl mr-3">🏦</span>
+                                                            <h3 className="text-xl font-black text-blue-900 uppercase">Transferencia</h3>
+                                                        </div>
+                                                        <div className="space-y-2 font-medium">
+                                                            <div className="flex justify-between border-b border-blue-200 pb-1">
+                                                                <span className="text-gray-600">Banco:</span>
+                                                                <span className="font-bold text-gray-900">{selectedBusForPoster.transfer_account.bank_name}</span>
+                                                            </div>
+                                                            <div className="flex flex-col border-b border-blue-200 pb-1">
+                                                                <span className="text-gray-600 mb-0.5">Cuenta:</span>
+                                                                <span className="font-black text-blue-700 tracking-wider break-all text-sm leading-tight text-right">
+                                                                    {selectedBusForPoster.transfer_account.account_number}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between border-b border-blue-200 pb-1 mt-1">
+                                                                <span className="text-gray-600">CI/RIF:</span>
+                                                                <span className="font-bold text-gray-900">{selectedBusForPoster.transfer_account.identification_document}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="space-y-2 font-medium">
-                                                        <div className="flex justify-between border-b border-blue-200 pb-1">
-                                                            <span className="text-gray-600">Banco:</span>
-                                                            <span className="font-bold text-gray-900">{selectedBusForPoster.transferAccount.bank_name}</span>
-                                                        </div>
-                                                        <div className="flex flex-col border-b border-blue-200 pb-1">
-                                                            <span className="text-gray-600 mb-0.5">Cuenta:</span>
-                                                            <span className="font-black text-blue-700 tracking-wider break-all text-sm leading-tight text-right">
-                                                                {selectedBusForPoster.transferAccount.account_number}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex justify-between border-b border-blue-200 pb-1 mt-1">
-                                                            <span className="text-gray-600">CI/RIF:</span>
-                                                            <span className="font-bold text-gray-900">{selectedBusForPoster.transferAccount.identification_document}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>

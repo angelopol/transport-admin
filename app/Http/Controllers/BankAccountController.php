@@ -28,10 +28,13 @@ class BankAccountController extends Controller
             'account_number' => 'nullable|string|max:50',
             'account_type' => 'nullable|string|max:50',
             'owner_name' => 'required|string|max:100',
-            'identification_document' => 'required|string|max:50',
-            'phone_number' => 'nullable|string|max:50',
+            'identification_document' => ['required', 'string', 'regex:/^[VEJPGvejpg]-?\d{5,11}(?:-?\d)?$/'],
+            'phone_number' => ['nullable', 'string', 'regex:/^(0414|0424|0412|0416|0426|0422|02[0-9]{2})[0-9]{7}$/'],
             'is_mobile_payment_active' => 'boolean',
             'is_transfer_active' => 'boolean',
+        ], [
+            'identification_document.regex' => 'El formato de la Cédula o RIF es inválido. Ejemplos válidos: V-12345678, J-12345678-9, V12345678.',
+            'phone_number.regex' => 'El formato del teléfono es inválido. Debe ser un número venezolano válido (ej. 04141234567).',
         ]);
 
         $validated['owner_id'] = $request->user()->id;
@@ -65,10 +68,13 @@ class BankAccountController extends Controller
             'account_number' => 'nullable|string|max:50',
             'account_type' => 'nullable|string|max:50',
             'owner_name' => 'required|string|max:100',
-            'identification_document' => 'required|string|max:50',
-            'phone_number' => 'nullable|string|max:50',
+            'identification_document' => ['required', 'string', 'regex:/^[VEJPGvejpg]-?\d{5,11}(?:-?\d)?$/'],
+            'phone_number' => ['nullable', 'string', 'regex:/^(0414|0424|0412|0416|0426|0422|02[0-9]{2})[0-9]{7}$/'],
             'is_mobile_payment_active' => 'boolean',
             'is_transfer_active' => 'boolean',
+        ], [
+            'identification_document.regex' => 'El formato de la Cédula o RIF es inválido. Ejemplos válidos: V-12345678, J-12345678-9, V12345678.',
+            'phone_number.regex' => 'El formato del teléfono es inválido. Debe ser un número venezolano válido (ej. 04141234567).',
         ]);
 
         $bankAccount->update($validated);

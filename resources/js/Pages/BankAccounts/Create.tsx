@@ -98,7 +98,8 @@ export default function Create({ auth }: PageProps) {
                                         value={data.identification_document}
                                         onChange={(e) => setData('identification_document', e.target.value)}
                                         required
-                                        placeholder="V-12345678 / J-12345678-9"
+                                        maxLength={15}
+                                        placeholder="Ej. V-12345678 o J-12345678-9"
                                     />
                                     <InputError message={errors.identification_document} className="mt-2" />
                                 </div>
@@ -110,7 +111,8 @@ export default function Create({ auth }: PageProps) {
                                         className="mt-1 block w-full"
                                         value={data.phone_number}
                                         onChange={(e) => setData('phone_number', e.target.value)}
-                                        placeholder="Ej: 0414-1234567"
+                                        maxLength={11}
+                                        placeholder="Ej. 04141234567"
                                     />
                                     <p className="text-xs text-gray-500 mt-1">Requerido si se usará para Pago Móvil.</p>
                                     <InputError message={errors.phone_number} className="mt-2" />

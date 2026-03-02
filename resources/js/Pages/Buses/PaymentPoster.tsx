@@ -15,9 +15,9 @@ interface BankAccount {
 interface Bus {
     id: number;
     plate: string;
-    route?: { name: string, origin: string, destination: string, fare: number };
-    mobilePaymentAccount?: BankAccount | null;
-    transferAccount?: BankAccount | null;
+    route?: { name: string, origin: string, destination: string, fare: number, fare_sunday?: number };
+    mobile_payment_account?: BankAccount | null;
+    transfer_account?: BankAccount | null;
 }
 
 interface Props {
@@ -25,7 +25,7 @@ interface Props {
 }
 
 export default function PaymentPoster({ bus }: Props) {
-    const hasDigitalPayments = bus.mobilePaymentAccount || bus.transferAccount;
+    const hasDigitalPayments = bus.mobile_payment_account || bus.transfer_account;
 
     const handlePrint = () => {
         window.print();
@@ -61,11 +61,22 @@ export default function PaymentPoster({ bus }: Props) {
 
                     {/* Fare Information */}
                     {bus.route ? (
-                        <div className="bg-yellow-100 border-l-[16px] border-yellow-400 p-6 mb-10 rounded-r-xl">
-                            <h2 className="text-2xl font-bold text-yellow-800 uppercase mb-2">Tarifa Actual</h2>
-                            <p className="text-5xl font-black text-gray-900">
-                                Bs. {Number(bus.route.fare).toFixed(2)}
-                            </p>
+                        <div className="flex flex-col md:flex-row gap-6 mb-10">
+                            <div className="bg-yellow-100 border-l-[16px] border-yellow-400 p-6 rounded-r-xl flex-1">
+                                <h2 className="text-2xl font-bold text-yellow-800 uppercase mb-2">Tarifa General</h2>
+                                <p className="text-5xl font-black text-gray-900">
+                                    Bs. {Number(bus.route.fare).toFixed(2)}
+                                </p>
+                            </div>
+
+                            {bus.route.fare_sunday !== undefined && bus.route.fare_sunday > 0 && (
+                                <div className="bg-orange-100 border-l-[16px] border-orange-400 p-6 rounded-r-xl flex-1">
+                                    <h2 className="text-2xl font-bold text-orange-800 uppercase mb-2">Feriados y Domingos</h2>
+                                    <p className="text-5xl font-black text-gray-900">
+                                        Bs. {Number(bus.route.fare_sunday).toFixed(2)}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="bg-red-50 border-l-[8px] border-red-500 p-4 mb-8">
@@ -89,70 +100,72 @@ export default function PaymentPoster({ bus }: Props) {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
-                                {/* Mobile Payment section */}
-                                {bus.mobilePaymentAccount && bus.mobilePaymentAccount.is_mobile_payment_active && (
-                                    <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 shadow-sm">
-                                        <div className="flex items-center mb-4">
-                                            <span className="text-5xl mr-4">📱</span>
-                                            <h3 className="text-3xl font-black text-indigo-900 uppercase">Pago Móvil</h3>
-                                        </div>
-                                        <div className="space-y-4 text-2xl">
-                                            <div className="flex justify-between border-b border-indigo-200 pb-2">
-                                                <span className="font-bold text-gray-600">Banco:</span>
-                                                <span className="font-black text-gray-900">{bus.mobilePaymentAccount.bank_name}</span>
+                            <div className="overflow-x-auto pb-4 custom-scrollbar">
+                                <div className="grid grid-cols-2 print:grid-cols-2 gap-8 pt-6 min-w-[800px] print:min-w-0">
+                                    {/* Mobile Payment section */}
+                                    {bus.mobile_payment_account && bus.mobile_payment_account.is_mobile_payment_active && (
+                                        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 shadow-sm">
+                                            <div className="flex items-center mb-4">
+                                                <span className="text-5xl mr-4">📱</span>
+                                                <h3 className="text-3xl font-black text-indigo-900 uppercase">Pago Móvil</h3>
                                             </div>
-                                            <div className="flex justify-between border-b border-indigo-200 pb-2">
-                                                <span className="font-bold text-gray-600">Teléfono:</span>
-                                                <span className="font-black text-indigo-700 tracking-wider">
-                                                    {bus.mobilePaymentAccount.phone_number.replace(/(\d{4})(\d{7})/, '$1-$2')}
-                                                </span>
+                                            <div className="space-y-4 text-2xl">
+                                                <div className="flex justify-between border-b border-indigo-200 pb-2">
+                                                    <span className="font-bold text-gray-600">Banco:</span>
+                                                    <span className="font-black text-gray-900">{bus.mobile_payment_account.bank_name}</span>
+                                                </div>
+                                                <div className="flex justify-between border-b border-indigo-200 pb-2">
+                                                    <span className="font-bold text-gray-600">Teléfono:</span>
+                                                    <span className="font-black text-indigo-700 tracking-wider">
+                                                        {bus.mobile_payment_account.phone_number.replace(/(\d{4})(\d{7})/, '$1-$2')}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between border-b border-indigo-200 pb-2">
+                                                    <span className="font-bold text-gray-600">CI/RIF:</span>
+                                                    <span className="font-black text-gray-900">{bus.mobile_payment_account.identification_document}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between border-b border-indigo-200 pb-2">
-                                                <span className="font-bold text-gray-600">CI/RIF:</span>
-                                                <span className="font-black text-gray-900">{bus.mobilePaymentAccount.identification_document}</span>
-                                            </div>
-                                        </div>
-                                        <p className="mt-4 text-center text-sm text-indigo-600 font-bold uppercase tracking-widest bg-indigo-100 py-2 rounded">
-                                            Muestre el comprobante al chófer
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Transfer section */}
-                                {bus.transferAccount && bus.transferAccount.is_transfer_active && (
-                                    <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 shadow-sm">
-                                        <div className="flex items-center mb-4">
-                                            <span className="text-5xl mr-4">🏦</span>
-                                            <h3 className="text-3xl font-black text-blue-900 uppercase">Transferencia</h3>
-                                        </div>
-                                        <div className="space-y-4 text-xl">
-                                            <div className="flex justify-between border-b border-blue-200 pb-2">
-                                                <span className="font-bold text-gray-600">Banco:</span>
-                                                <span className="font-black text-gray-900">{bus.transferAccount.bank_name}</span>
-                                            </div>
-                                            <div className="flex flex-col border-b border-blue-200 pb-2">
-                                                <span className="font-bold text-gray-600 mb-1">Cuenta:</span>
-                                                <span className="font-black text-blue-700 tracking-widest break-all">
-                                                    {bus.transferAccount.account_number}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between border-b border-blue-200 pb-2">
-                                                <span className="font-bold text-gray-600">Titular:</span>
-                                                <span className="font-bold text-gray-900 text-right">{bus.transferAccount.owner_name}</span>
-                                            </div>
-                                            <div className="flex justify-between border-b border-blue-200 pb-2">
-                                                <span className="font-bold text-gray-600">CI/RIF:</span>
-                                                <span className="font-black text-gray-900">{bus.transferAccount.identification_document}</span>
-                                            </div>
-                                        </div>
-                                        {bus.transferAccount.account_type && (
-                                            <p className="mt-2 text-center text-sm text-gray-500 font-medium">
-                                                Cuenta tipo {bus.transferAccount.account_type}
+                                            <p className="mt-4 text-center text-sm text-indigo-600 font-bold uppercase tracking-widest bg-indigo-100 py-2 rounded">
+                                                Muestre el comprobante al chófer
                                             </p>
-                                        )}
-                                    </div>
-                                )}
+                                        </div>
+                                    )}
+
+                                    {/* Transfer section */}
+                                    {bus.transfer_account && bus.transfer_account.is_transfer_active && (
+                                        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 shadow-sm">
+                                            <div className="flex items-center mb-4">
+                                                <span className="text-5xl mr-4">🏦</span>
+                                                <h3 className="text-3xl font-black text-blue-900 uppercase">Transferencia</h3>
+                                            </div>
+                                            <div className="space-y-4 text-xl">
+                                                <div className="flex justify-between border-b border-blue-200 pb-2">
+                                                    <span className="font-bold text-gray-600">Banco:</span>
+                                                    <span className="font-black text-gray-900">{bus.transfer_account.bank_name}</span>
+                                                </div>
+                                                <div className="flex flex-col border-b border-blue-200 pb-2">
+                                                    <span className="font-bold text-gray-600 mb-1">Cuenta:</span>
+                                                    <span className="font-black text-blue-700 tracking-widest break-all">
+                                                        {bus.transfer_account.account_number}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between border-b border-blue-200 pb-2">
+                                                    <span className="font-bold text-gray-600">Titular:</span>
+                                                    <span className="font-bold text-gray-900 text-right">{bus.transfer_account.owner_name}</span>
+                                                </div>
+                                                <div className="flex justify-between border-b border-blue-200 pb-2">
+                                                    <span className="font-bold text-gray-600">CI/RIF:</span>
+                                                    <span className="font-black text-gray-900">{bus.transfer_account.identification_document}</span>
+                                                </div>
+                                            </div>
+                                            {bus.transfer_account.account_type && (
+                                                <p className="mt-2 text-center text-sm text-gray-500 font-medium">
+                                                    Cuenta tipo {bus.transfer_account.account_type}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>

@@ -110,6 +110,8 @@ export default function Edit({ driver }: Props) {
                                         value={data.cedula}
                                         onChange={(e) => setData('cedula', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Ej. V-12345678 o J-12345678-9"
+                                        maxLength={15}
                                         required
                                     />
                                 </div>

@@ -81,7 +81,8 @@ export default function Create() {
                                         value={data.cedula}
                                         onChange={(e) => setData('cedula', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        placeholder="V-12345678"
+                                        placeholder="Ej. V-12345678 o J-12345678-9"
+                                        maxLength={15}
                                         required
                                     />
                                     {errors.cedula && <p className="text-red-500 text-sm mt-1">{errors.cedula}</p>}
@@ -93,7 +94,8 @@ export default function Create() {
                                         value={data.phone}
                                         onChange={(e) => setData('phone', e.target.value)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        placeholder="0412-1234567"
+                                        placeholder="Ej. 04141234567"
+                                        maxLength={11}
                                     />
                                 </div>
                             </div>

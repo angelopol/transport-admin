@@ -22,7 +22,7 @@ class BusController extends Controller
     {
         $user = $request->user();
 
-        $buses = Bus::with(['owner', 'route', 'drivers', 'collectors'])
+        $buses = Bus::with(['owner', 'route', 'drivers', 'collectors', 'mobilePaymentAccount', 'transferAccount'])
             ->forUser($user)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
