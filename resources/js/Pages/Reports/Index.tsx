@@ -268,7 +268,8 @@ export default function ReportsIndex({ auth, stats, filters, errors }: PageProps
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 capitalize">
                                                     <span className={`inline-block w-2 h-2 rounded-full mr-2 ${item.passenger_type === 'standard' ? 'bg-blue-500' :
                                                         item.passenger_type === 'student' ? 'bg-orange-500' :
-                                                            'bg-purple-500'
+                                                            item.passenger_type === 'telemetría' ? 'bg-emerald-500' :
+                                                                'bg-purple-500'
                                                         }`}></span>
                                                     {item.passenger_type}
                                                 </td>

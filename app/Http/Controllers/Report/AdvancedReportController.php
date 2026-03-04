@@ -20,7 +20,7 @@ class AdvancedReportController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        if (!$user->isAdmin() && $user->role !== 'manager') {
+        if (!$user->isAdmin() && !$user->isOwner()) {
             abort(403);
         }
 
@@ -33,7 +33,7 @@ class AdvancedReportController extends Controller
     public function unitSpacing(Request $request): Response
     {
         $user = $request->user();
-        if (!$user->isAdmin() && $user->role !== 'manager') {
+        if (!$user->isAdmin() && !$user->isOwner()) {
             abort(403);
         }
 
@@ -109,7 +109,7 @@ class AdvancedReportController extends Controller
     public function passengersPerArea(Request $request): Response
     {
         $user = $request->user();
-        if (!$user->isAdmin() && $user->role !== 'manager') {
+        if (!$user->isAdmin() && !$user->isOwner()) {
             abort(403);
         }
 
@@ -161,7 +161,7 @@ class AdvancedReportController extends Controller
     public function routeTimes(Request $request): Response
     {
         $user = $request->user();
-        if (!$user->isAdmin() && $user->role !== 'manager') {
+        if (!$user->isAdmin() && !$user->isOwner()) {
             abort(403);
         }
 

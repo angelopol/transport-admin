@@ -7,8 +7,14 @@ export default function ReportTabs() {
         {
             name: 'General (Financiero)',
             href: route('reports.index'),
-            active: url.startsWith('/reports'),
+            active: url === '/reports' || url.startsWith('/reports?'),
             icon: '📊'
+        },
+        {
+            name: 'Calendario de Ingresos',
+            href: route('reports.calendar'),
+            active: url.startsWith('/reports/calendar'),
+            icon: '📅'
         },
         {
             name: 'Espaciado de Unidades',

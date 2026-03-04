@@ -16,7 +16,7 @@ class EnsureUserIsOwner
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isOwner()) {
+        if (!$request->user() || (!$request->user()->isOwner() && !$request->user()->isAdmin())) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Acceso denegado. Se requieren permisos de dueño.',

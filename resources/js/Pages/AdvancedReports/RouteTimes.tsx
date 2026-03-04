@@ -67,8 +67,8 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
         >
             <Head title="Tiempos de Ruta" />
 
-            <div className="py-8">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="py-6">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
                     <ReportTabs />
 

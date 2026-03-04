@@ -169,8 +169,8 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
         >
             <Head title="Pasajeros por Zona" />
 
-            <div className="py-8 flex flex-col h-[calc(100vh-64px)] overflow-hidden">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
+            <div className="py-6 flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
 
                     <ReportTabs />
 

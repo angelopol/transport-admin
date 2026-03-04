@@ -73,9 +73,8 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Espaciado de Unidades</h2>}
         >
             <Head title="Espaciado de Unidades" />
-
-            <div className="py-8">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="py-6">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
                     <ReportTabs />
 

@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('drivers', DriverController::class)->except(['show']);
         Route::resource('collectors', \App\Http\Controllers\CollectorController::class)->except(['show']);
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/calendar', [\App\Http\Controllers\ReportController::class, 'calendar'])->name('reports.calendar');
 
         // Advanced Reports
         Route::get('/advanced-reports', [\App\Http\Controllers\Report\AdvancedReportController::class, 'index'])->name('advanced-reports.index');
