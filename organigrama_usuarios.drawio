@@ -1,0 +1,148 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.1 Chrome/142.0.7444.265 Electron/39.8.0 Safari/537.36" version="29.6.1">
+  <diagram name="Page-1" id="ABNyALut_t6aauWuFpCa">
+    <mxGraphModel dx="2212" dy="1358" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="oanz1LvRrPuxuqQVORVC-1" connectable="0" parent="1" style="group;fontSize=26;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="1000" width="1589" x="70" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-1" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Plataforma Transport Admin" vertex="1">
+          <mxGeometry height="118.54103343465046" width="302.00292397660826" x="601.6827485380119" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-2" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Administrador General" vertex="1">
+          <mxGeometry height="82.06686930091186" width="257.86403508771934" x="581.9364035087721" y="212.76595744680859" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-3" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Dueño de Autobuses / Transportista" vertex="1">
+          <mxGeometry height="118.54103343465046" width="302.00292397660826" x="313.6184210526316" y="379.93920972644383" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-4" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Personal Operativo" vertex="1">
+          <mxGeometry height="82.06686930091186" width="226.50219298245617" y="437.6899696048633" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-5" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Conductor" vertex="1">
+          <mxGeometry height="82.06686930091186" width="155.6476608187135" x="3.484649122807018" y="686.9300911854104" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-6" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Colector / Avance" vertex="1">
+          <mxGeometry height="82.06686930091186" width="218.37134502923982" x="267.15643274853807" y="686.9300911854104" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-7" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Dispositivos IoT" vertex="1">
+          <mxGeometry height="82.06686930091186" width="197.46345029239765" x="907.1703216374272" y="437.6899696048633" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-8" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Flota: Unidades, Rutas" vertex="1">
+          <mxGeometry height="82.06686930091186" width="257.86403508771934" x="581.9364035087721" y="686.9300911854104" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-9" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Cuentas Bancarias" vertex="1">
+          <mxGeometry height="82.06686930091186" width="220.6944444444445" x="1068.6257309941523" y="686.9300911854104" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-10" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Reportes BI Analítico" vertex="1">
+          <mxGeometry height="82.06686930091186" width="241.60233918128657" x="1347.3976608187138" y="686.9300911854104" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-11" parent="oanz1LvRrPuxuqQVORVC-1" style="whiteSpace=wrap;strokeWidth=2;fontSize=26;fontStyle=1" value="Módulo de Pasaje PWA" vertex="1">
+          <mxGeometry height="82.06686930091186" width="255.54093567251468" x="313.61748538011693" y="930.0031306990884" as="geometry" />
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-12" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-1" style="curved=1;startArrow=none;endArrow=none;exitX=0.557;exitY=0.989;entryX=0.5;entryY=0;rounded=0;exitDx=0;exitDy=0;exitPerimeter=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-13" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-1" style="curved=1;startArrow=none;endArrow=none;exitX=0.28;exitY=1;entryX=0.06;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-3" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-14" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-1" style="curved=1;startArrow=none;endArrow=none;exitX=0;exitY=0.85;entryX=0.5;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-4" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="404.2192982456142" y="156.5349544072949" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-15" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-4" style="curved=1;startArrow=none;endArrow=none;exitX=0.46;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-5" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="81.30847953216374" y="612.4620060790274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-16" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-4" style="curved=1;startArrow=none;endArrow=none;exitX=0.76;exitY=1;entryX=0.38;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="303.1644736842105" y="612.4620060790274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-17" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-2" style="curved=1;startArrow=none;endArrow=block;exitX=0.35;exitY=1;entryX=0.75;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-3" value="Crea y gestiona cuentas de">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-18" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-2" style="curved=1;startArrow=none;endArrow=block;exitX=0.75;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-7" value="Registra terminales físicos">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1005.902046783626" y="363.2218844984803" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-19" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-3" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.36;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-8" value="Gestiona">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="612.1366959064329" y="612.4620060790274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-20" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-3" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.8;entryX=0.5;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-9" value="Gestiona">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-21" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-3" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.92;entryX=0.78;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-5" value="Contrata y vincula">
+          <mxGeometry relative="1" x="-0.0541" y="-23" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="203.2711988304094" y="612.4620060790274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-22" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-3" style="curved=1;startArrow=none;endArrow=block;exitX=0.27;exitY=1;entryX=0.63;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-6" value="Contrata y vincula">
+          <mxGeometry relative="1" x="0.4442" y="-12" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="456.48903508771934" y="612.4620060790274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-23" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-3" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.7;entryX=0.5;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-10" value="Supervisa">
+          <mxGeometry relative="1" x="0.2257" y="-18" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1468.198830409357" y="612.4620060790274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-24" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-5" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.36;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-11" value="Registra ingresos al final de jornada">
+          <mxGeometry relative="1" x="-0.1263" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="81.30847953216374" y="843.4650455927055" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-25" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-6" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.76;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-11" value="Registra ingresos en ruta">
+          <mxGeometry relative="1" x="-0.0966" y="-19" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="530" y="850" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9tgAuiTCNnhxKKgWUPBo-26" edge="1" parent="oanz1LvRrPuxuqQVORVC-1" source="9tgAuiTCNnhxKKgWUPBo-7" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;exitX=0.4;exitY=1;entryX=0.82;entryY=0;rounded=0;fontSize=26;fontStyle=1" target="9tgAuiTCNnhxKKgWUPBo-8" value="Monitorea asignación en unidad">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="943.1783625730995" y="612.4620060790274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

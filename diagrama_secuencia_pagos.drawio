@@ -1,0 +1,147 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.1 Chrome/142.0.7444.265 Electron/39.8.0 Safari/537.36" version="29.6.1">
+  <diagram name="Page-1" id="rQMVJc2RAgI8k45oxk-2">
+    <mxGraphModel dx="2011" dy="1235" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="XokklxWiEpXpxcJ_S350-49" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};participant=umlActor;verticalAlign=bottom;labelPosition=center;verticalLabelPosition=top;align=center;size=65;fontSize=24;fontStyle=1" value="Personal Operativo (PWA)" vertex="1">
+          <mxGeometry height="359" width="35" x="70" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-50" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fontSize=24;fontStyle=1" value="Aplicación Web" vertex="1">
+          <mxGeometry height="989" width="150" x="120" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-51" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fontSize=24;fontStyle=1" value="API Laravel" vertex="1">
+          <mxGeometry height="989" width="150" x="499" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-52" parent="XokklxWiEpXpxcJ_S350-51" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fontSize=24;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="166" width="10" x="70" y="211" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-53" parent="XokklxWiEpXpxcJ_S350-51" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fontSize=24;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="166" width="10" x="70" y="471" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-54" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fontSize=24;fontStyle=1" value="API Gemini AI" vertex="1">
+          <mxGeometry height="989" width="150" x="860" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-55" parent="XokklxWiEpXpxcJ_S350-54" style="points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fontSize=24;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="52" width="10" x="70" y="263" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-56" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fontSize=24;fontStyle=1" value="Base de Datos Central" vertex="1">
+          <mxGeometry height="989" width="175" x="1170" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-57" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};participant=umlActor;verticalAlign=bottom;labelPosition=center;verticalLabelPosition=top;align=center;size=65;fontSize=24;fontStyle=1" value="Dueño (Dashboard)" vertex="1">
+          <mxGeometry height="170" width="35" x="1390" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-58" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;fontSize=24;fontStyle=1" value="Operative" vertex="1">
+          <mxGeometry height="989" width="150" x="1480" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-59" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-58" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-50" value="Selecciona &quot;Nuevo Ingreso Local&quot;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="893" y="177" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-60" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-58" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-50" value="Sube Captura de Pantalla del Pago">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="893" y="229" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-61" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-50" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-52" value="POST /api/ocr/analyze (Imagen Base64)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="393" y="281" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-62" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-52" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-55" value="analizar_imagen(instruccion, imagen)">
+          <mxGeometry relative="1" x="0.6581" y="3" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="765" y="333" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-63" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-55" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-52" value="JSON {numero_referencia, banco, monto}">
+          <mxGeometry relative="1" x="-0.9202" y="45" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="766" y="385" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-64" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-52" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-50" value="Auto-rellena formulario con datos extraídos">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="394" y="437" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-65" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-58" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-50" value="Confirma Datos y envía POST /manual-entries">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="893" y="489" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-66" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-50" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-53" value="Valida datos y roles">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="393" y="541" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-67" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-53" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-56" value="Guarda Ingreso y ruta de la imagen probatoria">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="871" y="593" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-68" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-53" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-56" value="Crea registro inalterable en BITACORAS_AUDITORIA">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="871" y="645" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-69" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-53" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-50" value="201 Creado (Pago Registrado)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="394" y="697" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-70" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-50" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-58" value="Éxito visual (Confeti/Notificación)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="749" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-71" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-57" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-51" value="GET /reports (Visualizar Ingresos)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="981" y="850" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-72" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-51" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-56" value="Cruza IngresosManuales vs EventosTelemetricos">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="869" y="902" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="XokklxWiEpXpxcJ_S350-73" edge="1" parent="1" source="XokklxWiEpXpxcJ_S350-51" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;dashed=1;dashPattern=2 3;endArrow=block;fontSize=24;fontStyle=1" target="XokklxWiEpXpxcJ_S350-57" value="Muestra Tasa de Evasión e Ingresos">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="978" y="954" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
