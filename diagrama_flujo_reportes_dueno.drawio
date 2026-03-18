@@ -1,0 +1,172 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.1 Chrome/142.0.7444.265 Electron/39.8.0 Safari/537.36" version="29.6.1">
+  <diagram name="Page-1" id="dwT7qOfsQ_-GfxOCB-Ko">
+    <mxGraphModel dx="3687" dy="2263" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="WbHDd86rwNRGRZDN41zL-3" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="2. Motor de Inteligencia de Negocios (Laravel)" vertex="1">
+          <mxGeometry height="607" width="1260" x="331" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-9" parent="1" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontStyle=1" value="Motor de Procesamiento BI" vertex="1">
+          <mxGeometry height="240" width="365" x="770" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-10" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="1. Cruce: Conteo Físico vs Montos" vertex="1">
+          <mxGeometry height="78" width="260" x="366" y="1143" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-11" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="2. Lógica: Puntos cardinales de inicio/fin de trayecto" vertex="1">
+          <mxGeometry height="102" width="260" x="676" y="1131" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-12" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="3. Lógica: Agrupación GPS por densidades / polígonos" vertex="1">
+          <mxGeometry height="91" width="286" x="970" y="1142" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-13" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="4. Lógica: Geolocalización comparativa entre múltiples autobuses" vertex="1">
+          <mxGeometry height="123" width="276" x="1280" y="1110" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-20" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=2;fontSize=20;fontStyle=1" value="Usuario Dueño / Administrador" vertex="1">
+          <mxGeometry height="100" width="280" x="40" y="1270" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-23" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-6" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=1;entryY=0.03;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1118" y="382" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-24" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-8" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0;entryY=0.03;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="808" y="382" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-25" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-9" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.66;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-10" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="496" y="1106" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-26" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-9" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.98;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-11" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="806" y="1106" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-27" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-9" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.98;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-12" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1116" y="1106" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-28" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-9" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.66;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-13" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1426" y="1106" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-29" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-10" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.95;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-14" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-30" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-11" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-15" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-31" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-12" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-16" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-32" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-13" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-17" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-33" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-14" style="curved=1;startArrow=none;endArrow=block;exitX=0.05;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-18" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="195" y="1760" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-34" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-14" style="curved=1;startArrow=none;endArrow=block;exitX=0.95;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-19" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="505" y="1760" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-35" edge="1" parent="1" source="WbHDd86rwNRGRZDN41zL-20" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-2" value="Consulta Dashboards">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-39" connectable="0" parent="1" style="group;aspect=fixed;fontSize=20;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="218.1" width="1650" x="30" y="1432" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-2" parent="WbHDd86rwNRGRZDN41zL-39" style="whiteSpace=wrap;strokeWidth=2;container=0;aspect=fixed;fontSize=20;fontStyle=1" value="3. Interfaz del Dueño (Reportes Generados)" vertex="1">
+          <mxGeometry height="218.0978260869565" width="1649.910054347826" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-14" parent="WbHDd86rwNRGRZDN41zL-39" style="whiteSpace=wrap;strokeWidth=2;container=0;fontSize=20;fontStyle=1" value="Reporte General y Financiero&#xa;Métricas: % Tasa de Evasión, Recaudado&#xa;Bruto vs Real" vertex="1">
+          <mxGeometry height="162.74" width="260" x="40" y="27.26" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-15" parent="WbHDd86rwNRGRZDN41zL-39" style="whiteSpace=wrap;strokeWidth=2;container=0;fontSize=20;fontStyle=1" value="Reporte: Tiempos de Ruta&#xa;Métricas: Duración Promedio de Ciclos (Minutos/Horas)" vertex="1">
+          <mxGeometry height="162.74" width="280" x="320" y="27.26" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-16" parent="WbHDd86rwNRGRZDN41zL-39" style="whiteSpace=wrap;strokeWidth=2;container=0;fontSize=20;fontStyle=1" value="Reporte: Pasajeros por Área&#xa;Visualización: Mapa de Calor Leaflet" vertex="1">
+          <mxGeometry height="161.03" width="270" x="1050" y="28.97" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-17" parent="WbHDd86rwNRGRZDN41zL-39" style="whiteSpace=wrap;strokeWidth=2;container=0;fontSize=20;fontStyle=1" value="Reporte: Espaciado de Unidades&#xa;Métricas: Distancia (km) y Tiempo (min) entre unidades de rescate" vertex="1">
+          <mxGeometry height="161.03" width="270" x="1340" y="28.97" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-40" connectable="0" parent="1" style="group;aspect=fixed;fontSize=20;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="314" width="1570" x="80" y="1800" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-1" parent="WbHDd86rwNRGRZDN41zL-40" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="4. Salidas y Contabilidad Físicas" vertex="1">
+          <mxGeometry height="314" width="1570" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-18" parent="WbHDd86rwNRGRZDN41zL-40" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="Exportación a Reportes PDF Oficiales" vertex="1">
+          <mxGeometry height="191.34" width="424.14" x="85.86" y="61.33" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-19" parent="WbHDd86rwNRGRZDN41zL-40" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="Exportación a Hojas de Cálculo CSV/Excel" vertex="1">
+          <mxGeometry height="191.34" width="424.14" x="1060" y="61.33" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-41" connectable="0" parent="1" style="group;aspect=fixed;fontSize=20;fontStyle=1" value="" vertex="1">
+          <mxGeometry height="487.5" width="1000" x="470" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-4" parent="WbHDd86rwNRGRZDN41zL-41" style="whiteSpace=wrap;strokeWidth=2;container=1;fontSize=20;fontStyle=1" value="1. Fuentes Originales de Verdad" vertex="1">
+          <mxGeometry height="487.5" width="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-5" parent="WbHDd86rwNRGRZDN41zL-41" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="Computadora de Procesamiento (Autobús)" vertex="1">
+          <mxGeometry height="121.875" width="406.25" x="539.0625" y="39.0625" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-6" parent="WbHDd86rwNRGRZDN41zL-41" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontStyle=1" value="Tabla: Eventos Telemétricos" vertex="1">
+          <mxGeometry height="134.375" width="335.9375" x="573.4375" y="314.0625" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-7" parent="WbHDd86rwNRGRZDN41zL-41" style="whiteSpace=wrap;strokeWidth=2;fontSize=20;fontStyle=1" value="PWA Operativos: Conductores y Colectores" vertex="1">
+          <mxGeometry height="121.875" width="406.25" x="54.6875" y="39.0625" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-8" parent="WbHDd86rwNRGRZDN41zL-41" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fontSize=20;fontStyle=1" value="Tabla: Ingresos Manuales" vertex="1">
+          <mxGeometry height="131.25" width="300" x="107.8125" y="315.625" as="geometry" />
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-21" edge="1" parent="WbHDd86rwNRGRZDN41zL-41" source="WbHDd86rwNRGRZDN41zL-5" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-6" value="Módulo Local: Conteo de Pasajeros y GPS">
+          <mxGeometry relative="1" x="0.6857" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WbHDd86rwNRGRZDN41zL-22" edge="1" parent="WbHDd86rwNRGRZDN41zL-41" source="WbHDd86rwNRGRZDN41zL-7" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=20;fontStyle=1" target="WbHDd86rwNRGRZDN41zL-8" value="Módulo Pasaje: Transacciones y Fotos OCR">
+          <mxGeometry relative="1" x="-0.7535" y="2" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -710,3 +710,69 @@ graph TD
     style PDF_Excel fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
     style Alertas fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
 ```
+
+---
+
+## 10. diagrama_flujo_reportes_dueno.drawio (Flujo de Generación de Reportes BI)
+
+**Descripción:**
+Este diagrama de flujo de datos describe específicamente la procedencia y el procesamiento de la información que consume visualmente el `Dueño` en su módulo de analítica. Hace énfasis en las dos únicas fuentes de verdad u orígenes de datos: los **Ingresos Manuales/Digitales** (generados por interacciones humanas en la PWA) y los **Eventos Telemétricos** (generados silenciosamente por las cámaras de los autobuses). Muestra cómo el Motor de Inteligencia de Negocios agrupa y cruza estas fuentes inconexas para producir los cuatro reportes críticos del sistema: el cálculo de evasión general, estimación de tiempos de ruta, mapas de calor por demanda temporal, y los retardos/espaciados entre unidades de la misma línea, culminando en la exportación formal de los mismos.
+
+```mermaid
+graph TD
+    %% FUENTES DE DATOS (ORIGEN)
+    subgraph Origen ["1. Fuentes Originales de Verdad"]
+        HardwareEdge["Computadora de Procesamiento (Autobús)"] -->|"Módulo Local: Conteo de Pasajeros y GPS"| Telemetria[("Tabla: Eventos Telemétricos")]
+        AppOperativo["PWA Operativos: Conductores y Colectores"] -->|"Módulo Pasaje: Transacciones y Fotos OCR"| Ingresos[("Tabla: Ingresos Manuales")]
+    end
+
+    %% BASE DE DATOS Y MOTOR BI
+    subgraph Backoffice ["2. Motor de Inteligencia de Negocios (Laravel)"]
+        Telemetria --> MotorBI{"Motor de Procesamiento BI"}
+        Ingresos --> MotorBI
+        
+        MotorBI --> AgrupadorEvasion["1. Cruce: Conteo Físico vs Montos"]
+        MotorBI --> AgrupadorTiempos["2. Lógica: Puntos cardinales de inicio/fin de trayecto"]
+        MotorBI --> AgrupadorGeo["3. Lógica: Agrupación GPS por densidades / polígonos"]
+        MotorBI --> AgrupadorDistancia["4. Lógica: Geolocalización comparativa entre múltiples autobuses"]
+    end
+
+    %% MÓDULOS DE REPORTES (CARA AL DUEÑO)
+    subgraph Vistas_Dueno ["3. Interfaz del Dueño (Reportes Generados)"]
+        AgrupadorEvasion --> RepGeneral["Reporte General y Financiero<br>Métricas: % Tasa de Evasión, Recaudado Bruto vs Real"]
+        AgrupadorTiempos --> RepTiempos["Reporte: Tiempos de Ruta<br>Métricas: Duración Promedio de Ciclos (Minutos/Horas)"]
+        AgrupadorGeo --> RepMapa["Reporte: Pasajeros por Área<br>Visualización: Mapa de Calor Leaflet"]
+        AgrupadorDistancia --> RepEspaciado["Reporte: Espaciado de Unidades<br>Métricas: Distancia (km) y Tiempo (min) entre unidades de rescate"]
+    end
+
+    %% EXPORTACIÓN
+    subgraph Exportacion ["4. Salidas y Contabilidad Físicas"]
+        RepGeneral --> ArchivoPDF["Exportación a Reportes PDF Oficiales"]
+        RepGeneral --> ArchivoCSV["Exportación a Hojas de Cálculo CSV/Excel"]
+    end
+
+    %% CONEXIONES A DUEÑO
+    Consumidor(["Usuario Dueño / Administrador"]) -.-> |"Consulta Dashboards"| Vistas_Dueno
+    
+    %% ESTILOS INLINE
+    style HardwareEdge fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style AppOperativo fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    
+    style Telemetria fill:#ede7f6,stroke:#673ab7,stroke-width:2px,color:#311b92
+    style Ingresos fill:#ede7f6,stroke:#673ab7,stroke-width:2px,color:#311b92
+
+    style MotorBI fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style AgrupadorEvasion fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style AgrupadorTiempos fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style AgrupadorGeo fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style AgrupadorDistancia fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+
+    style RepGeneral fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style RepTiempos fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style RepMapa fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style RepEspaciado fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+
+    style ArchivoPDF fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    style ArchivoCSV fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style Consumidor fill:#fbe9e7,stroke:#ff5722,stroke-width:3px,color:#bf360c
+```
