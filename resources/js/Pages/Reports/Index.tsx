@@ -7,8 +7,11 @@ import ReportTabs from '@/Components/ReportTabs';
 interface ReportStats {
     total_income: number;
     total_passengers: number;
+    evasion_rate: number;
+    evasion_count: number;
     growth_income: number;
     growth_passengers: number;
+    growth_evasion: number;
     compare_title: string;
     previous_income: number;
     previous_passengers: number;
@@ -48,7 +51,8 @@ export default function ReportsIndex({ auth, stats, filters, errors }: PageProps
 
         csvContent += "Totales\n";
         csvContent += `Ingresos Totales:,${stats.total_income} VES\n`;
-        csvContent += `Pasajeros Totales:,${stats.total_passengers}\n\n`;
+        csvContent += `Pasajeros Totales (Cámara + Manual):,${stats.total_passengers}\n`;
+        csvContent += `Evasión Detectada:,${stats.evasion_count} pasajeros (${stats.evasion_rate}%)\n\n`;
 
         csvContent += "Por Tipo de Pasajero\n";
         csvContent += "Tipo,Cantidad,Total VES\n";
@@ -195,7 +199,7 @@ export default function ReportsIndex({ auth, stats, filters, errors }: PageProps
                     )}
 
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-10">
                                 <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05 1.15 1.9 2.64 1.9 1.94 0 2.02-1.22 2.02-1.61 0-.84-.65-1.18-2.58-1.77-2.66-.8-3.04-2.58-3.04-3.5 0-1.8.91-3.13 2.57-3.49V4h2.67v1.88c1.55.33 2.76 1.41 2.91 3.24h-1.97c-.12-.91-.98-1.56-2.26-1.56-1.39 0-2.05.97-2.05 1.55 0 .8.62 1.11 2.66 1.77 2.45.83 2.96 2.3 2.96 3.49 0 1.99-1.3 3.32-2.96 3.67z" /></svg>
@@ -241,6 +245,34 @@ export default function ReportsIndex({ auth, stats, filters, errors }: PageProps
                                     {stats.growth_passengers > 0 ? '+' : ''}{stats.growth_passengers}%
                                 </span>
                                 <span className="text-gray-500 text-sm ml-2 font-medium">Usuarios físicos registrados</span>
+                            </div>
+                        </div>
+
+                        {/* Evasion KPI Card */}
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                                <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-2h2v2h-2zm0-10v6h2V7h-2z" /></svg>
+                            </div>
+                            <h3 className="text-red-100 text-sm font-medium uppercase tracking-wider mb-1">Tasa de Evasión</h3>
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-4xl font-bold font-mono">{stats.evasion_rate}%</p>
+                                <span className="text-red-100 text-sm opacity-90">({stats.evasion_count} pax)</span>
+                            </div>
+
+                            <div className="mt-4 flex items-center bg-white/20 rounded-lg p-2 backdrop-blur-sm shadow-sm inline-flex text-sm">
+                                {stats.growth_evasion <= 0 ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 text-green-300 mr-2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.51l-5.511-3.181" />
+                                    </svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 text-red-300 mr-2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+                                    </svg>
+                                )}
+                                <span className={`font-semibold ${stats.growth_evasion <= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                                    {stats.growth_evasion > 0 ? '+' : ''}{stats.growth_evasion}%
+                                </span>
+                                <span className="text-red-100 ml-2 font-medium">vs {stats.compare_title}</span>
                             </div>
                         </div>
                     </div>
@@ -319,6 +351,25 @@ export default function ReportsIndex({ auth, stats, filters, errors }: PageProps
                             </div>
                         </div>
 
+                    </div>
+                    
+                    {/* Privacy notice for defense */}
+                    <div className="mt-12 bg-blue-50 border border-blue-100 rounded-xl p-6 flex items-start gap-4">
+                        <div className="bg-blue-100 p-2 rounded-full text-blue-600 shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 className="text-base font-semibold text-blue-900">Privacidad por Diseño (Protección de Datos Biométricos)</h4>
+                            <p className="text-sm text-blue-800 mt-1 leading-relaxed">
+                                Este sistema opera exclusivamente mediante metadatos numéricos procesados en el borde 
+                                (Edge Computing). Para calcular la afluencia y la tasa de evasión, no se almacenan rostros, 
+                                imágenes ni secuencias de video de los pasajeros en la base de datos de manera permanente. 
+                                Las inferencias visuales alimentan los <strong>Eventos Telemétricos</strong> y los frames son descartados 
+                                instantáneamente, garantizando el cumplimiento de los estándares y normativas internacionales de protección de datos personales.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/advanced-reports/unit-spacing', [\App\Http\Controllers\Report\AdvancedReportController::class, 'unitSpacing'])->name('advanced-reports.unit-spacing');
         Route::get('/advanced-reports/passengers-area', [\App\Http\Controllers\Report\AdvancedReportController::class, 'passengersPerArea'])->name('advanced-reports.passengers-area');
         Route::get('/advanced-reports/route-times', [\App\Http\Controllers\Report\AdvancedReportController::class, 'routeTimes'])->name('advanced-reports.route-times');
+        Route::get('/advanced-reports/comparative', [\App\Http\Controllers\Report\AdvancedReportController::class, 'comparative'])->name('advanced-reports.comparative');
 
         // Maps
         Route::get('/maps', [\App\Http\Controllers\MapController::class, 'index'])->name('maps.index');
@@ -59,6 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/devices/{device}', [\App\Http\Controllers\DeviceController::class, 'update'])->name('devices.update');
         Route::post('/devices/{device}/toggle', [\App\Http\Controllers\DeviceController::class, 'toggleStatus'])->name('devices.toggle');
         Route::delete('/devices/{device}', [\App\Http\Controllers\DeviceController::class, 'destroy'])->name('devices.destroy');
+
+        // Audit Logs
+        Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit-logs.index');
     });
 });
 

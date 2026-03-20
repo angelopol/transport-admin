@@ -15,9 +15,13 @@ interface Bus {
 
 interface Stats {
     totalPassengersToday: number;
+    totalManualPassengersToday: number;
+    evasionRate: number;
+    evasionCount: number;
+    actualRevenue: string;
+    estimatedRevenue: string;
     onlineBuses: number;
     totalBuses: number;
-    estimatedRevenue: string;
 }
 
 interface HourlyData {
@@ -25,14 +29,22 @@ interface HourlyData {
     passengers: number;
 }
 
+interface Alert {
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+}
+
 interface Props {
     stats: Stats;
     hourlyData: HourlyData[];
     buses: Bus[];
+    alerts: Alert[];
     isAdmin: boolean;
 }
 
-export default function Index({ stats, hourlyData, buses, isAdmin }: Props) {
+export default function Index({ stats, hourlyData, buses, alerts, isAdmin }: Props) {
     const maxPassengers = Math.max(...hourlyData.map(h => h.passengers), 1);
 
     return (
@@ -58,24 +70,58 @@ export default function Index({ stats, hourlyData, buses, isAdmin }: Props) {
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-                            <div className="text-3xl font-bold">{stats.totalPassengersToday}</div>
-                            <div className="text-blue-100 text-sm">Pasajeros Hoy</div>
-                        </div>
-                        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                            <div className="text-3xl font-bold">{stats.onlineBuses}/{stats.totalBuses}</div>
-                            <div className="text-green-100 text-sm">Unidades Online</div>
-                        </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
-                            <div className="text-3xl font-bold">${stats.estimatedRevenue}</div>
-                            <div className="text-purple-100 text-sm">Ingresos Est. Hoy</div>
-                        </div>
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
-                            <div className="text-3xl font-bold">
-                                {stats.totalBuses > 0 ? Math.round(stats.totalPassengersToday / stats.totalBuses) : 0}
+                            <div className="text-3xl font-bold font-mono">{stats.totalPassengersToday}</div>
+                            <div className="text-blue-100 text-sm">Pasajeros Totales (Cámara)</div>
+                            <div className="text-blue-200 text-xs mt-2 border-t border-blue-400/50 pt-2">
+                                {stats.totalManualPassengersToday} pasajes pagados
                             </div>
-                            <div className="text-orange-100 text-sm">Promedio/Unidad</div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-rose-500 to-red-600 rounded-xl p-6 text-white shadow-lg">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl font-bold font-mono">{stats.evasionRate}%</span>
+                            </div>
+                            <div className="text-red-100 text-sm">Tasa de Evasión Hoy</div>
+                            <div className="text-red-200 text-xs mt-2 border-t border-red-400/50 pt-2">
+                                {stats.evasionCount} <span className="opacity-80">pasajeros evadidos</span>
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+                            <div className="text-3xl font-bold font-mono">Bs. {stats.actualRevenue}</div>
+                            <div className="text-green-100 text-sm">Ingresos Reales Hoy</div>
+                            <div className="text-green-200 text-xs mt-2 border-t border-green-400/50 pt-2">
+                                Meta Est: Bs. {stats.estimatedRevenue}
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg">
+                            <div className="text-3xl font-bold font-mono">{stats.onlineBuses}/{stats.totalBuses}</div>
+                            <div className="text-purple-100 text-sm">Unidades Trabajando</div>
+                            <div className="text-purple-200 text-xs mt-2 border-t border-purple-400/50 pt-2">
+                                Flota Activa
+                            </div>
                         </div>
                     </div>
+
+                    {/* Alerts Section (if any) */}
+                    {alerts && alerts.length > 0 && (
+                        <div className="mb-8 space-y-4">
+                            {alerts.map((alert) => (
+                                <div key={alert.id} className={`p-4 rounded-lg flex items-start gap-4 shadow-sm border ${alert.type === 'danger' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-orange-50 border-orange-200 text-orange-800'}`}>
+                                    <div className="shrink-0 mt-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold">{alert.title}</h4>
+                                        <p className="text-sm opacity-90">{alert.message}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Hourly Chart */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-8">

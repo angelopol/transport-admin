@@ -84,6 +84,9 @@ export default function Authenticated({
                             <NavLink href={route('devices.index')} active={route().current('devices.*')} className="w-full">
                                 <span className="mr-3">📡</span> Dispositivos
                             </NavLink>
+                            <NavLink href={route('audit-logs.index')} active={route().current('audit-logs.*')} className="w-full">
+                                <span className="mr-3">🛡️</span> Auditoría
+                            </NavLink>
                         </>
                     )}
                 </nav>
@@ -143,6 +146,7 @@ export default function Authenticated({
                                 <>
                                     <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('devices.index')} active={route().current('devices.*')}>Dispositivos</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('audit-logs.index')} active={route().current('audit-logs.*')}>Auditoría</ResponsiveNavLink>
                                 </>
                             )}
                         </div>

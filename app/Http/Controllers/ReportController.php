@@ -117,22 +117,33 @@ class ReportController extends Controller
             ->get();
 
         $currentTotalIncome = $manualEntries->sum('amount');
-        $currentTotalPassengers = $manualEntries->count() + $telemetryEntries->sum('passenger_count');
+        
+        // Evasion Calculation
+        $manualCount = $manualEntries->count();
+        $telemetryCount = $telemetryEntries->sum('passenger_count') ?: 0;
+        
+        // Actual total passengers is the maximum between camera counts and manual registers
+        $currentTotalPassengers = max($manualCount, $telemetryCount);
+        
+        $evasionCount = max(0, $telemetryCount - $manualCount);
+        $evasionRate = $currentTotalPassengers > 0 ? ($evasionCount / $currentTotalPassengers) * 100 : 0;
 
         // Aggregate data for previous period
         $previousTotalIncome = DB::table('manual_revenue_entries')
             ->whereBetween('registered_at', [$previousStart, $previousEnd])
             ->sum('amount');
 
-        $previousTotalPassengers = DB::table('manual_revenue_entries')
+        $previousManualCount = DB::table('manual_revenue_entries')
             ->whereBetween('registered_at', [$previousStart, $previousEnd])
             ->count();
 
-        $previousTelemetryPassengers = DB::table('telemetry_events')
+        $previousTelemetryCount = DB::table('telemetry_events')
             ->whereBetween('event_timestamp', [$previousStart, $previousEnd])
             ->sum('passenger_count') ?: 0;
 
-        $previousTotalPassengers += $previousTelemetryPassengers;
+        $previousTotalPassengers = max($previousManualCount, $previousTelemetryCount);
+        $previousEvasionCount = max(0, $previousTelemetryCount - $previousManualCount);
+        $previousEvasionRate = $previousTotalPassengers > 0 ? ($previousEvasionCount / $previousTotalPassengers) * 100 : 0;
 
         // Calculate growth percentage
         $growthIncome = $previousTotalIncome > 0
@@ -142,6 +153,10 @@ class ReportController extends Controller
         $growthPassengers = $previousTotalPassengers > 0
             ? (($currentTotalPassengers - $previousTotalPassengers) / $previousTotalPassengers) * 100
             : ($currentTotalPassengers > 0 ? 100 : 0);
+            
+        $growthEvasion = $previousEvasionRate > 0
+            ? $evasionRate - $previousEvasionRate // Absolute percentage points difference
+            : ($evasionRate > 0 ? $evasionRate : 0);
 
         return Inertia::render('Reports/Index', [
             'filters' => [
@@ -153,8 +168,11 @@ class ReportController extends Controller
             'stats' => [
                 'total_income' => $currentTotalIncome,
                 'total_passengers' => $currentTotalPassengers,
+                'evasion_rate' => round($evasionRate, 1),
+                'evasion_count' => $evasionCount,
                 'growth_income' => round($growthIncome, 1),
                 'growth_passengers' => round($growthPassengers, 1),
+                'growth_evasion' => round($growthEvasion, 1),
                 'compare_title' => $compareTitle,
                 'previous_income' => $previousTotalIncome,
                 'previous_passengers' => $previousTotalPassengers,

@@ -226,6 +226,82 @@ class AdvancedReportController extends Controller
     }
 
     /**
+     * Comparative Report (Unit Performance)
+     */
+    public function comparative(Request $request): Response
+    {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isOwner()) {
+            abort(403);
+        }
+
+        $monthParam = $request->input('month', now()->timezone('America/Caracas')->format('Y-m'));
+        try {
+            $monthStart = Carbon::createFromFormat('Y-m', $monthParam, 'America/Caracas')->startOfMonth();
+        } catch (\Exception $e) {
+            $monthStart = now()->timezone('America/Caracas')->startOfMonth();
+        }
+
+        $monthEnd = $monthStart->copy()->endOfMonth()->endOfDay();
+        $startUtc = $monthStart->copy()->setTimezone('UTC');
+        $endUtc = $monthEnd->copy()->setTimezone('UTC');
+
+        // Scope buses
+        $busesQuery = Bus::active();
+        if (!$user->isAdmin()) {
+            $busesQuery->where('owner_id', $user->id);
+        }
+        $buses = $busesQuery->get(['id', 'plate']);
+        $busIds = $buses->pluck('id');
+
+        // Fetch aggregates
+        $telemetryCounts = TelemetryEvent::whereIn('bus_id', $busIds)
+            ->whereBetween('event_timestamp', [$startUtc, $endUtc])
+            ->selectRaw('bus_id, SUM(passenger_count) as total_telemetry_passengers')
+            ->groupBy('bus_id')
+            ->get()
+            ->keyBy('bus_id');
+
+        $manualCounts = DB::table('manual_revenue_entries')
+            ->whereIn('bus_id', $busIds)
+            ->whereBetween('registered_at', [$startUtc, $endUtc])
+            ->selectRaw('bus_id, COUNT(*) as total_manual_passengers, SUM(amount) as total_revenue')
+            ->groupBy('bus_id')
+            ->get()
+            ->keyBy('bus_id');
+
+        $comparativeData = $buses->map(function ($bus) use ($telemetryCounts, $manualCounts) {
+            $telemetry = $telemetryCounts->get($bus->id)?->total_telemetry_passengers ?? 0;
+            $manual = $manualCounts->get($bus->id)?->total_manual_passengers ?? 0;
+            $revenue = $manualCounts->get($bus->id)?->total_revenue ?? 0;
+
+            // Simple evasion estimate per unit
+            $evasionCount = max(0, $telemetry - $manual);
+            $totalPassengers = max($telemetry, $manual);
+            $evasionRate = $totalPassengers > 0 ? ($evasionCount / $totalPassengers) * 100 : 0;
+
+            return [
+                'id' => $bus->id,
+                'plate' => $bus->plate,
+                'total_telemetry_passengers' => (int) $telemetry,
+                'total_manual_passengers' => (int) $manual,
+                'evasion_rate' => round($evasionRate, 1),
+                'total_revenue' => (float) $revenue,
+            ];
+        });
+
+        // Filter out buses with 0 passengers entirely and sort by revenue
+        $comparativeData = $comparativeData->filter(function ($item) {
+            return $item['total_telemetry_passengers'] > 0 || $item['total_manual_passengers'] > 0;
+        })->sortByDesc('total_revenue')->values();
+
+        return Inertia::render('AdvancedReports/Comparative', [
+            'comparativeData' => $comparativeData,
+            'currentMonth' => $monthStart->format('Y-m'),
+        ]);
+    }
+
+    /**
      * Helper to compute distance (Haversine)
      */
     private function haversineGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000)

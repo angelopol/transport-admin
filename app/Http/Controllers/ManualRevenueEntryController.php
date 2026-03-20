@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
+use App\Helpers\AuditLogger;
 
 class ManualRevenueEntryController extends Controller
 {
@@ -156,6 +157,13 @@ class ManualRevenueEntryController extends Controller
             'identification' => $validated['identification'] ?? null,
             'phone_or_account' => $validated['phone_or_account'] ?? null,
             'reference_image_path' => $imagePath,
+        ]);
+
+        AuditLogger::log('Registro de Ingreso Manual Creado', [
+            'amount' => $amount,
+            'payment_method' => $validated['payment_method'],
+            'bus_id' => $validated['bus_id'],
+            'user_type' => $validated['user_type'],
         ]);
 
         return redirect()->route('manual-entries.index')
