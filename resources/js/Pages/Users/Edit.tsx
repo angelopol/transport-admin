@@ -39,6 +39,7 @@ export default function Edit({ user }: Props) {
                 <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
                     <div className="bg-white rounded-xl shadow-lg p-6">
                         <form onSubmit={submit} className="space-y-6">
+                            <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3">Editar Usuario: {user.name}</h2>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
                                 <input

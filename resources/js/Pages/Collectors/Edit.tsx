@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import FileInput from '@/Components/FileInput';
 
 interface Collector {
     id: number;
@@ -45,6 +46,7 @@ export default function Edit({ collector }: Props) {
                 <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
                     <div className="bg-white rounded-xl shadow-lg p-6">
                         <form onSubmit={submit} className="space-y-6" autoComplete="off">
+                            <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3">Editar Colector: {collector.name}</h2>
                             {/* Campos señuelo para evitar el autocompletado agresivo del navegador */}
                             <input type="text" name="fake_username_autofill" className="hidden" tabIndex={-1} autoComplete="username" />
                             <input type="password" name="fake_password_autofill" className="hidden" tabIndex={-1} autoComplete="current-password" />
@@ -128,13 +130,11 @@ export default function Edit({ collector }: Props) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Actualizar Foto</label>
-                                <input
-                                    type="file"
+                                <FileInput
                                     accept="image/*"
-                                    onChange={(e) => setData('photo', e.target.files ? e.target.files[0] : null)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    onChange={(file) => setData('photo', file)}
+                                    error={errors.photo}
                                 />
-                                {errors.photo && <p className="text-red-500 text-sm mt-1">{errors.photo}</p>}
                             </div>
 
                             <div>

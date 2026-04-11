@@ -2,6 +2,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { FormEventHandler, useEffect, useState, useRef } from 'react';
+import FileInput from '@/Components/FileInput';
+
 
 interface Route {
     id: number;
@@ -504,11 +506,9 @@ export default function Create({ buses, isOperative }: Props) {
                                                         <canvas ref={canvasRef} className="hidden" />
                                                     </>
                                                 ) : (
-                                                    <input
-                                                        type="file"
+                                                    <FileInput
                                                         accept="image/*"
-                                                        onChange={(e) => setData('reference_image', e.target.files ? e.target.files[0] : null)}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+                                                        onChange={(file) => setData('reference_image', file)}
                                                     />
                                                 )}
 

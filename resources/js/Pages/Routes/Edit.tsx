@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import FileInput from '@/Components/FileInput';
 
 interface Route {
     id: number;
@@ -76,6 +77,7 @@ export default function Edit({ route }: Props) {
                 <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
                     <div className="bg-white rounded-xl shadow-lg p-6">
                         <form onSubmit={submit} className="space-y-6">
+                            <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3">Editar Ruta: {route.name}</h2>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
                                 <input
@@ -283,14 +285,12 @@ export default function Edit({ route }: Props) {
                                         </a>
                                     </div>
                                 )}
-                                <input
-                                    type="file"
+                                <FileInput
                                     accept="image/*"
-                                    onChange={(e) => setData('official_gazette', e.target.files ? e.target.files[0] : null)}
-                                    className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    onChange={(file) => setData('official_gazette', file)}
+                                    error={errors.official_gazette}
+                                    hint="Sube una nueva imagen para reemplazar la actual (JPG, PNG, WEBP - Máx 2MB)."
                                 />
-                                {errors.official_gazette && <p className="text-red-500 text-sm mt-1">{errors.official_gazette}</p>}
-                                <p className="text-gray-500 text-xs mt-1">Sube una nueva imagen para reemplazar la actual (JPG, PNG, WEBP - Max 2MB).</p>
                             </div>
 
                             <div className="flex justify-end gap-4">

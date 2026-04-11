@@ -89,6 +89,7 @@ export default function Edit({ bus, routes, drivers, collectors, availableDevice
                 <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
                     <div className="bg-white rounded-xl shadow-lg p-6">
                         <form onSubmit={submit} className="space-y-6">
+                            <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3">Editar Unidad: {bus.plate}</h2>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
