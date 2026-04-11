@@ -14,7 +14,9 @@ class Route extends Model
         'name',
         'origin',
         'destination',
+        'is_suburban',
         'fare',
+        'fare_urban',
         'fare_student',
         'fare_senior',
         'fare_disabled',
@@ -24,6 +26,7 @@ class Route extends Model
         'is_disabled_percentage',
         'is_active',
         'owner_id',
+        'official_gazette_path',
     ];
 
     public function owner()
@@ -42,7 +45,9 @@ class Route extends Model
     protected function casts(): array
     {
         return [
+            'is_suburban' => 'boolean',
             'fare' => 'decimal:2',
+            'fare_urban' => 'decimal:2',
             'fare_student' => 'decimal:2',
             'fare_senior' => 'decimal:2',
             'fare_disabled' => 'decimal:2',

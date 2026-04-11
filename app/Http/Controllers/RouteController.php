@@ -6,6 +6,7 @@ use App\Models\Route;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,7 +46,9 @@ class RouteController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'origin' => ['required', 'string', 'max:100'],
             'destination' => ['required', 'string', 'max:100'],
+            'is_suburban' => ['boolean'],
             'fare' => ['required', 'numeric', 'min:0'],
+            'fare_urban' => ['nullable', 'numeric', 'min:0'],
             'fare_student' => ['nullable', 'numeric', 'min:0'],
             'fare_senior' => ['nullable', 'numeric', 'min:0'],
             'fare_disabled' => ['nullable', 'numeric', 'min:0'],
@@ -53,9 +56,14 @@ class RouteController extends Controller
             'is_student_percentage' => ['boolean'],
             'is_senior_percentage' => ['boolean'],
             'is_disabled_percentage' => ['boolean'],
+            'official_gazette' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $validated['owner_id'] = $request->user()->id;
+
+        if ($request->hasFile('official_gazette')) {
+            $validated['official_gazette_path'] = $request->file('official_gazette')->store('gazettes', 'public');
+        }
 
         Route::create($validated);
 
@@ -92,7 +100,9 @@ class RouteController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'origin' => ['required', 'string', 'max:100'],
             'destination' => ['required', 'string', 'max:100'],
+            'is_suburban' => ['boolean'],
             'fare' => ['required', 'numeric', 'min:0'],
+            'fare_urban' => ['nullable', 'numeric', 'min:0'],
             'fare_student' => ['nullable', 'numeric', 'min:0'],
             'fare_senior' => ['nullable', 'numeric', 'min:0'],
             'fare_disabled' => ['nullable', 'numeric', 'min:0'],
@@ -101,7 +111,15 @@ class RouteController extends Controller
             'is_senior_percentage' => ['boolean'],
             'is_disabled_percentage' => ['boolean'],
             'is_active' => ['boolean'],
+            'official_gazette' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        if ($request->hasFile('official_gazette')) {
+            if ($route->official_gazette_path) {
+                Storage::disk('public')->delete($route->official_gazette_path);
+            }
+            $validated['official_gazette_path'] = $request->file('official_gazette')->store('gazettes', 'public');
+        }
 
         $route->update($validated);
 

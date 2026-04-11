@@ -1,13 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 export default function Create() {
+    const { auth } = usePage().props as any;
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         origin: '',
         destination: '',
-        fare: '',
+        fare: auth.user?.default_route_fare || '',
+        fare_urban: auth.user?.default_route_fare_urban || '',
+        is_suburban: false,
         fare_student: '',
         fare_senior: '',
         fare_disabled: '',
@@ -15,11 +19,28 @@ export default function Create() {
         is_student_percentage: false,
         is_senior_percentage: false,
         is_disabled_percentage: false,
+        official_gazette: null as File | null,
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post('/routes');
+    };
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+        }).format(amount);
+    };
+
+    const calculateFare = (baseFare: string | number, discountVal: string | number, isPercentage: boolean) => {
+        const base = Number(baseFare) || 0;
+        const desc = Number(discountVal) || 0;
+        if (isPercentage) {
+            return base - (base * (desc / 100));
+        }
+        return desc > 0 ? desc : base;
     };
 
     return (
@@ -71,17 +92,46 @@ export default function Create() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa General ($) *</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={data.fare}
-                                    onChange={(e) => setData('fare', e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="1.50"
-                                    required
-                                />
-                                {errors.fare && <p className="text-red-500 text-sm mt-1">{errors.fare}</p>}
+                                <label className="flex items-center gap-2 mb-4">
+                                    <input
+                                        type="checkbox"
+                                        checked={data.is_suburban}
+                                        onChange={(e) => setData('is_suburban', e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700 select-none">Esta es una ruta Suburbana (Posee tarifa urbana adicional)</span>
+                                </label>
+                            </div>
+
+                            <div className={`grid gap-4 ${data.is_suburban ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{data.is_suburban ? "Tarifa Suburbana General ($) *" : "Tarifa General ($) *"}</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.fare}
+                                        onChange={(e) => setData('fare', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="1.50"
+                                        required
+                                    />
+                                    {errors.fare && <p className="text-red-500 text-sm mt-1">{errors.fare}</p>}
+                                </div>
+                                {data.is_suburban && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Urbana ($) *</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={data.fare_urban}
+                                            onChange={(e) => setData('fare_urban', e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50"
+                                            placeholder="1.00"
+                                            required={data.is_suburban}
+                                        />
+                                        {errors.fare_urban && <p className="text-red-500 text-sm mt-1">{errors.fare_urban}</p>}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -147,6 +197,62 @@ export default function Create() {
                                         placeholder="0.00"
                                     />
                                 </div>
+                            </div>
+
+                            {/* Cartel de Precios Visual */}
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mt-6 shadow-inner">
+                                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">🎟️ Vista Previa: Cartel de Precios</h3>
+                                <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-gray-100 text-gray-700">
+                                            <tr>
+                                                <th className="px-4 py-3 font-semibold">Tipo de Pasajero</th>
+                                                {data.is_suburban && <th className="px-4 py-3 font-semibold text-blue-800">Trayecto Urbano</th>}
+                                                <th className="px-4 py-3 font-semibold text-green-800">{data.is_suburban ? 'Trayecto Suburbano' : 'Precio Oficial'}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            <tr>
+                                                <td className="px-4 py-3 font-medium text-gray-900">General</td>
+                                                {data.is_suburban && <td className="px-4 py-3 font-bold text-blue-600">{formatCurrency(Number(data.fare_urban) || 0)}</td>}
+                                                <td className="px-4 py-3 font-bold text-green-600">{formatCurrency(Number(data.fare) || 0)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 text-gray-700">Domingo / Feriado</td>
+                                                {data.is_suburban && <td className="px-4 py-3">{formatCurrency(Number(data.fare_sunday) > 0 ? Number(data.fare_sunday) : Number(data.fare_urban) || 0)}</td>}
+                                                <td className="px-4 py-3">{formatCurrency(Number(data.fare_sunday) > 0 ? Number(data.fare_sunday) : Number(data.fare) || 0)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 text-gray-700">Estudiante{data.is_student_percentage ? ` (-${data.fare_student || 0}%)` : ''}</td>
+                                                {data.is_suburban && <td className="px-4 py-3">{formatCurrency(calculateFare(data.fare_urban, data.fare_student, data.is_student_percentage))}</td>}
+                                                <td className="px-4 py-3">{formatCurrency(calculateFare(data.fare, data.fare_student, data.is_student_percentage))}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 text-gray-700">Adulto Mayor{data.is_senior_percentage ? ` (-${data.fare_senior || 0}%)` : ''}</td>
+                                                {data.is_suburban && <td className="px-4 py-3">{formatCurrency(calculateFare(data.fare_urban, data.fare_senior, data.is_senior_percentage))}</td>}
+                                                <td className="px-4 py-3">{formatCurrency(calculateFare(data.fare, data.fare_senior, data.is_senior_percentage))}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="px-4 py-3 text-gray-700">Discapacitado{data.is_disabled_percentage ? ` (-${data.fare_disabled || 0}%)` : ''}</td>
+                                                {data.is_suburban && <td className="px-4 py-3">{formatCurrency(calculateFare(data.fare_urban, data.fare_disabled, data.is_disabled_percentage))}</td>}
+                                                <td className="px-4 py-3">{formatCurrency(calculateFare(data.fare, data.fare_disabled, data.is_disabled_percentage))}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-3 text-center">Así se mostrarán los precios automáticamente en la aplicación móvil de los choferes.</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Cartelera de Precios / Gaceta Oficial (Opcional)</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setData('official_gazette', e.target.files ? e.target.files[0] : null)}
+                                    className="w-full px-4 py-2 border border-gray-300 text-sm rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                />
+                                {errors.official_gazette && <p className="text-red-500 text-sm mt-1">{errors.official_gazette}</p>}
+                                <p className="text-gray-500 text-xs mt-1">Sube una imagen de la Gaceta Oficial para respaldo visual (JPG, PNG, WEBP - Max 2MB).</p>
                             </div>
 
                             <div className="flex justify-end gap-4">

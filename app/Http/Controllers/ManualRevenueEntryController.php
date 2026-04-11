@@ -111,7 +111,11 @@ class ManualRevenueEntryController extends Controller
         $date = $validated['registered_at'] ? Carbon::parse($validated['registered_at']) : now();
 
         // Calculate amount
-        $baseFare = ($date->isSunday() && $route->fare_sunday > 0) ? $route->fare_sunday : $route->fare;
+        $routeType = $request->input('route_type', 'suburban');
+        $isUrban = $route->is_suburban && $routeType === 'urban';
+        $activeFare = $isUrban ? ($route->fare_urban ?? $route->fare) : $route->fare;
+
+        $baseFare = ($date->isSunday() && $route->fare_sunday > 0) ? $route->fare_sunday : $activeFare;
         $amount = $baseFare;
 
         if ($validated['user_type'] === 'student') {

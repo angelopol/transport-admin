@@ -24,6 +24,8 @@ class User extends Authenticatable
         'password',
         'role',
         'phone',
+        'default_route_fare',
+        'default_route_fare_urban',
     ];
 
     /**
@@ -46,6 +48,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'default_route_fare' => 'decimal:2',
+            'default_route_fare_urban' => 'decimal:2',
         ];
     }
 

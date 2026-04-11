@@ -1,16 +1,20 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
+import SettingsModal from './SettingsModal';
 
 interface Route {
     id: number;
     name: string;
     origin: string;
     destination: string;
+    is_suburban: boolean;
     fare: number;
+    fare_urban: number;
     is_active: boolean;
     buses_count: number;
     buses?: { id: number; plate: string }[];
+    official_gazette_path?: string;
 }
 
 interface PaginatedRoutes {
@@ -25,6 +29,9 @@ interface Props {
 }
 
 export default function Index({ routes }: Props) {
+    const { auth } = usePage().props as any;
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
     const handleDelete = (route: Route) => {
         if (confirm(`¿Eliminar la ruta "${route.name}"?`)) {
             router.delete(`/routes/${route.id}`);
@@ -47,6 +54,13 @@ export default function Index({ routes }: Props) {
                         </svg>
                         Nueva Ruta
                     </Link>
+                    <button
+                        onClick={() => setIsSettingsModalOpen(true)}
+                        className="p-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 font-medium"
+                        title="Ajustes de Rutas"
+                    >
+                        ⚙️ <span className="hidden md:inline">Ajustes</span>
+                    </button>
                 </div>
             }
         >
@@ -75,7 +89,26 @@ export default function Index({ routes }: Props) {
                                             <td className="px-6 py-4 font-medium text-gray-900">{route.name}</td>
                                             <td className="px-6 py-4 text-gray-600">{route.origin}</td>
                                             <td className="px-6 py-4 text-gray-600">{route.destination}</td>
-                                            <td className="px-6 py-4 font-medium">${parseFloat(route.fare.toString()).toFixed(2)}</td>
+                                            <td className="px-6 py-4 font-medium">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>{route.is_suburban ? 'Sub:' : ''} ${parseFloat(route.fare.toString()).toFixed(2)}</span>
+                                                        {route.official_gazette_path && (
+                                                            <a href={`/storage/${route.official_gazette_path}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700" title="Ver Gaceta Oficial">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                                </svg>
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    {route.is_suburban && route.fare_urban && (
+                                                        <div className="text-xs text-gray-500 font-normal">
+                                                            Urb: ${parseFloat(route.fare_urban.toString()).toFixed(2)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+
                                             <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={route.buses?.map(b => b.plate).join(', ')}>
                                                 {route.buses?.map(b => b.plate).join(', ') || '—'}
                                             </td>
@@ -125,9 +158,25 @@ export default function Index({ routes }: Props) {
                                             <span className="font-semibold text-gray-500 w-16">Ruta:</span>
                                             <span>{route.origin} ➝ {route.destination}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-semibold text-gray-500 w-16">Tarifa:</span>
-                                            <span className="font-medium text-gray-900">${parseFloat(route.fare.toString()).toFixed(2)}</span>
+                                        <div className="flex items-start gap-2 mb-1">
+                                            <span className="font-semibold text-gray-500 w-16 mt-0.5">Tarifa:</span>
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium text-gray-900">{route.is_suburban ? 'Sub:' : ''} ${parseFloat(route.fare.toString()).toFixed(2)}</span>
+                                                    {route.official_gazette_path && (
+                                                        <a href={`/storage/${route.official_gazette_path}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700" title="Ver Gaceta Oficial">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                        </svg>
+                                                    </a>
+                                                    )}
+                                                </div>
+                                                {route.is_suburban && route.fare_urban && (
+                                                    <div className="text-xs text-gray-500 font-normal">
+                                                        Urb: ${parseFloat(route.fare_urban.toString()).toFixed(2)}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="font-semibold text-gray-500 w-16">Unidades:</span>
@@ -173,6 +222,13 @@ export default function Index({ routes }: Props) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
             </Link>
+            {/* Route Settings Modal */}
+            <SettingsModal 
+                isOpen={isSettingsModalOpen} 
+                onClose={() => setIsSettingsModalOpen(false)} 
+                routes={routes.data} 
+                user={auth.user} 
+            />
         </AuthenticatedLayout>
     );
 }

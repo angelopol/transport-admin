@@ -776,3 +776,68 @@ graph TD
     style ArchivoCSV fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     style Consumidor fill:#fbe9e7,stroke:#ff5722,stroke-width:3px,color:#bf360c
 ```
+
+---
+
+## 11. diagrama_componentes_dashboard.drawio (Arquitectura del Dashboard Inteligente de E-commerce)
+
+**Descripción:**
+Este diagrama de componentes ilustra la arquitectura del dashboard inteligente descrita en el ejemplo (Figura 14, De Crescenzo y Guerrero, 2025). El sistema está organizado en tres capas principales: la capa de presentación (interfaz y visualización), la capa de lógica de negocio (preprocesamiento, cálculos de KPIs, conversión monetaria y predicciones) y la capa de datos (conexión con API y almacenamiento).
+
+```mermaid
+flowchart TD
+    %% Capa de Presentación
+    subgraph CapaPresentacion ["Capa de Presentación"]
+        direction TB
+        Interfaz[Interfaz del Dashboard]
+        Visualizacion[Componentes de Visualización Gráfica]
+    end
+
+    %% Capa de Lógica de Negocio
+    subgraph CapaLogica ["Capa de Lógica de Negocio"]
+        direction TB
+        Preprocesamiento[Módulo de Preprocesamiento]
+        KPIs[Cálculo de Indicadores Clave - KPIs]
+        Conversion[Conversión Monetaria]
+        Predicciones[Generación de Predicciones de Ventas]
+    end
+
+    %% Capa de Datos
+    subgraph CapaDatos ["Capa de Datos"]
+        direction TB
+        API_Ecommerce[Conexión con API de E-commerce]
+        Almacenamiento[(Almacenamiento Temporal de Ventas)]
+    end
+
+    %% Flujo y Relaciones
+    Usuario([Usuario / Tomador de Decisiones]) <-->|Interpreta resultados| Interfaz
+    Interfaz <--> Visualizacion
+    
+    Visualizacion <--> KPIs
+    Visualizacion <--> Predicciones
+    Visualizacion <--> Conversion
+
+    KPIs <--> Preprocesamiento
+    Predicciones <--> Preprocesamiento
+    Conversion <--> Preprocesamiento
+
+    Preprocesamiento <--> Almacenamiento
+    Almacenamiento <--> API_Ecommerce
+
+    %% Estilos (Consistentes con el documento)
+    style Usuario fill:#fbe9e7,stroke:#ff5722,stroke-width:3px,color:#bf360c
+    style CapaPresentacion fill:#e0f7fa,stroke:#006064,stroke-width:2px,color:#004d40
+    style CapaLogica fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style CapaDatos fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    
+    style Interfaz fill:#ffffff,stroke:#00897b,stroke-width:2px
+    style Visualizacion fill:#ffffff,stroke:#00897b,stroke-width:2px
+    
+    style Preprocesamiento fill:#ffffff,stroke:#f57c00,stroke-width:2px
+    style KPIs fill:#ffffff,stroke:#f57c00,stroke-width:2px
+    style Conversion fill:#ffffff,stroke:#f57c00,stroke-width:2px
+    style Predicciones fill:#ffffff,stroke:#f57c00,stroke-width:2px
+    
+    style API_Ecommerce fill:#ffffff,stroke:#4caf50,stroke-width:2px
+    style Almacenamiento fill:#ffffff,stroke:#4caf50,stroke-width:2px
+```

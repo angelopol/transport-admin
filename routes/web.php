@@ -30,6 +30,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('bank-accounts', \App\Http\Controllers\BankAccountController::class);
         Route::resource('routes', RouteController::class)->except(['show']);
+        Route::post('/routes/settings/defaults', [\App\Http\Controllers\RouteSettingsController::class, 'saveDefaults'])->name('routes.settings.defaults');
+        Route::post('/routes/settings/bulk', [\App\Http\Controllers\RouteSettingsController::class, 'bulkUpdateFares'])->name('routes.settings.bulk');
         Route::resource('drivers', DriverController::class)->except(['show']);
         Route::resource('collectors', \App\Http\Controllers\CollectorController::class)->except(['show']);
         Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');

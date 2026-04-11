@@ -7,6 +7,8 @@ interface Route {
     id: number;
     name: string;
     fare: number;
+    fare_urban: number;
+    is_suburban: boolean;
     fare_student: number;
     fare_senior: number;
     fare_disabled: number;
@@ -31,6 +33,7 @@ export default function Create({ buses, isOperative }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         bus_id: '',
         user_type: 'general',
+        route_type: 'suburban', // o 'urban'
         payment_method: isOperative ? 'digital' : 'cash',
         amount: 0, // Just for display, backend recalculates
         registered_at: '', // Optional date override
@@ -185,9 +188,12 @@ export default function Create({ buses, isOperative }: Props) {
         const now = data.registered_at ? new Date(data.registered_at) : new Date();
         const isSunday = now.getDay() === 0;
 
+        const isUrban = selectedRoute.is_suburban && data.route_type === 'urban';
+        const activeFare = isUrban ? Number(selectedRoute.fare_urban) : Number(selectedRoute.fare);
+
         const baseFare = (isSunday && Number(selectedRoute.fare_sunday) > 0)
             ? Number(selectedRoute.fare_sunday)
-            : Number(selectedRoute.fare);
+            : activeFare;
 
         let calculatedAmount = baseFare;
 
@@ -212,7 +218,7 @@ export default function Create({ buses, isOperative }: Props) {
         }
 
         setData('amount', calculatedAmount);
-    }, [data.bus_id, data.user_type, data.registered_at]);
+    }, [data.bus_id, data.user_type, data.route_type, data.registered_at]);
 
 
     const submit: FormEventHandler = (e) => {
@@ -261,6 +267,51 @@ export default function Create({ buses, isOperative }: Props) {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Route Type Selection (only if suburban) */}
+                            {buses.find(b => b.id.toString() === data.bus_id)?.route?.is_suburban && (
+                                <div className={`relative transition-all duration-300 ${isFormDisabled ? 'opacity-50 grayscale pointer-events-none select-none' : ''}`}>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Distancia del Trayecto *</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="relative">
+                                            <input
+                                                type="radio"
+                                                name="route_type"
+                                                id="route_type-urban"
+                                                value="urban"
+                                                checked={data.route_type === 'urban'}
+                                                onChange={(e) => setData('route_type', e.target.value)}
+                                                className="peer sr-only"
+                                            />
+                                            <label
+                                                htmlFor="route_type-urban"
+                                                className="flex flex-col items-center justify-center p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-600 hover:bg-gray-50 transition-all"
+                                            >
+                                                <span className="text-xl mb-1">🏙️</span>
+                                                <span className="text-sm font-bold">Corto (Urbano)</span>
+                                            </label>
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type="radio"
+                                                name="route_type"
+                                                id="route_type-suburban"
+                                                value="suburban"
+                                                checked={data.route_type === 'suburban'}
+                                                onChange={(e) => setData('route_type', e.target.value)}
+                                                className="peer sr-only"
+                                            />
+                                            <label
+                                                htmlFor="route_type-suburban"
+                                                className="flex flex-col items-center justify-center p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-green-600 peer-checked:bg-green-50 peer-checked:text-green-600 hover:bg-gray-50 transition-all"
+                                            >
+                                                <span className="text-xl mb-1">🛣️</span>
+                                                <span className="text-sm font-bold">Largo (Suburbano)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* User Type Selection */}
                             <div className={`space-y-6 relative transition-all duration-300 ${isFormDisabled ? 'opacity-50 grayscale pointer-events-none select-none' : ''}`}>
