@@ -25,6 +25,8 @@ class Bus extends Model
         'api_token',
         'is_active',
         'last_seen_at',
+        'last_latitude',
+        'last_longitude',
     ];
 
     protected function casts(): array
@@ -33,6 +35,8 @@ class Bus extends Model
             'capacity' => 'integer',
             'is_active' => 'boolean',
             'last_seen_at' => 'datetime',
+            'last_latitude' => 'decimal:7',
+            'last_longitude' => 'decimal:7',
         ];
     }
 

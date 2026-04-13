@@ -24,6 +24,8 @@ interface Bus extends PaymentPosterBus {
     api_token: string;
     is_active: boolean;
     last_seen_at: string | null;
+    last_latitude: number | null;
+    last_longitude: number | null;
     owner?: { name: string; email: string };
     driver?: { name: string; phone: string };
 }
@@ -53,6 +55,36 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
     const [selectedEvent, setSelectedEvent] = useState<TelemetryEvent | null>(null);
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [showPoster, setShowPoster] = useState(false);
+    const [liveLocation, setLiveLocation] = useState<{lat: number, lng: number, timestamp: string} | null>(
+        bus.last_latitude && bus.last_longitude 
+            ? { lat: Number(bus.last_latitude), lng: Number(bus.last_longitude), timestamp: bus.last_seen_at || '' } 
+            : null
+    );
+
+    // Live Tracking Polling
+    useEffect(() => {
+        const fetchLiveLocation = async () => {
+            try {
+                const response = await fetch('/maps/live');
+                if (response.ok) {
+                    const data = await response.json();
+                    const busLive = data.find((b: any) => b.bus_id === bus.id);
+                    if (busLive && busLive.latitude && busLive.longitude) {
+                        setLiveLocation({
+                            lat: Number(busLive.latitude),
+                            lng: Number(busLive.longitude),
+                            timestamp: busLive.event_timestamp
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error polling live location", error);
+            }
+        };
+
+        const interval = setInterval(fetchLiveLocation, 15000); // 15 seconds
+        return () => clearInterval(interval);
+    }, [bus.id]);
 
     const formatCurrency = (amount: number | string) => {
         const numericAmount = Number(amount) || 0;
@@ -116,10 +148,77 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                         </div>
                     </div>
 
+                    {/* Live Location Map Card */}
+                    {liveLocation && (
+                        <div className="bg-white rounded-xl shadow-lg border-2 border-green-500 overflow-hidden">
+                            <div className="px-6 py-3 bg-green-50 border-b border-green-100 flex justify-between items-center">
+                                <h3 className="text-lg font-bold text-green-800 flex items-center gap-2">
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                    </span>
+                                    Ubicación en Tiempo Real
+                                </h3>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-xs text-green-600 font-medium">
+                                        Actualizado: {new Date(liveLocation.timestamp).toLocaleTimeString('es-VE')}
+                                    </span>
+                                    {Math.abs(new Date().getTime() - new Date(liveLocation.timestamp).getTime()) > 600000 && (
+                                        <span className="text-[10px] text-amber-600 font-bold uppercase">Señal demorada</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="h-64 w-full relative z-0">
+                                <MapContainer 
+                                    center={[liveLocation.lat, liveLocation.lng]} 
+                                    zoom={15} 
+                                    scrollWheelZoom={false}
+                                    style={{ height: '100%', width: '100%', zIndex: 1 }}
+                                    key={`live-map-${liveLocation.lat}-${liveLocation.lng}`}
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    <Marker 
+                                        position={[liveLocation.lat, liveLocation.lng]}
+                                        icon={L.divIcon({
+                                            className: 'custom-bus-marker',
+                                            html: `<div class="bg-indigo-600 text-white p-2 rounded-full shadow-lg border-2 border-white animate-bounce-short">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                                                  </div>`,
+                                            iconSize: [40, 40],
+                                            iconAnchor: [20, 20]
+                                        })}
+                                    >
+                                        <Popup>
+                                            <div className="text-sm">
+                                                <p className="font-bold">{bus.plate}</p>
+                                                <p className="text-xs text-gray-500">{new Date(liveLocation.timestamp).toLocaleString('es-VE')}</p>
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                </MapContainer>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Bus Information */}
                     <div className="bg-white rounded-xl shadow-lg p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Información</h3>
-                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Información de la Unidad</h3>
+                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Última Señal</dt>
+                                <dd className="font-medium">
+                                    {bus.last_seen_at ? new Date(bus.last_seen_at).toLocaleString('es-VE') : 'Nunca'}
+                                </dd>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <dt className="text-gray-500">Ubicación GPS</dt>
+                                <dd className="text-sm font-mono text-gray-600">
+                                    {bus.last_latitude ? `${Number(bus.last_latitude).toFixed(5)}, ${Number(bus.last_longitude).toFixed(5)}` : 'No disponible'}
+                                </dd>
+                            </div>
                             <div className="flex justify-between border-b pb-2">
                                 <dt className="text-gray-500">Placa</dt>
                                 <dd className="font-medium">{bus.plate}</dd>

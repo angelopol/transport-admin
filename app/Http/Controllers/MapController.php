@@ -43,39 +43,46 @@ class MapController extends Controller
 
     /**
      * Get live telemetry data for active buses.
+     * Uses last_latitude/last_longitude stored on the bus record, which is
+     * updated on every heartbeat, making the map reactive even when no
+     * passenger events are being generated.
      */
     public function live(Request $request)
     {
         $user = $request->user();
 
-        // Get the latest telemetry event for each active bus owned by the user
-        // Using a subquery approach to get the most recent event per bus
-        $latestEventsSubquery = DB::table('telemetry_events')
-            ->select('bus_id', DB::raw('MAX(event_timestamp) as latest_timestamp'))
-            ->groupBy('bus_id');
-
-        $liveBuses = DB::table('telemetry_events as te')
-            ->joinSub($latestEventsSubquery, 'latest', function ($join) {
-                $join->on('te.bus_id', '=', 'latest.bus_id')
-                    ->on('te.event_timestamp', '=', 'latest.latest_timestamp');
-            })
-            ->join('buses as b', 'te.bus_id', '=', 'b.id')
+        $liveBuses = DB::table('buses as b')
             ->leftJoin('routes as r', 'b.route_id', '=', 'r.id')
+            // Get the latest passenger_count and timestamp from the exact most recent event record
+            ->leftJoinSub(
+                DB::table('telemetry_events as te')
+                    ->whereIn('id', function($query) {
+                        $query->select(DB::raw('MAX(id)'))
+                            ->from('telemetry_events')
+                            ->groupBy('bus_id');
+                    }),
+                'latest_event',
+                'b.id',
+                '=',
+                'latest_event.bus_id'
+            )
             ->where('b.is_active', true)
+            ->whereNotNull('b.last_latitude')
+            ->whereNotNull('b.last_longitude')
+            // Only consider buses seen in the last 2 hours as "live"
+            ->where('b.last_seen_at', '>=', now()->subHours(2))
             ->when(!$user->isAdmin(), function ($query) use ($user) {
                 return $query->where('b.owner_id', $user->id);
             })
-            // Only consider events from the last 2 hours as "live" to avoid showing buses that have been offline for days
-            ->where('te.event_timestamp', '>=', now()->subHours(2))
             ->select(
                 'b.id as bus_id',
                 'b.plate',
                 'b.model',
                 'r.name as route_name',
-                'te.latitude',
-                'te.longitude',
-                'te.passenger_count',
-                'te.event_timestamp'
+                'b.last_latitude as latitude',
+                'b.last_longitude as longitude',
+                DB::raw('COALESCE(latest_event.passenger_count, 0) as passenger_count'),
+                'b.last_seen_at as event_timestamp'
             )
             ->get();
 
