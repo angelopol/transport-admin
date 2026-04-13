@@ -168,53 +168,108 @@ class AdvancedReportController extends Controller
         $dateStr = $request->input('date', today()->toDateString());
         $date = Carbon::parse($dateStr);
 
+        $reportTimezone = 'America/Caracas';
+
         $routesQuery = Route::active();
         if (!$user->isAdmin()) {
             $routesQuery->where('owner_id', $user->id);
         }
-        $routes = $routesQuery->get(['id', 'name']);
+        $routes = $routesQuery->get(['id', 'name', 'origin', 'destination']);
 
         $routeStats = [];
 
         foreach ($routes as $route) {
-            // Get all active buses for this route
-            $buses = Bus::where('route_id', $route->id)->get(['id']);
-            $busIds = $buses->pluck('id');
+            $buses = Bus::where('route_id', $route->id)
+                ->where('is_active', true)
+                ->get(['id', 'plate', 'model']);
 
-            if ($busIds->isEmpty()) {
+            if ($buses->isEmpty()) {
                 continue;
             }
 
-            // For each bus, find their first and last telemetry event for the given day
             $busDurations = [];
+            $busEventCounts = [];
+            $busPassengers = [];
+            $startSeconds = [];
+            $endSeconds = [];
+            $earliestStart = null;
+            $latestEnd = null;
+            $units = [];
 
-            foreach ($busIds as $busId) {
-                $firstEvent = TelemetryEvent::where('bus_id', $busId)
+            foreach ($buses as $bus) {
+                $events = TelemetryEvent::where('bus_id', $bus->id)
                     ->whereDate('event_timestamp', $date)
                     ->orderBy('event_timestamp', 'asc')
-                    ->first(['event_timestamp']);
+                    ->get(['event_timestamp', 'passenger_count']);
 
-                $lastEvent = TelemetryEvent::where('bus_id', $busId)
-                    ->whereDate('event_timestamp', $date)
-                    ->orderBy('event_timestamp', 'desc')
-                    ->first(['event_timestamp']);
-
-                if ($firstEvent && $lastEvent && $firstEvent->event_timestamp->ne($lastEvent->event_timestamp)) {
-                    $minutes = $firstEvent->event_timestamp->diffInMinutes($lastEvent->event_timestamp);
-                    // Filter out implausible durations (e.g. less than 10 mins or more than 20 hours)
-                    if ($minutes > 10 && $minutes < 1200) {
-                        $busDurations[] = $minutes;
-                    }
+                if ($events->count() < 2) {
+                    continue;
                 }
+
+                $firstEvent = $events->first();
+                $lastEvent = $events->last();
+
+                if (!$firstEvent || !$lastEvent || $firstEvent->event_timestamp->eq($lastEvent->event_timestamp)) {
+                    continue;
+                }
+
+                $minutes = $firstEvent->event_timestamp->diffInMinutes($lastEvent->event_timestamp);
+
+                if ($minutes <= 10 || $minutes >= 1200) {
+                    continue;
+                }
+
+                $firstLocal = $firstEvent->event_timestamp->copy()->timezone($reportTimezone);
+                $lastLocal = $lastEvent->event_timestamp->copy()->timezone($reportTimezone);
+                $eventCount = $events->count();
+                $passengers = (int) $events->sum('passenger_count');
+
+                $busDurations[] = $minutes;
+                $busEventCounts[] = $eventCount;
+                $busPassengers[] = $passengers;
+
+                $startOfDay = $firstLocal->copy()->startOfDay();
+                $startSeconds[] = $startOfDay->diffInSeconds($firstLocal);
+                $endSeconds[] = $startOfDay->diffInSeconds($lastLocal);
+
+                $earliestStart = $earliestStart === null || $firstLocal->lt($earliestStart) ? $firstLocal : $earliestStart;
+                $latestEnd = $latestEnd === null || $lastLocal->gt($latestEnd) ? $lastLocal : $latestEnd;
+
+                $units[] = [
+                    'id' => $bus->id,
+                    'plate' => $bus->plate,
+                    'model' => $bus->model,
+                    'duration_minutes' => $minutes,
+                    'event_count' => $eventCount,
+                    'passengers' => $passengers,
+                    'first_seen' => $firstLocal->format('H:i'),
+                    'last_seen' => $lastLocal->format('H:i'),
+                ];
             }
 
             if (count($busDurations) > 0) {
                 $avgMinutes = array_sum($busDurations) / count($busDurations);
+                $avgStartSeconds = (int) round(array_sum($startSeconds) / count($startSeconds));
+                $avgEndSeconds = (int) round(array_sum($endSeconds) / count($endSeconds));
+
                 $routeStats[] = [
                     'id' => $route->id,
                     'name' => $route->name,
+                    'origin' => $route->origin,
+                    'destination' => $route->destination,
                     'active_buses' => count($busDurations),
-                    'average_duration_minutes' => round($avgMinutes)
+                    'average_duration_minutes' => round($avgMinutes),
+                    'min_duration_minutes' => min($busDurations),
+                    'max_duration_minutes' => max($busDurations),
+                    'average_event_count' => round(array_sum($busEventCounts) / count($busEventCounts), 1),
+                    'total_events' => array_sum($busEventCounts),
+                    'total_passengers' => array_sum($busPassengers),
+                    'average_passengers_per_active_bus' => round(array_sum($busPassengers) / count($busPassengers), 1),
+                    'average_start_time' => Carbon::createFromTime(0, 0, 0, $reportTimezone)->addSeconds($avgStartSeconds)->format('H:i'),
+                    'average_end_time' => Carbon::createFromTime(0, 0, 0, $reportTimezone)->addSeconds($avgEndSeconds)->format('H:i'),
+                    'earliest_start_time' => $earliestStart?->format('H:i'),
+                    'latest_end_time' => $latestEnd?->format('H:i'),
+                    'units' => collect($units)->sortBy('first_seen')->values()->all(),
                 ];
             }
         }

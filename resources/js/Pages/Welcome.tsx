@@ -21,7 +21,7 @@ export default function Welcome({
                 <div className="relative z-10 w-full max-w-7xl px-6 lg:px-8">
                     <header className="flex justify-between items-center py-6">
                         <div className="flex items-center gap-3">
-                            <img src="/logo.png" alt="" className="h-8 w-auto hidden" /> {/* Placeholder for logo if needed */}
+                            <img src="/logo-192.svg" alt="Logo SIMCI-TU" className="h-8 w-auto hidden" />
                             <span className="text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-400">
                                 SIMCI-TU
                             </span>

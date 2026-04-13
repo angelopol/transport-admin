@@ -1,11 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from '@/Components/Modal';
 import PaymentPosterModal, { PaymentPosterBus } from '@/Components/PaymentPosterModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { createTransportUnitIcon } from '@/lib/mapIcons';
 
 // Fix for default Leaflet icon in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -182,14 +183,7 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                                     />
                                     <Marker 
                                         position={[liveLocation.lat, liveLocation.lng]}
-                                        icon={L.divIcon({
-                                            className: 'custom-bus-marker',
-                                            html: `<div class="bg-indigo-600 text-white p-2 rounded-full shadow-lg border-2 border-white animate-bounce-short">
-                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                                                  </div>`,
-                                            iconSize: [40, 40],
-                                            iconAnchor: [20, 20]
-                                        })}
+                                        icon={createTransportUnitIcon(bus.plate)}
                                     >
                                         <Popup>
                                             <div className="text-sm">

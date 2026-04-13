@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import Modal from '@/Components/Modal';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
 
 interface User {
     id: number;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function Edit({ user }: Props) {
+    const [confirmingSessionLogout, setConfirmingSessionLogout] = useState(false);
     const { data, setData, put, processing, errors } = useForm({
         name: user.name,
         email: user.email,
@@ -29,6 +31,11 @@ export default function Edit({ user }: Props) {
         put(route('users.update', user.id));
     };
 
+    const handleLogoutSessions = () => {
+        router.post(route('users.logout-sessions', user.id));
+        setConfirmingSessionLogout(false);
+    };
+
     return (
         <AuthenticatedLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Editar Usuario: {user.name}</h2>}
@@ -40,6 +47,7 @@ export default function Edit({ user }: Props) {
                     <div className="bg-white rounded-xl shadow-lg p-6">
                         <form onSubmit={submit} className="space-y-6">
                             <h2 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3">Editar Usuario: {user.name}</h2>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
                                 <input
@@ -64,7 +72,7 @@ export default function Edit({ user }: Props) {
                                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
                                     <select
@@ -77,6 +85,7 @@ export default function Edit({ user }: Props) {
                                     </select>
                                     {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
                                 </div>
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                                     <input
@@ -91,11 +100,15 @@ export default function Edit({ user }: Props) {
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-gray-100">
-                                <h3 className="text-lg font-medium text-gray-900 mb-4">Cambiar Contraseña</h3>
-                                <p className="text-sm text-gray-500 mb-4">Dejar en blanco para mantener la actual.</p>
+                            <div className="pt-4 border-t border-gray-100 space-y-4">
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">Cambiar Contraseña</h3>
+                                    <p className="text-sm text-gray-500">
+                                        Dejar en blanco para mantener la actual. Si estableces una nueva contraseña, el usuario cerrará sesión en todos sus dispositivos.
+                                    </p>
+                                </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
                                         <input
@@ -106,6 +119,7 @@ export default function Edit({ user }: Props) {
                                         />
                                         {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                                     </div>
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar Nueva Contraseña</label>
                                         <input
@@ -115,6 +129,25 @@ export default function Edit({ user }: Props) {
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-amber-900">Sesiones activas</h3>
+                                        <p className="text-sm text-amber-800">
+                                            Usa esta opción para expulsar al usuario de todos sus dispositivos sin cambiar sus datos.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfirmingSessionLogout(true)}
+                                        className="inline-flex items-center justify-center rounded-lg border border-amber-300 bg-white px-4 py-2 text-sm font-medium text-amber-900 transition hover:bg-amber-100"
+                                    >
+                                        Cerrar sesiones activas
+                                    </button>
                                 </div>
                             </div>
 
@@ -134,6 +167,36 @@ export default function Edit({ user }: Props) {
                     </div>
                 </div>
             </div>
+
+            <Modal show={confirmingSessionLogout} onClose={() => setConfirmingSessionLogout(false)} maxWidth="md">
+                <div className="p-6">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                        Cerrar sesiones activas
+                    </h2>
+
+                    <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                        Se cerrará la sesión de <span className="font-medium text-gray-900">{user.name}</span> en todos sus dispositivos activos.
+                        Tendrá que volver a iniciar sesión para seguir usando la plataforma.
+                    </p>
+
+                    <div className="mt-6 flex justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setConfirmingSessionLogout(false)}
+                            className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleLogoutSessions}
+                            className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
+                        >
+                            Confirmar cierre
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

@@ -72,9 +72,9 @@ export default function PaymentPosterModal({ bus, onClose }: Props) {
         const html2pdf = (await import('html2pdf.js')).default;
         
         const opt = {
-            margin: [10, 10],
+            margin: [10, 10] as [number, number],
             filename: `cartel-pagos-${bus?.plate ?? 'unidad'}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg' as const, quality: 0.98 },
             html2canvas: { 
                 scale: 2, 
                 useCORS: true, 
@@ -82,7 +82,7 @@ export default function PaymentPosterModal({ bus, onClose }: Props) {
                 scrollY: 0,
                 windowHeight: element.scrollHeight + 100 // Ensure full height is captured
             },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
         };
 
         html2pdf().set(opt).from(element).save();

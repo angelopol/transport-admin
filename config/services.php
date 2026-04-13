@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'nominatim' => [
+        'endpoint' => env('NOMINATIM_ENDPOINT', 'https://nominatim.openstreetmap.org'),
+        'email' => env('NOMINATIM_EMAIL'),
+        'cache_minutes' => (int) env('NOMINATIM_CACHE_MINUTES', 30),
+    ],
+
 ];

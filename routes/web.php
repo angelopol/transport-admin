@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RouteController;
 use Illuminate\Foundation\Application;
@@ -17,6 +18,8 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/health', [HealthController::class, 'publicStatus'])->name('health.public');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware([\App\Http\Middleware\EnsureUserIsOwner::class])->group(function () {
@@ -56,6 +59,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin-only routes
     Route::middleware('admin')->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+        Route::post('/users/{user}/logout-sessions', [\App\Http\Controllers\UserController::class, 'logoutSessions'])
+            ->name('users.logout-sessions');
 
         // Device Management
         Route::get('/devices', [\App\Http\Controllers\DeviceController::class, 'index'])->name('devices.index');
@@ -65,6 +70,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Audit Logs
         Route::get('/audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::get('/admin/health', [HealthController::class, 'adminIndex'])->name('admin.health');
     });
 });
 
@@ -75,4 +81,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
-

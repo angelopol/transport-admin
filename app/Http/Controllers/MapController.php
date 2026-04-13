@@ -8,7 +8,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+use Throwable;
 
 class MapController extends Controller
 {
@@ -86,6 +89,15 @@ class MapController extends Controller
             )
             ->get();
 
+        $liveBuses = $liveBuses->map(function ($bus) {
+            $bus->address = $this->resolveLiveAddress($bus->latitude, $bus->longitude);
+            $bus->event_timestamp = $bus->event_timestamp
+                ? Carbon::parse($bus->event_timestamp, 'UTC')->toIso8601String()
+                : null;
+
+            return $bus;
+        });
+
         return response()->json($liveBuses);
     }
 
@@ -148,5 +160,60 @@ class MapController extends Controller
             'path' => $path,
             'boardingEvents' => $boardingEvents,
         ]);
+    }
+
+    private function resolveLiveAddress($latitude, $longitude): ?string
+    {
+        if ($latitude === null || $longitude === null) {
+            return null;
+        }
+
+        $lat = number_format((float) $latitude, 4, '.', '');
+        $lng = number_format((float) $longitude, 4, '.', '');
+        $cacheKey = "maps:reverse-geocode:{$lat}:{$lng}";
+        $cacheTtl = now()->addMinutes(config('services.nominatim.cache_minutes', 30));
+
+        return Cache::remember($cacheKey, $cacheTtl, function () use ($lat, $lng) {
+            try {
+                $response = Http::acceptJson()
+                    ->timeout(5)
+                    ->withHeaders([
+                        'User-Agent' => sprintf('%s transport-admin/1.0', config('app.name', 'SIMCI-TU')),
+                        'Referer' => config('app.url'),
+                    ])
+                    ->get(rtrim(config('services.nominatim.endpoint'), '/') . '/reverse', array_filter([
+                        'format' => 'jsonv2',
+                        'lat' => $lat,
+                        'lon' => $lng,
+                        'zoom' => 18,
+                        'addressdetails' => 1,
+                        'email' => config('services.nominatim.email'),
+                    ]));
+
+                if (!$response->successful()) {
+                    return null;
+                }
+
+                $payload = $response->json();
+                $address = data_get($payload, 'address', []);
+
+                $parts = array_filter([
+                    $address['road'] ?? null,
+                    $address['suburb'] ?? ($address['neighbourhood'] ?? null),
+                    $address['city'] ?? ($address['town'] ?? ($address['village'] ?? null)),
+                    $address['state'] ?? null,
+                ]);
+
+                if (!empty($parts)) {
+                    return implode(', ', array_unique($parts));
+                }
+
+                return data_get($payload, 'display_name');
+            } catch (Throwable $exception) {
+                report($exception);
+
+                return null;
+            }
+        });
     }
 }
