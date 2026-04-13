@@ -80,11 +80,12 @@ export default function Index({ entries, auth }: Props) {
         }
     };
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-MX', {
-            style: 'currency',
-            currency: 'MXN',
-        }).format(amount);
+    const formatCurrency = (amount: number | string) => {
+        const numericAmount = Number(amount) || 0;
+        return `Bs. ${new Intl.NumberFormat('es-VE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(numericAmount)}`;
     };
 
     const formatDate = (dateString: string) => {

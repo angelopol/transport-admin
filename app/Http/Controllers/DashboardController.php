@@ -146,6 +146,31 @@ class DashboardController extends Controller
             }
         }
 
+        // Weekly Revenue (Last 7 days)
+        $sevenDaysAgo = now()->subDays(6)->startOfDay();
+        $weeklyEntries = ManualRevenueEntry::whereIn('bus_id', $busIds)
+            ->where('registered_at', '>=', $sevenDaysAgo)
+            ->select(
+                DB::raw('DATE(registered_at) as date'),
+                DB::raw('SUM(amount) as total_amount')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
+
+        $weeklyRevenueData = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $dateObj = now()->subDays($i);
+            $dateString = $dateObj->format('Y-m-d');
+            $dayName = $dateObj->translatedFormat('D'); // Short day name
+            $weeklyRevenueData[] = [
+                'date' => $dateString,
+                'day' => ucfirst($dayName),
+                'amount' => (float) ($weeklyEntries->get($dateString)?->total_amount ?? 0),
+            ];
+        }
+
         return Inertia::render('Dashboard/Index', [
             'stats' => [
                 'totalPassengersToday' => $totalPassengersToday,
@@ -159,6 +184,7 @@ class DashboardController extends Controller
             ],
             'alerts' => $alerts,
             'hourlyData' => $hourlyData,
+            'weeklyRevenueData' => $weeklyRevenueData,
             'buses' => $busesWithStats,
             'isAdmin' => $user->isAdmin(),
         ]);

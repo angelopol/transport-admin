@@ -106,7 +106,7 @@ class BusController extends Controller
             abort(403);
         }
 
-        $bus->load(['owner', 'route', 'drivers', 'collectors']);
+        $bus->load(['owner', 'route', 'drivers', 'collectors', 'mobilePaymentAccount', 'transferAccount']);
 
         // Get recent events
         $recentEvents = $bus->telemetryEvents()

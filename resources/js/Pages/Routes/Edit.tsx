@@ -51,11 +51,12 @@ export default function Edit({ route }: Props) {
         post(`/routes/${route.id}`);
     };
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-MX', {
-            style: 'currency',
-            currency: 'MXN',
-        }).format(amount);
+    const formatCurrency = (amount: number | string) => {
+        const numericAmount = Number(amount) || 0;
+        return `Bs. ${new Intl.NumberFormat('es-VE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(numericAmount)}`;
     };
 
     const calculateFare = (baseFare: string | number, discountVal: string | number, isPercentage: boolean) => {
@@ -126,7 +127,7 @@ export default function Edit({ route }: Props) {
 
                             <div className={`grid gap-4 ${data.is_suburban ? 'grid-cols-2' : 'grid-cols-1'}`}>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{data.is_suburban ? "Tarifa Suburbana General ($) *" : "Tarifa General ($) *"}</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{data.is_suburban ? "Tarifa Suburbana General (Bs.) *" : "Tarifa General (Bs.) *"}</label>
                                     <input
                                         type="number"
                                         step="0.01"
@@ -139,7 +140,7 @@ export default function Edit({ route }: Props) {
                                 </div>
                                 {data.is_suburban && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Urbana ($) *</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Urbana (Bs.) *</label>
                                         <input
                                             type="number"
                                             step="0.01"
@@ -206,7 +207,7 @@ export default function Edit({ route }: Props) {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Domingo ($)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tarifa Domingo (Bs.)</label>
                                     <input
                                         type="number"
                                         step="0.01"

@@ -29,6 +29,12 @@ interface HourlyData {
     passengers: number;
 }
 
+interface WeeklyRevenueData {
+    date: string;
+    day: string;
+    amount: number;
+}
+
 interface Alert {
     id: string;
     type: string;
@@ -39,13 +45,15 @@ interface Alert {
 interface Props {
     stats: Stats;
     hourlyData: HourlyData[];
+    weeklyRevenueData: WeeklyRevenueData[];
     buses: Bus[];
     alerts: Alert[];
     isAdmin: boolean;
 }
 
-export default function Index({ stats, hourlyData, buses, alerts, isAdmin }: Props) {
+export default function Index({ stats, hourlyData, weeklyRevenueData, buses, alerts, isAdmin }: Props) {
     const maxPassengers = Math.max(...hourlyData.map(h => h.passengers), 1);
+    const maxRevenue = Math.max(...weeklyRevenueData.map(d => d.amount), 1);
 
     return (
         <AuthenticatedLayout
@@ -123,31 +131,61 @@ export default function Index({ stats, hourlyData, buses, alerts, isAdmin }: Pro
                         </div>
                     )}
 
-                    {/* Hourly Chart */}
-                    <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Pasajeros por Hora</h3>
-                        <div className="overflow-x-auto pb-4">
-                            <div className="flex items-end gap-1 h-40 min-w-[600px] sm:min-w-full">
-                                {hourlyData.map((data, idx) => (
-                                    <div key={idx} className="flex-1 flex flex-col items-center group">
-                                        <div
-                                            className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all hover:from-blue-600 hover:to-blue-500 relative"
-                                            style={{
-                                                height: `${(data.passengers / maxPassengers) * 100}%`,
-                                                minHeight: data.passengers > 0 ? '4px' : '0'
-                                            }}
-                                        >
-                                            {data.passengers > 0 && (
-                                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
-                                                    {data.passengers}
-                                                </div>
+                    {/* Charts Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        {/* Hourly Chart */}
+                        <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Pasajeros por Hora</h3>
+                            <div className="overflow-x-auto pb-4 mt-auto">
+                                <div className="flex items-end gap-1 h-40 min-w-[300px] sm:min-w-full">
+                                    {hourlyData.map((data, idx) => (
+                                        <div key={idx} className="flex-1 flex flex-col items-center group">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all hover:from-blue-600 hover:to-blue-500 relative"
+                                                style={{
+                                                    height: `${(data.passengers / maxPassengers) * 100}%`,
+                                                    minHeight: data.passengers > 0 ? '4px' : '0'
+                                                }}
+                                            >
+                                                {data.passengers > 0 && (
+                                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
+                                                        {data.passengers}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {idx % 3 === 0 && (
+                                                <span className="text-xs text-gray-500 mt-1">{data.hour}</span>
                                             )}
                                         </div>
-                                        {idx % 3 === 0 && (
-                                            <span className="text-xs text-gray-500 mt-1">{data.hour}</span>
-                                        )}
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Weekly Revenue Chart */}
+                        <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Ingresos Últimos 7 Días</h3>
+                            <div className="overflow-x-auto pb-4 mt-auto">
+                                <div className="flex items-end gap-2 h-40 min-w-[300px] sm:min-w-full">
+                                    {weeklyRevenueData.map((data, idx) => (
+                                        <div key={idx} className="flex-1 flex flex-col items-center group">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-emerald-500 to-green-400 rounded-t transition-all hover:from-emerald-600 hover:to-green-500 relative"
+                                                style={{
+                                                    height: `${(data.amount / maxRevenue) * 100}%`,
+                                                    minHeight: data.amount > 0 ? '4px' : '0'
+                                                }}
+                                            >
+                                                {data.amount > 0 && (
+                                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
+                                                        Bs. {data.amount.toFixed(2)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className="text-xs text-gray-500 mt-1">{data.day}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>

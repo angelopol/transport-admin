@@ -1,7 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
+import Modal from '@/Components/Modal';
+import PaymentPosterModal, { PaymentPosterBus } from '@/Components/PaymentPosterModal';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-interface Bus {
+// Fix for default Leaflet icon in React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+interface Bus extends PaymentPosterBus {
     id: number;
     plate: string;
     model: string | null;
@@ -11,7 +25,6 @@ interface Bus {
     is_active: boolean;
     last_seen_at: string | null;
     owner?: { name: string; email: string };
-    route?: { name: string; fare: number };
     driver?: { name: string; phone: string };
 }
 
@@ -37,6 +50,28 @@ interface Props {
 }
 
 export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) {
+    const [selectedEvent, setSelectedEvent] = useState<TelemetryEvent | null>(null);
+    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+    const [showPoster, setShowPoster] = useState(false);
+
+    const formatCurrency = (amount: number | string) => {
+        const numericAmount = Number(amount) || 0;
+        return `Bs. ${new Intl.NumberFormat('es-VE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(numericAmount)}`;
+    };
+
+    const openMapModal = (event: TelemetryEvent) => {
+        setSelectedEvent(event);
+        setIsMapModalOpen(true);
+    };
+
+    const closeMapModal = () => {
+        setIsMapModalOpen(false);
+        setTimeout(() => setSelectedEvent(null), 300);
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -72,7 +107,7 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                             <div className="text-blue-100 text-sm">Pasajeros Hoy</div>
                         </div>
                         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                            <div className="text-3xl font-bold">${todayStats.revenue.toFixed(2)}</div>
+                            <div className="text-3xl font-bold">{formatCurrency(todayStats.revenue)}</div>
                             <div className="text-green-100 text-sm">Ingresos Hoy</div>
                         </div>
                         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
@@ -100,9 +135,23 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                                     : <span className="text-gray-400">Sin dispositivo</span>
                                 }</dd>
                             </div>
-                            <div className="flex justify-between border-b pb-2">
+                            <div className="flex justify-between border-b pb-2 items-center">
                                 <dt className="text-gray-500">Ruta</dt>
-                                <dd>{bus.route?.name || '—'}</dd>
+                                <dd className="flex items-center gap-2">
+                                    <span>{bus.route?.name || '—'}</span>
+                                    {bus.route && (
+                                        <button
+                                            onClick={() => setShowPoster(true)}
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg border border-indigo-200 transition-colors"
+                                            title="Ver cartel de pagos"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                            </svg>
+                                            Cartel de Pagos
+                                        </button>
+                                    )}
+                                </dd>
                             </div>
                             <div className="flex justify-between border-b pb-2">
                                 <dt className="text-gray-500">Conductor</dt>
@@ -143,10 +192,21 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                                             </td>
                                             <td className="px-6 py-3 font-medium">{event.passenger_count}</td>
                                             <td className="px-6 py-3 text-sm text-gray-500">
-                                                {event.latitude && event.longitude
-                                                    ? `${event.latitude.toFixed(4)}, ${event.longitude.toFixed(4)}`
-                                                    : '—'
-                                                }
+                                                {event.latitude && event.longitude ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span>{`${Number(event.latitude).toFixed(4)}, ${Number(event.longitude).toFixed(4)}`}</span>
+                                                        <button 
+                                                            onClick={() => openMapModal(event)}
+                                                            className="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-1.5 rounded-md transition-colors"
+                                                            title="Ver en mapa"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                ) : '—'}
                                             </td>
                                             <td className="px-6 py-3 text-sm text-gray-500">{event.location_source || '—'}</td>
                                         </tr>
@@ -164,6 +224,63 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                     </div>
                 </div>
             </div>
+
+            {/* Cartel de Pagos Modal */}
+            <PaymentPosterModal bus={showPoster ? bus : null} onClose={() => setShowPoster(false)} />
+
+            {/* Modal de Mapa */}
+            <Modal show={isMapModalOpen} onClose={closeMapModal} maxWidth="2xl">
+                <div className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-medium text-gray-900">
+                            Ubicación del evento
+                        </h2>
+                        <button onClick={closeMapModal} className="text-gray-400 hover:text-gray-500 rounded-lg p-1 hover:bg-gray-100 transition-colors">
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    {selectedEvent && selectedEvent.latitude && selectedEvent.longitude ? (
+                        <div className="h-96 w-full rounded-lg overflow-hidden border border-gray-200 relative z-0">
+                            <MapContainer 
+                                center={[Number(selectedEvent.latitude), Number(selectedEvent.longitude)]} 
+                                zoom={16} 
+                                scrollWheelZoom={true}
+                                style={{ height: '100%', width: '100%', zIndex: 1 }}
+                            >
+                                <TileLayer
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                />
+                                <Marker position={[Number(selectedEvent.latitude), Number(selectedEvent.longitude)]}>
+                                    <Popup>
+                                        <div className="text-center">
+                                            <p className="font-semibold mb-1">Pasajeros abordados: {selectedEvent.passenger_count}</p>
+                                            <p className="text-xs text-gray-500">Hora: {new Date(selectedEvent.event_timestamp).toLocaleTimeString('es-VE')}</p>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            </MapContainer>
+                        </div>
+                    ) : (
+                        <div className="h-96 w-full flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
+                            <p className="text-gray-500">No hay datos de ubicación disponibles para este evento.</p>
+                        </div>
+                    )}
+                    
+                    <div className="mt-6 flex justify-end">
+                        <button
+                            onClick={closeMapModal}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors border border-gray-300"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
         </AuthenticatedLayout>
     );
 }

@@ -10,7 +10,11 @@ interface CalendarProps extends Record<string, unknown> {
 
 export default function CalendarIndex({ auth, currentMonth, daysMap }: PageProps<CalendarProps>) {
     const formatCurrency = (amount: number | string) => {
-        return new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES' }).format(Number(amount));
+        const numericAmount = Number(amount) || 0;
+        return `Bs. ${new Intl.NumberFormat('es-VE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(numericAmount)}`;
     };
 
     const handleMonthChange = (direction: 'prev' | 'next') => {
