@@ -25,12 +25,12 @@ class OcrController extends Controller
         }
 
         try {
-            $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
+            $response = Http::timeout(5)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
                 'contents' => [
                     [
                         'parts' => [
                             [
-                                'text' => "Extrae única y exclusivamente el número de referencia (puede decir también número de operación, número de recibo, referencia, etc) de esta captura de pantalla de transferencia bancaria. Devuelve ÚNICAMENTE los números. Si no encuentras ningún número de referencia válido, devuelve un texto vacío."
+                                'text' => "Eres un experto auditor bancario. Tu tarea es extraer el número de referencia (también llamado número de operación o recibo) de una imagen de transferencia de Pago Móvil. PRECAUCIÓN ESTRICTA: Si la imagen provista NO es un comprobante bancario válido (ej. una foto de un animal, paisaje, recibo de compra, selfie, o basura), DEBES devolver exactamente la palabra 'FRAUDE'. Si es un comprobante válido, devuelve ÚNICAMENTE los números de la referencia. Si no encuentras el número, devuelve un texto vacío."
                             ],
                             [
                                 'inline_data' => [
@@ -47,8 +47,13 @@ class OcrController extends Controller
                 $data = $response->json();
                 $extractedText = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
-                // Clean up any extra text to ensure we only have digits
+                // Clean up any extra text
                 $extractedText = trim($extractedText);
+                
+                if (strtoupper(trim($extractedText)) === 'FRAUDE') {
+                    return response()->json(['error' => 'FRAUDE_DETECTADO'], 422);
+                }
+
                 preg_match('/[0-9]{4,}/', $extractedText, $matches);
                 $referenceNumber = $matches[0] ?? '';
 

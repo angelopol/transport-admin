@@ -61,6 +61,11 @@ class RouteController extends Controller
 
         $validated['owner_id'] = $request->user()->id;
 
+        $fareFields = ['fare_urban', 'fare_student', 'fare_senior', 'fare_disabled', 'fare_sunday'];
+        foreach ($fareFields as $field) {
+            $validated[$field] = $validated[$field] ?? 0;
+        }
+
         if ($request->hasFile('official_gazette')) {
             $validated['official_gazette_path'] = $request->file('official_gazette')->store('gazettes', 'public');
         }
@@ -113,6 +118,11 @@ class RouteController extends Controller
             'is_active' => ['boolean'],
             'official_gazette' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        $fareFields = ['fare_urban', 'fare_student', 'fare_senior', 'fare_disabled', 'fare_sunday'];
+        foreach ($fareFields as $field) {
+            $validated[$field] = $validated[$field] ?? 0;
+        }
 
         if ($request->hasFile('official_gazette')) {
             if ($route->official_gazette_path) {

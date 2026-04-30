@@ -203,7 +203,7 @@ export default function MapsIndex({ buses }: Props) {
                             {mode === 'live' && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between text-sm text-gray-500">
-                                        <span>Ultima actualizacion:</span>
+                                        <span>Última actualización:</span>
                                         <span className="font-medium text-gray-700">{lastRefresh ? lastRefresh.toLocaleTimeString('es-VE') : '...'}</span>
                                     </div>
 
@@ -222,15 +222,15 @@ export default function MapsIndex({ buses }: Props) {
 
                                             <div className="mt-3 space-y-2 text-sm text-gray-600">
                                                 <p>
-                                                    <span className="font-semibold text-gray-800">Direccion:</span>{' '}
-                                                    {selectedLiveBus.address || 'Ubicacion aproximada sin direccion disponible'}
+                                                    <span className="font-semibold text-gray-800">Dirección:</span>{' '}
+                                                    {selectedLiveBus.address || 'Ubicación aproximada sin dirección disponible'}
                                                 </p>
                                                 <p>
                                                     <span className="font-semibold text-gray-800">Coordenadas:</span>{' '}
                                                     {selectedLiveBus.latitude.toFixed(5)}, {selectedLiveBus.longitude.toFixed(5)}
                                                 </p>
                                                 <p>
-                                                    <span className="font-semibold text-gray-800">Ultimo reporte:</span>{' '}
+                                                    <span className="font-semibold text-gray-800">Último reporte:</span>{' '}
                                                     {new Date(selectedLiveBus.event_timestamp).toLocaleString('es-VE')}
                                                 </p>
                                             </div>
@@ -268,7 +268,7 @@ export default function MapsIndex({ buses }: Props) {
                                                         </div>
                                                         <p className="text-xs text-gray-500">{bus.route_name || 'Sin ruta'}</p>
                                                         <p className="mt-1 text-xs text-gray-600 line-clamp-2">
-                                                            {bus.address || 'Direccion no disponible todavia'}
+                                                            {bus.address || 'Dirección no disponible todavía'}
                                                         </p>
                                                         <p className="text-xs text-gray-500 mt-1">{new Date(bus.event_timestamp).toLocaleTimeString('es-VE')}</p>
                                                     </div>
@@ -371,10 +371,10 @@ export default function MapsIndex({ buses }: Props) {
                                                 <div className="text-sm">
                                                     <p className="font-bold border-b pb-1 mb-1">{bus.plate}</p>
                                                     <p className="text-gray-600">
-                                                        Ruta: <span className="font-medium">{bus.route_name || 'N/A'}</span>
+                                                        Ruta: <span className="font-medium">{bus.route_name || 'Sin ruta asignada'}</span>
                                                     </p>
                                                     <p className="text-gray-600 mt-1">
-                                                        Direccion: <span className="font-medium">{bus.address || 'No disponible'}</span>
+                                                        Dirección: <span className="font-medium">{bus.address || 'No disponible'}</span>
                                                     </p>
                                                     <p className="text-gray-600 mt-1">
                                                         Coordenadas:{' '}
@@ -383,7 +383,7 @@ export default function MapsIndex({ buses }: Props) {
                                                         </span>
                                                     </p>
                                                     <p className="text-gray-600 mt-1">
-                                                        Ultimo abordaje:{' '}
+                                                        Último abordaje:{' '}
                                                         <span className="font-medium text-emerald-600">+{bus.passenger_count} pasajeros</span>
                                                     </p>
                                                     <p className="text-xs text-gray-400 mt-2">
@@ -403,7 +403,7 @@ export default function MapsIndex({ buses }: Props) {
                                         <Popup>Punto de Inicio</Popup>
                                     </Marker>
                                     <Marker position={historyPath[historyPath.length - 1]}>
-                                        <Popup>Ultimo Punto</Popup>
+                                        <Popup>Último Punto</Popup>
                                     </Marker>
 
                                     {historyBoardings

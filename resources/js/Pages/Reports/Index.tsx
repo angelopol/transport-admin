@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ReportTabs from '@/Components/ReportTabs';
-import { Head } from '@inertiajs/react';
+import CompanyPrintHeader, { getCompanyCsvHeader } from '@/Components/CompanyPrintHeader';
+import { Head, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { useState } from 'react';
 
@@ -54,8 +55,11 @@ export default function ReportsIndex({
         window.print();
     };
 
+    const user = usePage().props.auth.user as any;
+
     const handleExportCSV = () => {
         let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += getCompanyCsvHeader(user);
         csvContent += '=== REPORTE GENERAL DE INGRESOS ===\n';
         csvContent += `Periodo:,${startDate} al ${endDate}\n\n`;
         csvContent += 'Totales\n';
@@ -68,7 +72,7 @@ export default function ReportsIndex({
             csvContent += `${row.passenger_type},${row.count},${row.total}\n`;
         });
         csvContent += '\nPor Método de Pago\n';
-        csvContent += 'Metodo,Cantidad,Total VES\n';
+        csvContent += 'Método,Cantidad,Total VES\n';
         stats.by_payment_method.forEach((row) => {
             csvContent += `${row.payment_method},${row.count},${row.total}\n`;
         });
@@ -173,6 +177,7 @@ export default function ReportsIndex({
                     )}
 
                     <div className="hidden print:block bg-white text-black mb-6">
+                        <CompanyPrintHeader />
                         <div className="border-b border-gray-300 pb-4 mb-4">
                             <h1 className="text-2xl font-bold">Reporte General Financiero</h1>
                             <p className="text-sm mt-1">Periodo principal: {startDate} al {endDate}</p>
@@ -192,7 +197,7 @@ export default function ReportsIndex({
                             </div>
                             <div className="border border-gray-300 rounded-lg p-4">
                                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Tasa de Evasión</p>
-                                <p className="text-2xl font-bold mt-2">{stats.evasion_rate}% ({stats.evasion_count} pax)</p>
+                                <p className="text-2xl font-bold mt-2">{stats.evasion_rate}% ({stats.evasion_count} personas)</p>
                                 <p className="text-sm text-gray-600 mt-1">{formatGrowth(stats.growth_evasion)} vs {stats.compare_title}</p>
                             </div>
                         </div>
@@ -300,7 +305,7 @@ export default function ReportsIndex({
                                 <h3 className="text-red-100 text-sm font-medium uppercase tracking-wider mb-1">Tasa de Evasión</h3>
                                 <div className="flex items-baseline gap-2">
                                     <p className="text-4xl font-bold font-mono">{stats.evasion_rate}%</p>
-                                    <span className="text-red-100 text-sm opacity-90">({stats.evasion_count} pax)</span>
+                                    <span className="text-red-100 text-sm opacity-90">({stats.evasion_count} personas)</span>
                                 </div>
                                 <div className="mt-4 flex items-center bg-white/20 rounded-lg p-2 inline-flex text-sm">
                                     <span className={`font-semibold ${stats.growth_evasion <= 0 ? 'text-green-300' : 'text-red-300'}`}>{formatGrowth(stats.growth_evasion)}</span>

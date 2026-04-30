@@ -1,123 +1,84 @@
-# SIMCI-TU - Sistema de Administración de Transporte Urbano
+# 🚍 SIMCI-TU: Sistema de Administración de Transporte Urbano
 
-Este proyecto es la plataforma administrativa del sistema SIMCI-TU, diseñada para gestionar flotas de transporte público, monitorear ingresos y visualizar telemetría en tiempo real. Desarrollado como parte de un proyecto de tesis.
+![Versión](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Laravel](https://img.shields.io/badge/backend-Laravel%2012-red.svg)
+![React](https://img.shields.io/badge/frontend-React%2018-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-## 🚀 Tecnologías
+**SIMCI-TU** es una plataforma administrativa de vanguardia diseñada para la gestión integral de flotas de transporte público. Combina telemetría IoT en tiempo real, inteligencia artificial para la validación de pagos y un robusto motor de análisis de negocios (BI).
 
-Este proyecto utiliza un stack moderno y robusto:
+---
 
-*   **Backend:** [Laravel 12](https://laravel.com)
-*   **Frontend:** [React 18](https://react.dev) con TypeScript
-*   **Bridge:** [Inertia.js 2.0](https://inertiajs.com)
-*   **Estilos:** [Tailwind CSS 3](https://tailwindcss.com) & HeadlessUI
-*   **Base de Datos:** SQLite (Desarrollo) / MySQL (Producción)
-*   **Autenticación:** Laravel Sanctum
-*   **Empaquetador:** Vite
+## 🏗️ Arquitectura del Sistema
 
-## ✨ Funcionalidades Principales
+```mermaid
+graph LR
+    Hardware[Hardware IoT / Cámaras] -- "Telemetría (Sanctum)" --> Server[Laravel Backend]
+    Server -- "Analítica" --> Dashboard[Dashboard React PWA]
+    Server -- "OCR" --> Gemini[Gemini AI]
+    Colector[📱 PWA Colector] -- "Pagos Manuales" --> Server
+```
 
-### 📊 Panel de Control (Dashboard)
-*   Visualización de estadísticas en tiempo real.
-*   Gráficas de pasajeros por hora (Responsivas).
-*   Resumen de ingresos y unidades activas.
+---
 
-### 🚌 Gestión de Recursos
-*   **Unidades (Buses):** Registro de vehículos, asignación de rutas y conductores.
-*   **Rutas:** Definición de trayectos, tarifas y origen/destino.
-*   **Conductores:** Administración de personal y licencias.
+## ✨ Funcionalidades Estrella
 
-### 👥 Usuarios y Roles
-*   Gestión de Administradores y Dueños de unidades.
-*   Control de acceso y permisos.
+### 📊 Panel de Control Inteligente
+*   **Métricas en Vivo:** Visualización de afluencia y recaudación en tiempo real.
+*   **Tasa de Evasión:** Cálculo automático de discrepancias entre conteo de cámara y caja.
+*   **Mapas Dinámicos:** Rastreo GPS de unidades y mapas de calor de abordaje.
 
-### 📈 Reportes e Ingresos
-*   Reportes detallados de ingresos por tipo de pasajero (Estudiante, Adulto Mayor, General).
-*   Desglose por métodos de pago.
-*   Exportación de datos.
+### 🤖 Inteligencia Artificial y OCR
+*   **Validación de Pagos:** Extracción automática de referencias bancarias mediante visión artificial.
+*   **Detección de Fraude:** Filtros estrictos para rechazar comprobantes manipulados o irrelevantes.
 
-### 📱 Experiencia de Usuario (UX)
-*   Diseño totalmente responsivo (Vistas de tarjeta para móviles).
-*   Paginación y textos localizados al Español.
-*   Interfaz limpia y moderna.
+### 🚌 Gestión de Flota 360°
+*   **Rutas Dinámicas:** Tarifas urbanas/suburbanas con soporte para beneficios sociales.
+*   **Exclusión Biométrica:** El sistema ignora automáticamente al personal autorizado en el conteo.
+*   **Pósters QR:** Generación de cartelería física personalizada por unidad.
 
-### 🔗 Integración de Hardware
-*   API RESTful para sincronización de conteo de pasajeros.
-*   Soporte para funcionamiento offline (Buffer local en dispositivos).
-*   Autenticación de dispositivos mediante Tokens.
+---
 
-## 🛠️ Instalación y Configuración
+## 🛠️ Tecnologías Core
 
-Sigue estos pasos para levantar el proyecto en tu entorno local:
+| Componente | Tecnología |
+| :--- | :--- |
+| **Backend** | Laravel 12 + Sanctum |
+| **Frontend** | React 18 + TypeScript |
+| **Puente** | Inertia.js 2.0 |
+| **Estilos** | Tailwind CSS 3 |
+| **Base de Datos** | MySQL / SQLite |
+| **IA** | Google Gemini API |
 
-### Prerrequisitos
-*   PHP 8.2 o superior
-*   Node.js 18+ y NPM
-*   Composer
-*   Git
+---
 
-### Pasos
+## 🚀 Instalación Rápida
 
-1.  **Clonar el repositorio:**
+> [!TIP]
+> Asegúrate de tener instalado PHP 8.2+, Node.js 18+ y Composer.
+
+1.  **Clonación y Dependencias:**
     ```bash
-    git clone <URL_DEL_REPOSITORIO>
-    cd transport-admin
+    git clone <repo-url>
+    composer install && npm install
     ```
 
-2.  **Instalar dependencias de PHP:**
-    ```bash
-    composer install
-    ```
-
-3.  **Instalar dependencias de JavaScript:**
-    ```bash
-    npm install
-    ```
-
-4.  **Configurar entorno:**
-    Copia el archivo de ejemplo y genera la clave de aplicación:
+2.  **Configuración de Entorno:**
     ```bash
     cp .env.example .env
     php artisan key:generate
     ```
-    *Asegúrate de configurar tu base de datos en el archivo `.env`.*
 
-5.  **Ejecutar migraciones y seeders:**
+3.  **Base de Datos:**
     ```bash
     php artisan migrate --seed
     ```
 
-## ▶️ Ejecución
+4.  **Lanzamiento:**
+    ```bash
+    composer dev
+    ```
 
-Para entorno de desarrollo, puedes usar el comando simplificado que levanta tanto el servidor backend como el frontend:
+---
 
-```bash
-composer dev
-```
-
-O ejecutarlos manualmente en terminales separadas:
-
-**Backend:**
-```bash
-php artisan serve
-```
-
-**Frontend:**
-```bash
-npm run dev
-```
-
-## 📂 Estructura del Proyecto
-
-*   `app/Http/Controllers`: Lógica del Backend.
-*   `resources/js/Pages`: Vistas y componentes de React (Inertia).
-*   `routes/api.php`: Endpoints para la integración de hardware.
-*   `routes/web.php`: Rutas de la aplicación web.
-*   `lang/es`: Archivos de traducción y localización.
-
-## 🤝 Contribución
-
-1.  Haz un Fork del proyecto.
-2.  Crea una rama para tu funcionalidad (`git checkout -b feature/AmazingFeature`).
-3.  Commit a tus cambios (`git commit -m 'Add some AmazingFeature'`).
-4.  Push a la rama (`git push origin feature/AmazingFeature`).
-5.  Abre un Pull Request.
+**Desarrollado por:** Angel Polgrossi (2026). Proyecto de Tesis de Ingeniería.

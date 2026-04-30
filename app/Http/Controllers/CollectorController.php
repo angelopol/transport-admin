@@ -46,7 +46,7 @@ class CollectorController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'cedula' => ['required', 'string', 'regex:/^[VEJPGvejpg]-?\d{5,11}(?:-?\d)?$/', 'unique:collectors,cedula'],
+            'cedula' => ['required', 'string', new \App\Rules\VenezuelanDocument, 'unique:collectors,cedula'],
             'phone' => ['nullable', 'string', 'regex:/^(0414|0424|0412|0416|0426|0422|02[0-9]{2})[0-9]{7}$/'],
             'is_active' => ['boolean'],
             'photo' => ['nullable', 'image', 'max:5120'], // 5MB
@@ -115,7 +115,7 @@ class CollectorController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'cedula' => ['required', 'string', 'regex:/^[VEJPGvejpg]-?\d{5,11}(?:-?\d)?$/', Rule::unique('collectors')->ignore($collector->id)],
+            'cedula' => ['required', 'string', new \App\Rules\VenezuelanDocument, Rule::unique('collectors')->ignore($collector->id)],
             'phone' => ['nullable', 'string', 'regex:/^(0414|0424|0412|0416|0426|0422|02[0-9]{2})[0-9]{7}$/'],
             'is_active' => ['boolean'],
             'photo' => ['nullable', 'image', 'max:5120'],

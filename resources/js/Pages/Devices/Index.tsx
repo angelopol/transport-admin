@@ -146,7 +146,7 @@ export default function Index({ devices, stats, currentFilter, owners }: Props) 
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MAC</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dirección MAC</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Autobús</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Propietario</th>

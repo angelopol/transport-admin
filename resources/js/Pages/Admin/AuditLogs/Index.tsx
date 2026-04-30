@@ -75,7 +75,7 @@ export default function AuditLogsIndex({ auth, logs }: PageProps<{ logs: any }>)
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-500 max-w-md">
                                                 <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all whitespace-pre-wrap">
-                                                    {log.details ? JSON.stringify(log.details) : 'N/A'}
+                                                    {log.details ? JSON.stringify(log.details) : 'Sin detalles'}
                                                 </div>
                                                 {log.ip_address && (
                                                     <div className="text-xs mt-1 text-gray-400">Origen IP: {log.ip_address}</div>

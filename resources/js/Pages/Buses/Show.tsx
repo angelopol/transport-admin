@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import Modal from '@/Components/Modal';
 import PaymentPosterModal, { PaymentPosterBus } from '@/Components/PaymentPosterModal';
+import ConnectionCalendar from '@/Components/ConnectionCalendar';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -56,6 +57,7 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
     const [selectedEvent, setSelectedEvent] = useState<TelemetryEvent | null>(null);
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [showPoster, setShowPoster] = useState(false);
+    const [showCalendarModal, setShowCalendarModal] = useState(false);
     const [liveLocation, setLiveLocation] = useState<{lat: number, lng: number, timestamp: string} | null>(
         bus.last_latitude && bus.last_longitude 
             ? { lat: Number(bus.last_latitude), lng: Number(bus.last_longitude), timestamp: bus.last_seen_at || '' } 
@@ -259,6 +261,17 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
                                     </span>
                                 </dd>
                             </div>
+                            <div className="flex justify-between border-b pb-2 items-center md:col-span-2 mt-2">
+                                <dt className="text-gray-500 font-medium">Historial</dt>
+                                <dd>
+                                    <button onClick={() => setShowCalendarModal(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg border border-blue-200 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        Calendario de Conexiones
+                                    </button>
+                                </dd>
+                            </div>
                         </dl>
                     </div>
 
@@ -320,6 +333,37 @@ export default function Show({ bus, recentEvents, todayStats, isAdmin }: Props) 
 
             {/* Cartel de Pagos Modal */}
             <PaymentPosterModal bus={showPoster ? bus : null} onClose={() => setShowPoster(false)} />
+
+            {/* Modal de Calendario: overlay propio para controlar posicionamiento */}
+            {showCalendarModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    onClick={(e) => e.target === e.currentTarget && setShowCalendarModal(false)}
+                >
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowCalendarModal(false)} />
+
+                    {/* Panel */}
+                    <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl flex flex-col">
+                        {/* Header fijo */}
+                        <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+                            <h2 className="text-base font-semibold text-gray-900">Historial de Conexiones</h2>
+                            <button
+                                onClick={() => setShowCalendarModal(false)}
+                                className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-100 transition-colors"
+                            >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        {/* Contenido con scroll */}
+                        <div className="px-5 py-4 overflow-y-auto">
+                            <ConnectionCalendar busId={bus.id} busPlate={bus.plate} />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal de Mapa */}
             <Modal show={isMapModalOpen} onClose={closeMapModal} maxWidth="2xl">

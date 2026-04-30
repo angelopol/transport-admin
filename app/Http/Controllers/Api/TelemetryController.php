@@ -46,8 +46,9 @@ class TelemetryController extends Controller
                 'events.*.type'    => 'nullable|string',
                 // Top-level location for heartbeats
                 'location'         => 'nullable|array',
-                'location.lat'     => 'nullable|numeric',
-                'location.lon'     => 'nullable|numeric',
+                // Relax validation to allow manual sanitization
+                'location.lat'     => 'nullable',
+                'location.lon'     => 'nullable',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['message' => 'Invalid data format', 'errors' => $e->errors()], 422);
@@ -64,25 +65,42 @@ class TelemetryController extends Controller
                 ->exists();
 
             if (!$exists) {
-                $lat = $eventData['location']['lat'] ?? null;
-                $lon = $eventData['location']['lon'] ?? null;
+                // Sanitizar y validar coordenadas (Test 6)
+                $lat_raw = $eventData['location']['lat'] ?? null;
+                $lon_raw = $eventData['location']['lon'] ?? null;
+                
+                $lat = is_numeric($lat_raw) ? (float) $lat_raw : null;
+                $lon = is_numeric($lon_raw) ? (float) $lon_raw : null;
+                
+                // Aplicar valores nulos seguros si están fuera del rango topográfico
+                if ($lat !== null && ($lat < -90 || $lat > 90)) $lat = null;
+                if ($lon !== null && ($lon < -180 || $lon > 180)) $lon = null;
 
-                TelemetryEvent::create([
-                    'bus_id'           => $bus->id,
-                    'event_timestamp'  => $eventData['timestamp'],
-                    'passenger_count'  => $eventData['count'],
-                    'latitude'         => $lat,
-                    'longitude'        => $lon,
-                    'location_source'  => 'gps',
-                    'event_type'       => $eventData['type'] ?? 'boarding',
-                    'synced_at'        => now(),
-                ]);
-                $count++;
+                try {
+                    TelemetryEvent::create([
+                        'bus_id'           => $bus->id,
+                        'event_timestamp'  => $eventData['timestamp'],
+                        'passenger_count'  => $eventData['count'],
+                        'latitude'         => $lat,
+                        'longitude'        => $lon,
+                        'location_source'  => 'gps',
+                        'event_type'       => $eventData['type'] ?? 'boarding',
+                        'synced_at'        => now(),
+                    ]);
+                    $count++;
 
-                // Track most recent valid coords from events
-                if ($lat !== null && $lon !== null) {
-                    $lastLat = $lat;
-                    $lastLon = $lon;
+                    // Track most recent valid coords from events
+                    if ($lat !== null && $lon !== null) {
+                        $lastLat = $lat;
+                        $lastLon = $lon;
+                    }
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Check if it's a unique constraint violation (Error 1062 in MySQL)
+                    if ($e->errorInfo[1] == 1062 || $e->getCode() == 23000) {
+                        Log::warning("Concurrent duplicate telemetry event rejected for bus {$bus->id} at {$eventData['timestamp']}");
+                    } else {
+                        throw $e;
+                    }
                 }
             }
         }
@@ -102,6 +120,36 @@ class TelemetryController extends Controller
             $busUpdate['last_longitude'] = $lastLon;
         }
         $bus->update($busUpdate);
+
+        // If no passenger events were recorded but the device sent a heartbeat,
+        // store a heartbeat event so the connection calendar reflects the ping.
+        if ($count === 0) {
+            $hbLat = $lastLat ?? null;
+            $hbLon = $lastLon ?? null;
+
+            $nowTs = now();
+            $alreadyHasHeartbeatToday = TelemetryEvent::where('bus_id', $bus->id)
+                ->whereDate('event_timestamp', $nowTs->toDateString())
+                ->where('event_type', 'heartbeat')
+                ->exists();
+
+            if (!$alreadyHasHeartbeatToday) {
+                try {
+                    TelemetryEvent::create([
+                        'bus_id'          => $bus->id,
+                        'event_timestamp' => $nowTs,
+                        'passenger_count' => 0,
+                        'latitude'        => $hbLat,
+                        'longitude'       => $hbLon,
+                        'location_source' => 'gps',
+                        'event_type'      => 'heartbeat',
+                        'synced_at'       => $nowTs,
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    Log::warning("Could not store heartbeat for bus {$bus->id}: " . $e->getMessage());
+                }
+            }
+        }
 
         return response()->json([
             'message'      => 'Sync successful',

@@ -31,6 +31,20 @@
 }
 
 @layer utilities {
+    .sidebar-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+    }
+    .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+    .sidebar-scroll {
+        scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    }
+
     .animate-bounce-short {
         animation: bounce-short 1.5s infinite;
     }

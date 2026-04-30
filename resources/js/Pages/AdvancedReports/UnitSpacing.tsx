@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ReportTabs from '@/Components/ReportTabs';
-import { Head, router } from '@inertiajs/react';
+import CompanyPrintHeader, { getCompanyCsvHeader } from '@/Components/CompanyPrintHeader';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface BusData {
@@ -45,14 +46,17 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
         window.print();
     };
 
+    const user = usePage().props.auth.user as any;
+
     const handleExportCSV = () => {
         let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += getCompanyCsvHeader(user);
         csvContent += '=== REPORTE DE ESPACIADO DE UNIDADES ===\n';
 
         const selectedRoute = routes.find((route) => route.id.toString() === routeId.toString());
-        csvContent += `Ruta Seleccionada:,${selectedRoute ? selectedRoute.name : 'N/A'}\n\n`;
+        csvContent += `Ruta Seleccionada:,${selectedRoute ? selectedRoute.name : 'Sin ruta'}\n\n`;
 
-        csvContent += 'Posicion,Placa,Ultimo Reporte,Brecha Tiempo (min),Distancia (m),Interpretacion\n';
+        csvContent += 'Posición,Placa,Último Reporte,Brecha de Tiempo (minutos),Distancia (metros),Interpretación\n';
 
         if (busesData.length > 0) {
             busesData.forEach((bus, index) => {
@@ -168,6 +172,7 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                     {routeId ? (
                         <>
                             <div className="hidden print:block bg-white text-black mb-6">
+                                <CompanyPrintHeader />
                                 <div className="border-b border-gray-300 pb-4 mb-4">
                                     <h1 className="text-2xl font-bold">Reporte de Espaciado de Unidades</h1>
                                     <p className="text-sm mt-1">Ruta: {selectedRoute?.name || 'N/D'}</p>

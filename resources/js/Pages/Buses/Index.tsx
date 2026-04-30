@@ -102,7 +102,7 @@ export default function Index({ buses, isAdmin }: Props) {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Placa</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modelo</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MAC</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dirección MAC</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruta</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Conductor</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Colectores</th>
@@ -207,7 +207,7 @@ export default function Index({ buses, isAdmin }: Props) {
                                             <span className="text-gray-800">{bus.collectors?.map(c => c.name).join(', ') || '—'}</span>
                                         </div>
                                         <div className="col-span-2 mt-1">
-                                            <span className="block text-xs font-semibold text-gray-500 uppercase">MAC</span>
+                                            <span className="block text-xs font-semibold text-gray-500 uppercase">Dirección MAC</span>
                                             <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">{bus.device_mac}</code>
                                         </div>
                                     </div>

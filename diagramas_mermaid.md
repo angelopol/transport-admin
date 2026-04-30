@@ -1,13 +1,32 @@
-# Diagramas del Sistema - Transport Admin Completo (Español)
+# 🏗️ Arquitectura Visual: Transport Admin (Diagramas Mermaid)
 
-A continuación se encuentran los códigos **Mermaid** completos y traducidos al español para todos los diagramas del sistema. Incluyen la gestión de flotas, hardware, usuarios, ingresos manuales y las nuevas funcionalidades de Inteligencia de Negocios y Privacidad.
+Esta documentación centraliza los planos técnicos del ecosistema **Transport Admin**. Los diagramas están construidos utilizando la sintaxis **Mermaid**, permitiendo una representación clara de la lógica de clases, flujos de datos y arquitectura de red.
 
-Puedes copiar cada bloque (solo el contenido interno) y usar la opción **Arrange > Insert > Advanced > Mermaid** en Draw.io.
+> [!TIP]
+> **¿Cómo utilizar estos diagramas?**
+> 1. Copia el bloque de código `mermaid`.
+> 2. En **Draw.io**, ve a `Arrange > Insert > Advanced > Mermaid`.
+> 3. Pega el código para generar el diagrama editable automáticamente.
 
-## 1. diagrama_uml.drawio (Diagrama de Clases UML Completo)
+---
 
-**Descripción:**
-Este diagrama ilustra la estructura fundamental de clases del sistema Transport Admin. Define las entidades principales (Usuarios, Flota, Gestión Financiera) y sus atributos y métodos esenciales. Destaca la implementación de POO (Programación Orientada a Objetos) dentro de la arquitectura, mostrando cómo un `Usuario` puede heredar roles específicos o asociarse con entidades de la flota como `Autobus`, `Ruta` o personal (`Conductor`, `Colector`). También introduce los bloques de servicios lógicos, como `ServicioReportesBI` (para el cálculo de evasión y reportes cruzados) y sus relaciones de dependencia con los registros de entrada (`EventoTelemetrico` e `IngresoManual`), sirviendo como plano general de la base de código.
+## 📂 Índice de Diagramas
+1. [Diagrama de Clases UML](#1-diagrama-de-clases-uml-completo)
+2. [Modelo Entidad-Relación (DER)](#2-modelo-entidad-relación---der)
+3. [Arquitectura y Flujo de Módulos](#3-arquitectura-y-flujo-de-módulos)
+4. [Jerarquía y Roles (RBAC)](#4-jerarquía-y-roles)
+5. [Casos de Uso por Actor](#5-casos-de-uso-por-actor)
+6. [Secuencia: Recaudación con IA](#6-diagrama-de-secuencia-recaudación-inteligente-con-ia)
+7. [Máquina de Estados: IoT y Privacidad](#7-máquina-de-estados-hardware-y-privacidad)
+8. [Arquitectura de Red y Despliegue](#8-diagrama-de-despliegue--red)
+9. [Integración Visión CV - Gestión](#9-arquitectura-de-integración-visión-por-computador---gestión)
+10. [Flujo de Reportes BI](#10-flujo-de-generación-de-reportes-bi)
+11. [Dashboard Inteligente](#11-arquitectura-del-dashboard-inteligente-de-e-commerce)
+
+---
+
+## 1. Diagrama de Clases UML Completo
+**Propósito:** Ilustrar la estructura fundamental de objetos, herencia y relaciones del backend Laravel.
 
 ```mermaid
 classDiagram
@@ -139,10 +158,8 @@ classDiagram
 
 ---
 
-## 2. diagrama_identidad_relaciones.drawio (Modelo Entidad-Relación - DER)
-
-**Descripción:**
-Este diagrama representa el diseño físico y lógico de la base de datos relacional (MySQL). Describe cómo se almacenan y vinculan los datos a través de claves foráneas (FK) y primarias (PK). Es crucial para la tesis ya que demuestra la normalización de la base de datos y la trazabilidad de la información. Se hace un énfasis especial en el bloque `EVENTOS_TELEMETRICOS`, aclarando que *solo* se almacena metadata numérica y de ubicación, sin guardar imágenes, lo que documenta el cumplimiento del requerimiento no funcional de "Privacidad por Diseño". Además, detalla las tablas pivote (ej. `AUTOBUS_CONDUCTOR`) que permiten relaciones de muchos-a-muchos en la asignación de flotas.
+## 2. Modelo Entidad-Relación - DER
+**Propósito:** Definir el esquema físico de la base de datos MySQL y la trazabilidad relacional.
 
 ```mermaid
 erDiagram
@@ -202,10 +219,8 @@ erDiagram
 
 ---
 
-## 3. diagrama_flujos_modulos.drawio (Arquitectura y Flujo de Módulos)
-
-**Descripción:**
-Este diagrama de flujo técnico ofrece una visión macro de la arquitectura del sistema, dividiéndolo en cuatro grandes capas: Hardware IoT (Edge/Autobús), Backend (Servidor Central), Servicios Externos en la Nube y Frontend (Interfaces de Usuario). Explica visualmente el viaje de los datos: cómo el video de la cámara se procesa localmente mediante MediaPipe, cómo se descartan los rostros por privacidad, cómo el `Sync Client` transmite el conteo vía API (Sanctum) al servidor Laravel, y cómo finalmente estos datos interactúan con servicios de IA (como Gemini para OCR de pagos) antes de ser servidos a las diferentes aplicaciones cliente (PWA) de los roles correspondientes.
+## 3. Arquitectura y Flujo de Módulos
+**Propósito:** Visión macro del viaje de los datos desde el sensor IoT hasta la PWA del usuario.
 
 ```mermaid
 flowchart TD
@@ -271,7 +286,7 @@ flowchart TD
     
     PWA -.-> Interfaces
 
-    %% ESTILOS INLINE (Soportados por Draw.io)
+    %% ESTILOS
     style Camara fill:#f9f2f4,stroke:#c7254e,stroke-width:2px,color:#c7254e
     style Monitor fill:#f9f2f4,stroke:#c7254e,stroke-width:2px,color:#c7254e
     style MediaPipe fill:#f9f2f4,stroke:#c7254e,stroke-width:2px,color:#c7254e
@@ -297,10 +312,8 @@ flowchart TD
 
 ---
 
-## 4. organigrama_usuarios.drawio (Jerarquía y Roles)
-
-**Descripción:**
-Este organigrama funcional detalla la jerarquía de roles (RBAC - Role-Based Access Control) implementada en el sistema y sus respectivos alcances. Muestra cómo el `Administrador General` (superusuario) gestiona a los dueños y el hardware troncal, mientras que el `Dueño` administra su ecosistema de negocio (flotas, cuentas bancarias, reportes BI, y personal). Debajo de ellos, se define la capa del `Personal Operativo` (Conductores y Colectores), cuyo alcance está estrictamente limitado a registrar transacciones al término de su jornada o en ruta a través de la PWA móvil, protegiendo así la información gerencial sensible.
+## 4. Jerarquía y Roles
+**Propósito:** Definir los niveles de acceso y permisos (RBAC) del sistema.
 
 ```mermaid
 graph TD
@@ -334,7 +347,7 @@ graph TD
     
     Dispositivos -.->|Monitorea asignación en unidad| Flota
 
-    %% ESTILOS INLINE
+    %% ESTILOS
     style Sistema fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
     style ModuloPWA fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
 
@@ -352,10 +365,8 @@ graph TD
 
 ---
 
-## 5. diagrama_casos_uso_roles.drawio (Casos de Uso por Actor)
-
-**Descripción:**
-Este diagrama documenta las interacciones funcionales permitidas para cada actor dentro del sistema. A diferencia del organigrama (que muestra jerarquías), aquí se listan las acciones concretas o "Casos de Uso" que la aplicación resuelve. Se divide en cinco enfoques: las tareas de configuración del Admin, las tareas analíticas y de gestión del Dueño, el registro de ingresos del Operativo, el funcionamiento autónomo de la caja de Hardware (monitoreo de privacidad y telemetría), y finalmente, los procesos invisibles del Sistema Analítico en segundo plano (cruces de datos, OCR automatizado, y alertas por métricas anómalas).
+## 5. Casos de Uso por Actor
+**Propósito:** Listar las acciones concretas permitidas para cada tipo de usuario.
 
 ```mermaid
 flowchart LR
@@ -425,7 +436,7 @@ flowchart LR
     Op_CU3 -.-> S_CU1
     S_CU2 -.-> D_CU3
 
-    %% ESTILOS INLINE
+    %% ESTILOS
     style Admin fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#b71c1c
     style Dueno fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#0d47a1
     style Operativo fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
@@ -454,10 +465,8 @@ flowchart LR
 
 ---
 
-## 6. diagrama_secuencia_pagos.drawio (Diagrama de Secuencia: Recaudación Inteligente con IA)
-
-**Descripción:**
-Este diagrama de secuencia traza el ciclo de vida temporal (paso a paso cronológico) de uno de los procesos más complejos: el registro de un pago asistido por Inteligencia Artificial. Ilustra cómo inicia la petición por parte del Colector en la PWA, enviando una captura de pantalla al servidor. Detalla cómo el servidor de Laravel interactúa con la API de Gemini (Google AI) para realizar un proceso iterativo de OCR, devolver los datos limpios a la vista gráfica y, tras la confirmación humana, persistir permanentemente el registro junto con una entrada inalterable en la bitácora de auditoría, para que posteriormente el dueño la consulte.
+## 6. Diagrama de Secuencia: Recaudación Inteligente con IA
+**Propósito:** Trazar el ciclo de vida temporal del registro de pagos asistido por OCR.
 
 ```mermaid
 sequenceDiagram
@@ -497,10 +506,8 @@ sequenceDiagram
 
 ---
 
-## 7. diagrama_estados_iot.drawio (Máquina de Estados: Hardware y Privacidad)
-
-**Descripción:**
-Esta máquina de estados modela el comportamiento interno del módulo de hardware (computación en el borde/Edge) ubicado dentro del autobús. Su objetivo es mapear por qué fases pasa el script `transport_monitor.py`. Inicia en un estado de espera (Standby) hasta que detecta movimiento, pasa a validar la calidad de la imagen, aplica detección por IA (MediaPipe) y ejecuta la regla de exclusión de rostros del personal. Es vital para demostrar la ética y privacidad tecnológica del proyecto, pues diagrama explícitamente el paso ineludible donde el evento de incremento de un pasajero es seguido inmediatamente por la destrucción local de la imagen visual antes del paso de transmisión (Sincronización).
+## 7. Máquina de Estados: Hardware y Privacidad
+**Propósito:** Modelar el comportamiento interno del script de monitoreo IoT.
 
 ```mermaid
 stateDiagram-v2
@@ -547,10 +554,8 @@ stateDiagram-v2
 
 ---
 
-## 8. diagrama_arquitectura_red.drawio (Diagrama de Despliegue / Red)
-
-**Descripción:**
-Este es un diagrama de despliegue físico y de red que ilustra cómo los componentes lógicos del software de Transport Admin se distribuyen físicamente sobre el hardware real y las topologías de conexión. Visualiza la separación estricta entre las computadoras de procesamiento aisladas dentro de los autobuses, sus dependencias locales por SQLite, su enlace saliente cifrado sobre sub-redes WiFi/4G hacia internet, y cómo aterrizan las peticiones en los servidores centrales en la nube (VPS) administrados por Nginx, finalizando en los navegadores web finales de los clientes (smartphones y PC).
+## 8. Diagrama de Despliegue / Red
+**Propósito:** Visualizar la distribución física de componentes y topologías de red.
 
 ```mermaid
 graph TD
@@ -606,7 +611,7 @@ graph TD
     Laravel -.-> |"OCR de capturas"| IA_Gemini
     TM -.-> |"Fallo local -> AWS Alternativo"| IA_Aws
 
-    %% ESTILOS INLINE
+    %% ESTILOS
     style Computadora fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#1a237e
     style Camara fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#1a237e
     style TM fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#1a237e
@@ -628,10 +633,8 @@ graph TD
 
 ---
 
-## 9. diagrama_integracion_cv_admin.drawio (Arquitectura de Integración Visión por Computador - Gestión)
-
-**Descripción:**
-Creado específicamente para abordar el objetivo base de la tesis: la integración entre el mundo de Visión por Computadora y el Backoffice Administrativo. Este puenteo logístico detalla el ducto (pipeline) tecnológico. Del lado izquierdo (Edge), muestra la entrada del estímulo visual, extrayendo las cajas delimitadoras, pasando el algoritmo de seguimiento (Rastreador) y el contador numérico. En el medio, sitúa al Canal Seguro (Sanctum Endpoint) que funge como el traductor universal y aislador de complejidad. Del lado derecho (Nube), demuestra cómo los datos "limpios" entrantes alimentan al Motor de Inteligencia de Negocios para emparejarse con los reportes manuales, cruzando las variables para emitir reportes de evasión en tiempo real.
+## 9. Arquitectura de Integración Visión por Computador - Gestión
+**Propósito:** Detallar el "puente" tecnológico entre la detección Edge y el Backoffice.
 
 ```mermaid
 graph TD
@@ -684,7 +687,7 @@ graph TD
     %% DEPENDENCIAS CRUZADAS
     DBCentral -.-> |Descarga periódica rostros permitidos| Exclusor
 
-    %% ESTILOS INLINE
+    %% ESTILOS
     style Camara fill:#424242,stroke:#000000,stroke-width:2px,color:#ffffff
     
     style Detector fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
@@ -713,10 +716,8 @@ graph TD
 
 ---
 
-## 10. diagrama_flujo_reportes_dueno.drawio (Flujo de Generación de Reportes BI)
-
-**Descripción:**
-Este diagrama de flujo de datos describe específicamente la procedencia y el procesamiento de la información que consume visualmente el `Dueño` en su módulo de analítica. Hace énfasis en las dos únicas fuentes de verdad u orígenes de datos: los **Ingresos Manuales/Digitales** (generados por interacciones humanas en la PWA) y los **Eventos Telemétricos** (generados silenciosamente por las cámaras de los autobuses). Muestra cómo el Motor de Inteligencia de Negocios agrupa y cruza estas fuentes inconexas para producir los cuatro reportes críticos del sistema: el cálculo de evasión general, estimación de tiempos de ruta, mapas de calor por demanda temporal, y los retardos/espaciados entre unidades de la misma línea, culminando en la exportación formal de los mismos.
+## 10. Flujo de Generación de Reportes BI
+**Propósito:** Describir la procedencia y procesamiento de los datos que consume el Dueño.
 
 ```mermaid
 graph TD
@@ -754,7 +755,7 @@ graph TD
     %% CONEXIONES A DUEÑO
     Consumidor(["Usuario Dueño / Administrador"]) -.-> |"Consulta Dashboards"| Vistas_Dueno
     
-    %% ESTILOS INLINE
+    %% ESTILOS
     style HardwareEdge fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     style AppOperativo fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     
@@ -779,10 +780,8 @@ graph TD
 
 ---
 
-## 11. diagrama_componentes_dashboard.drawio (Arquitectura del Dashboard Inteligente de E-commerce)
-
-**Descripción:**
-Este diagrama de componentes ilustra la arquitectura del dashboard inteligente descrita en el ejemplo (Figura 14, De Crescenzo y Guerrero, 2025). El sistema está organizado en tres capas principales: la capa de presentación (interfaz y visualización), la capa de lógica de negocio (preprocesamiento, cálculos de KPIs, conversión monetaria y predicciones) y la capa de datos (conexión con API y almacenamiento).
+## 11. Arquitectura del Dashboard Inteligente de E-commerce
+**Propósito:** Diagrama de componentes basado en el modelo de De Crescenzo y Guerrero (2025).
 
 ```mermaid
 flowchart TD
@@ -798,46 +797,41 @@ flowchart TD
         direction TB
         Preprocesamiento[Módulo de Preprocesamiento]
         KPIs[Cálculo de Indicadores Clave - KPIs]
-        Conversion[Conversión Monetaria]
-        Predicciones[Generación de Predicciones de Ventas]
+        Conversion[Motor de Conversión y Normalización]
+        Prediccion[Módulo de Análisis Predictivo]
     end
 
     %% Capa de Datos
     subgraph CapaDatos ["Capa de Datos"]
         direction TB
-        API_Ecommerce[Conexión con API de E-commerce]
-        Almacenamiento[(Almacenamiento Temporal de Ventas)]
+        API[Interfaz de Programación - API]
+        Storage[(Almacenamiento de Datos)]
     end
 
-    %% Flujo y Relaciones
-    Usuario([Usuario / Tomador de Decisiones]) <-->|Interpreta resultados| Interfaz
-    Interfaz <--> Visualizacion
-    
-    Visualizacion <--> KPIs
-    Visualizacion <--> Predicciones
-    Visualizacion <--> Conversion
+    %% Relaciones de Flujo
+    API --> Preprocesamiento
+    Storage <--> API
+    Preprocesamiento --> KPIs
+    KPIs --> Conversion
+    Conversion --> Prediccion
+    Prediccion --> Visualizacion
+    Visualizacion --> Interfaz
 
-    KPIs <--> Preprocesamiento
-    Predicciones <--> Preprocesamiento
-    Conversion <--> Preprocesamiento
-
-    Preprocesamiento <--> Almacenamiento
-    Almacenamiento <--> API_Ecommerce
-
-    %% Estilos (Consistentes con el documento)
-    style Usuario fill:#fbe9e7,stroke:#ff5722,stroke-width:3px,color:#bf360c
-    style CapaPresentacion fill:#e0f7fa,stroke:#006064,stroke-width:2px,color:#004d40
-    style CapaLogica fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style CapaDatos fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    %% Estilización
+    style CapaPresentacion fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style CapaLogica fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style CapaDatos fill:#fff3e0,stroke:#e65100,stroke-width:2px
     
-    style Interfaz fill:#ffffff,stroke:#00897b,stroke-width:2px
-    style Visualizacion fill:#ffffff,stroke:#00897b,stroke-width:2px
-    
-    style Preprocesamiento fill:#ffffff,stroke:#f57c00,stroke-width:2px
-    style KPIs fill:#ffffff,stroke:#f57c00,stroke-width:2px
-    style Conversion fill:#ffffff,stroke:#f57c00,stroke-width:2px
-    style Predicciones fill:#ffffff,stroke:#f57c00,stroke-width:2px
-    
-    style API_Ecommerce fill:#ffffff,stroke:#4caf50,stroke-width:2px
-    style Almacenamiento fill:#ffffff,stroke:#4caf50,stroke-width:2px
+    style Interfaz fill:#fff,stroke:#333,stroke-width:2px
+    style Visualizacion fill:#fff,stroke:#333,stroke-width:2px
+    style Preprocesamiento fill:#fff,stroke:#01579b,stroke-width:1px
+    style KPIs fill:#fff,stroke:#01579b,stroke-width:1px
+    style Conversion fill:#fff,stroke:#01579b,stroke-width:1px
+    style Prediccion fill:#fff,stroke:#01579b,stroke-width:1px
+    style API fill:#fff,stroke:#e65100,stroke-width:1px
+    style Storage fill:#fff,stroke:#e65100,stroke-width:1px
 ```
+
+---
+
+**Fuente:** Documentación Técnica de Transport Admin (2026).

@@ -25,6 +25,9 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'company_name' => ['nullable', 'string', 'max:150'],
+            'rif' => ['nullable', 'string', new \App\Rules\VenezuelanDocument()],
+            'company_logo' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }

@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ReportTabs from '@/Components/ReportTabs';
-import { Head, router } from '@inertiajs/react';
+import CompanyPrintHeader, { getCompanyCsvHeader } from '@/Components/CompanyPrintHeader';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface RouteUnitStat {
@@ -56,7 +57,8 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
         );
     };
 
-    const formatDuration = (minutes: number) => {
+    const formatDuration = (rawMinutes: number) => {
+        const minutes = Math.round(rawMinutes);
         const h = Math.floor(minutes / 60);
         const m = minutes % 60;
         return h > 0 ? `${h}h ${m}m` : `${m}m`;
@@ -66,18 +68,21 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
         window.print();
     };
 
+    const user = usePage().props.auth.user as any;
+
     const handleExportCSV = () => {
         let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += getCompanyCsvHeader(user);
         csvContent += '=== REPORTE DE TIEMPOS DE RUTA ===\n';
         csvContent += `Fecha:,${date}\n\n`;
-        csvContent += 'Ruta,Unidades activas,Duracion promedio (min),Duracion minima (min),Duracion maxima (min),Hora promedio de inicio,Hora promedio de cierre,Primer inicio del dia,Ultimo cierre del dia,Eventos totales,Eventos promedio por unidad,Pasajeros totales,Pasajeros promedio por unidad\n';
+        csvContent += 'Ruta,Unidades activas,Duración promedio (minutos),Duración mínima (minutos),Duración máxima (minutos),Hora promedio de inicio,Hora promedio de cierre,Primer inicio del día,Último cierre del día,Eventos totales,Eventos promedio por unidad,Pasajeros totales,Pasajeros promedio por unidad\n';
 
         routeStats.forEach((stat) => {
             csvContent += `"${stat.name}",${stat.active_buses},${stat.average_duration_minutes},${stat.min_duration_minutes},${stat.max_duration_minutes},${stat.average_start_time},${stat.average_end_time},${stat.earliest_start_time || ''},${stat.latest_end_time || ''},${stat.total_events},${stat.average_event_count},${stat.total_passengers},${stat.average_passengers_per_active_bus}\n`;
         });
 
         csvContent += '\n=== DETALLE POR UNIDAD ===\n';
-        csvContent += 'Ruta,Unidad,Modelo,Inicio,Fin,Duracion (min),Eventos,Pasajeros\n';
+        csvContent += 'Ruta,Unidad,Modelo,Inicio,Fin,Duración (minutos),Eventos,Pasajeros\n';
 
         routeStats.forEach((stat) => {
             stat.units.forEach((unit) => {
@@ -106,7 +111,7 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
 
                     <div className="bg-white p-4 shadow-sm sm:rounded-lg mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center print:hidden">
                         <div className="text-gray-600 max-w-3xl">
-                            El reporte resume la jornada operativa por ruta: ventana de servicio, dispersion entre unidades,
+                            El reporte resume la jornada operativa por ruta: ventana de servicio, dispersión entre unidades,
                             volumen de eventos y detalle por autobus para el dia seleccionado.
                         </div>
                         <div className="flex gap-4 items-center flex-wrap">
@@ -155,7 +160,15 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                         </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="hidden print:block bg-white text-black mb-6">
+                        <CompanyPrintHeader />
+                        <div className="border-b border-gray-300 pb-4 mb-4">
+                            <h1 className="text-2xl font-bold">Reporte de Tiempos Promedio de Ruta</h1>
+                            <p className="text-sm mt-1">Fecha: {date}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg print:shadow-none">
                         <div className="p-6">
                             {routeStats.length === 0 ? (
                                 <div className="text-center py-12 text-gray-500">
@@ -165,10 +178,10 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                                     <p>No hay suficientes datos de telemetria para calcular promedios en esta fecha.</p>
                                 </div>
                             ) : (
-                                <div className="space-y-6">
+                                <div className="space-y-6 print:space-y-8">
                                     {routeStats.map((stat) => (
-                                        <div key={stat.id} className="border border-gray-200 rounded-2xl overflow-hidden">
-                                            <div className="p-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-100">
+                                        <div key={stat.id} className="border border-gray-200 rounded-2xl overflow-hidden print:border-0 print:border-t print:border-gray-800 print:rounded-none">
+                                            <div className="p-6 bg-gradient-to-r from-slate-50 to-white print:bg-none print:p-0 print:pt-4 border-b border-gray-100 print:border-0">
                                                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                                                     <div>
                                                         <h3 className="text-2xl font-bold text-gray-900">{stat.name}</h3>
@@ -182,7 +195,7 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                                                         </p>
                                                     </div>
                                                     <div className="text-left lg:text-right">
-                                                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Duracion promedio</p>
+                                                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Duración promedio</p>
                                                         <p className="text-4xl font-extrabold text-indigo-600 mt-1">
                                                             {formatDuration(stat.average_duration_minutes)}
                                                         </p>
@@ -197,7 +210,7 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                                                         </p>
                                                     </div>
                                                     <div className="rounded-xl bg-white border border-gray-100 p-4">
-                                                        <p className="text-xs uppercase tracking-wide text-gray-500">Rango de duracion</p>
+                                                        <p className="text-xs uppercase tracking-wide text-gray-500">Rango de duración</p>
                                                         <p className="mt-2 text-lg font-bold text-gray-900">
                                                             {formatDuration(stat.min_duration_minutes)} - {formatDuration(stat.max_duration_minutes)}
                                                         </p>
@@ -220,13 +233,13 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                                                         <p className="mt-1 text-lg font-bold text-amber-900">{stat.earliest_start_time || 'N/D'}</p>
                                                     </div>
                                                     <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
-                                                        <p className="text-xs uppercase tracking-wide text-emerald-700">Ultimo cierre detectado</p>
+                                                        <p className="text-xs uppercase tracking-wide text-emerald-700">Último cierre detectado</p>
                                                         <p className="mt-1 text-lg font-bold text-emerald-900">{stat.latest_end_time || 'N/D'}</p>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="p-6">
+                                            <div className="p-6 print:p-0 print:mt-4">
                                                 <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-600 mb-4">
                                                     Desglose por unidad
                                                 </h4>
@@ -238,7 +251,7 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                                                                 <th className="py-3 pr-4 font-semibold">Unidad</th>
                                                                 <th className="py-3 pr-4 font-semibold">Inicio</th>
                                                                 <th className="py-3 pr-4 font-semibold">Fin</th>
-                                                                <th className="py-3 pr-4 font-semibold">Duracion</th>
+                                                                <th className="py-3 pr-4 font-semibold">Duración</th>
                                                                 <th className="py-3 pr-4 font-semibold">Eventos</th>
                                                                 <th className="py-3 pr-4 font-semibold">Pasajeros</th>
                                                             </tr>

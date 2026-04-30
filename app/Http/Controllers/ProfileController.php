@@ -29,13 +29,52 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        if ($user->isOwner() && $request->hasFile('company_logo')) {
+            if ($user->company_logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->company_logo_path);
+            }
+            $user->company_logo_path = $request->file('company_logo')->store('logos', 'public');
+        }
+
+        $user->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    public function updateCompany(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (!$user->isOwner()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'company_name' => ['nullable', 'string', 'max:150'],
+            'rif' => ['nullable', 'string', new \App\Rules\VenezuelanDocument()],
+            'company_logo' => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        $user->company_name = $validated['company_name'] ?? null;
+        $user->rif = $validated['rif'] ?? null;
+
+        if ($request->hasFile('company_logo')) {
+            if ($user->company_logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->company_logo_path);
+            }
+            $user->company_logo_path = $request->file('company_logo')->store('logos', 'public');
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit');
     }

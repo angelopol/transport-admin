@@ -253,4 +253,167 @@ class BusController extends Controller
             'bus' => $bus,
         ]);
     }
+
+    /**
+     * Get connections sessions for the bus.
+     */
+    public function connections(Request $request, Bus $bus)
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && $bus->owner_id !== $user->id) {
+            abort(403);
+        }
+
+        $month = $request->query('month', date('Y-m')); // Format: YYYY-MM
+        
+        try {
+            $startDate = \Carbon\Carbon::parse($month . '-01')->startOfDay();
+            $endDate = $startDate->copy()->endOfMonth()->endOfDay();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Invalid month format'], 400);
+        }
+
+        // Fetch timestamps
+        $events = $bus->telemetryEvents()
+            ->whereBetween('event_timestamp', [$startDate, $endDate])
+            ->orderBy('event_timestamp', 'asc')
+            ->pluck('event_timestamp');
+
+        $sessionsByDay = [];
+        $currentSession = null;
+
+        foreach ($events as $timestamp) {
+            $dateStr = $timestamp->format('Y-m-d');
+            
+            if (!isset($sessionsByDay[$dateStr])) {
+                $sessionsByDay[$dateStr] = [];
+            }
+
+            if ($currentSession === null) {
+                $currentSession = [
+                    'start' => $timestamp,
+                    'end' => $timestamp,
+                    'date' => $dateStr
+                ];
+            } else {
+                $diffInMinutes = $currentSession['end']->diffInMinutes($timestamp);
+                
+                if ($diffInMinutes > 60 || $currentSession['date'] !== $dateStr) {
+                    // Close previous session
+                    $sessionsByDay[$currentSession['date']][] = [
+                        'start' => $currentSession['start']->format('H:i:s'),
+                        'end' => $currentSession['end']->format('H:i:s'),
+                    ];
+                    
+                    // Start new
+                    $currentSession = [
+                        'start' => $timestamp,
+                        'end' => $timestamp,
+                        'date' => $dateStr
+                    ];
+                } else {
+                    $currentSession['end'] = $timestamp;
+                }
+            }
+        }
+
+        if ($currentSession !== null) {
+            $sessionsByDay[$currentSession['date']][] = [
+                'start' => $currentSession['start']->format('H:i:s'),
+                'end' => $currentSession['end']->format('H:i:s'),
+            ];
+        }
+
+        return response()->json($sessionsByDay);
+    }
+
+    /**
+     * Get inferred stops for a bus on a given date.
+     * A "stop" is a cluster of boarding events within 1 min and ~100 m of each other.
+     */
+    public function stops(Request $request, Bus $bus)
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && $bus->owner_id !== $user->id) {
+            abort(403);
+        }
+
+        $date = $request->query('date', date('Y-m-d'));
+
+        $events = $bus->telemetryEvents()
+            ->whereDate('event_timestamp', $date)
+            ->where('passenger_count', '>', 0)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->orderBy('event_timestamp', 'asc')
+            ->get(['event_timestamp', 'passenger_count', 'latitude', 'longitude']);
+
+        $stops = [];
+        $current = null;
+
+        foreach ($events as $event) {
+            $lat = (float) $event->latitude;
+            $lon = (float) $event->longitude;
+
+            if ($current === null) {
+                $current = [
+                    'first_time'  => $event->event_timestamp,
+                    'last_time'   => $event->event_timestamp,
+                    'lat_sum'     => $lat,
+                    'lon_sum'     => $lon,
+                    'n'           => 1,
+                    'passengers'  => $event->passenger_count,
+                ];
+            } else {
+                $avgLat   = $current['lat_sum'] / $current['n'];
+                $avgLon   = $current['lon_sum'] / $current['n'];
+                $timeDiff = $current['last_time']->diffInSeconds($event->event_timestamp);
+
+                // ~0.001 deg ≈ 111 m
+                $nearLat = abs($avgLat - $lat) < 0.001;
+                $nearLon = abs($avgLon - $lon) < 0.001;
+                $sameWindow = $timeDiff <= 60;
+
+                if ($nearLat && $nearLon && $sameWindow) {
+                    $current['lat_sum']    += $lat;
+                    $current['lon_sum']    += $lon;
+                    $current['n']++;
+                    $current['passengers'] += $event->passenger_count;
+                    $current['last_time']  = $event->event_timestamp;
+                } else {
+                    $stops[] = [
+                        'time'       => $current['first_time']->format('H:i'),
+                        'lat'        => round($current['lat_sum'] / $current['n'], 6),
+                        'lon'        => round($current['lon_sum'] / $current['n'], 6),
+                        'passengers' => $current['passengers'],
+                    ];
+                    $current = [
+                        'first_time' => $event->event_timestamp,
+                        'last_time'  => $event->event_timestamp,
+                        'lat_sum'    => $lat,
+                        'lon_sum'    => $lon,
+                        'n'          => 1,
+                        'passengers' => $event->passenger_count,
+                    ];
+                }
+            }
+        }
+
+        if ($current !== null) {
+            $stops[] = [
+                'time'       => $current['first_time']->format('H:i'),
+                'lat'        => round($current['lat_sum'] / $current['n'], 6),
+                'lon'        => round($current['lon_sum'] / $current['n'], 6),
+                'passengers' => $current['passengers'],
+            ];
+        }
+
+        return response()->json([
+            'date'        => $date,
+            'total_stops' => count($stops),
+            'stops'       => $stops,
+        ]);
+    }
 }

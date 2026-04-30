@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { FormEventHandler, useEffect, useState, useRef } from 'react';
 import FileInput from '@/Components/FileInput';
+import { saveOfflinePayment, getOfflinePayments, deleteOfflinePayment } from '@/utils/idbHelper';
 
 
 interface Route {
@@ -32,7 +33,7 @@ interface Props {
 }
 
 export default function Create({ buses, isOperative }: Props) {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         bus_id: '',
         user_type: 'general',
         route_type: 'suburban', // o 'urban'
@@ -56,6 +57,74 @@ export default function Create({ buses, isOperative }: Props) {
     const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
+    // PWA Offline Logic
+    const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+    const [offlineQueueCount, setOfflineQueueCount] = useState<number>(0);
+    const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+    const updateQueueCount = async () => {
+        try {
+            const payments = await getOfflinePayments();
+            setOfflineQueueCount(payments.length);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const syncOfflineQueue = async () => {
+        if (!navigator.onLine || isSyncing) return;
+        setIsSyncing(true);
+        try {
+            const payments = await getOfflinePayments();
+            for (const payment of payments) {
+                const formData = new FormData();
+                formData.append('bus_id', payment.bus_id);
+                formData.append('user_type', payment.user_type);
+                formData.append('route_type', payment.route_type);
+                formData.append('payment_method', payment.payment_method);
+                formData.append('amount', payment.amount.toString());
+                if (payment.registered_at) formData.append('registered_at', payment.registered_at);
+                if (payment.reference_number) formData.append('reference_number', payment.reference_number);
+                if (payment.identification) formData.append('identification', payment.identification);
+                if (payment.phone_or_account) formData.append('phone_or_account', payment.phone_or_account);
+                if (payment.reference_image) formData.append('reference_image', payment.reference_image);
+
+                await axios.post('/manual-entries', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                
+                if (payment.id) await deleteOfflinePayment(payment.id);
+            }
+            if (payments.length > 0) {
+                alert(`¡Se han sincronizado ${payments.length} transacciones encoladas de forma exitosa!`);
+            }
+        } catch (error) {
+            console.error("Error sincronizando pagos offline:", error);
+        } finally {
+            setIsSyncing(false);
+            updateQueueCount();
+        }
+    };
+
+    useEffect(() => {
+        const handleOnline = () => {
+            setIsOnline(true);
+            syncOfflineQueue();
+        };
+        const handleOffline = () => setIsOnline(false);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        updateQueueCount();
+        if (navigator.onLine) syncOfflineQueue();
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
+
     const extractReference = async (file: File) => {
         setIsExtractingReference(true);
         const formData = new FormData();
@@ -73,8 +142,13 @@ export default function Create({ buses, isOperative }: Props) {
                     reference_number: response.data.reference
                 }));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error extracted reference via OCR:", error);
+            if (error.response && error.response.status === 422) {
+                alert("Atención: El modelo de Inteligencia Artificial determinó que la imagen suministrada NO es un comprobante bancario válido (posible archivo irrelevante o fraude). Por favor intente con una imagen correcta.");
+            } else {
+                alert("Ocurrió un error extrayendo la referencia bancaria automáticamente. Puede escribirla manualmente.");
+            }
         } finally {
             setIsExtractingReference(false);
         }
@@ -223,8 +297,24 @@ export default function Create({ buses, isOperative }: Props) {
     }, [data.bus_id, data.user_type, data.route_type, data.registered_at]);
 
 
-    const submit: FormEventHandler = (e) => {
+    const submit: FormEventHandler = async (e) => {
         e.preventDefault();
+        
+        if (!isOnline) {
+            try {
+                await saveOfflinePayment(data as any);
+                alert("¡Cobro guardado localmente (Offline)! Se sincronizará automáticamente al recuperar internet.");
+                reset();
+                setPhotoPreview(null);
+                setData('reference_image', null);
+                updateQueueCount();
+            } catch (err) {
+                console.error("Error guardando pago offline:", err);
+                alert("Error al encolar el pago localmente.");
+            }
+            return;
+        }
+
         post('/manual-entries');
     };
 
@@ -238,7 +328,21 @@ export default function Create({ buses, isOperative }: Props) {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">{isOperative ? 'Registrar Pasaje' : 'Registrar Ingreso'}</h2>}
+            header={
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold leading-tight text-gray-800">{isOperative ? 'Registrar Pasaje' : 'Registrar Ingreso'}</h2>
+                    <div className="flex items-center space-x-3">
+                        {offlineQueueCount > 0 && (
+                            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                                {offlineQueueCount} en cola
+                            </span>
+                        )}
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800 animate-pulse'}`}>
+                            {isOnline ? (isSyncing ? 'Sincronizando...' : 'Online') : 'Offline'}
+                        </span>
+                    </div>
+                </div>
+            }
         >
             <Head title={isOperative ? 'Registrar Pasaje' : 'Registrar Ingreso'} />
 

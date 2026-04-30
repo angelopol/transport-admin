@@ -30,6 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('buses.regenerate-token');
         Route::get('/buses/{bus}/payment-poster', [BusController::class, 'paymentPoster'])
             ->name('buses.payment-poster');
+        Route::get('/buses/{bus}/connections', [BusController::class, 'connections'])
+            ->name('buses.connections');
+        Route::get('/buses/{bus}/stops', [BusController::class, 'stops'])
+            ->name('buses.stops');
 
         Route::resource('bank-accounts', \App\Http\Controllers\BankAccountController::class);
         Route::resource('routes', RouteController::class)->except(['show']);
@@ -77,6 +81,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/company', [ProfileController::class, 'updateCompany'])->name('profile.company.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

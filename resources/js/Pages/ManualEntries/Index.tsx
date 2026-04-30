@@ -26,6 +26,7 @@ interface ManualEntry {
     phone_or_account?: string;
     reference_image_path?: string;
     owner?: User;
+    registered_by?: { id: number; name: string; email: string };
 }
 
 interface Props {
@@ -146,6 +147,9 @@ export default function Index({ entries, auth }: Props) {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruta</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Usuario</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método Pago</th>
+                                        {!isOperative && (
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registrado por</th>
+                                        )}
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalles Ref.</th>
                                         <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Comprobante</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
@@ -187,6 +191,23 @@ export default function Index({ entries, auth }: Props) {
                                                         {translatePaymentMethod(entry.payment_method)}
                                                     </span>
                                                 </td>
+                                                {!isOperative && (
+                                                    <td className="px-6 py-4 text-sm text-gray-700">
+                                                        {entry.registered_by ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                                                    {entry.registered_by.name.charAt(0).toUpperCase()}
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="font-medium text-gray-900 truncate">{entry.registered_by.name}</p>
+                                                                    <p className="text-xs text-gray-400 truncate">{entry.registered_by.email}</p>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-gray-400">—</span>
+                                                        )}
+                                                    </td>
+                                                )}
                                                 <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                                                     {entry.reference_number && <div><span className="font-semibold">Ref:</span> {entry.reference_number}</div>}
                                                     {entry.identification && <div><span className="font-semibold">C.I:</span> {entry.identification}</div>}

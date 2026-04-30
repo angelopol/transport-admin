@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import Modal from '@/Components/Modal';
+import { usePage } from '@inertiajs/react';
 
 interface BankAccount {
     id: number;
@@ -42,6 +43,7 @@ interface Props {
 
 export default function PaymentPosterModal({ bus, onClose }: Props) {
     const posterRef = useRef<HTMLDivElement>(null);
+    const user = usePage().props.auth.user as any;
 
     const handlePrint = () => {
         if (!posterRef.current) return;
@@ -115,7 +117,23 @@ export default function PaymentPosterModal({ bus, onClose }: Props) {
                     {/* Printable Area */}
                     <div className="max-h-[65vh] overflow-y-auto pr-1">
                         <div ref={posterRef} className="bg-white border-2 border-gray-200 rounded-xl p-6">
-                            {/* Header */}
+                            
+                            {/* Company Header */}
+                            {(user.company_name || user.company_logo_path) && (
+                                <div className="text-center mb-6 border-b border-gray-200 pb-4">
+                                    {user.company_logo_path && (
+                                        <img src={`/storage/${user.company_logo_path}`} alt="Logo Empresa" className="h-20 object-contain mx-auto mb-2" />
+                                    )}
+                                    {user.company_name && (
+                                        <h2 className="text-xl font-black text-gray-800 uppercase leading-tight tracking-wide">{user.company_name}</h2>
+                                    )}
+                                    {user.rif && (
+                                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">{user.rif}</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Unit Header */}
                             <div className="text-center mb-4 border-b-4 border-blue-600 pb-3">
                                 <h1 className="text-3xl font-extrabold text-blue-900 uppercase tracking-widest mb-0.5">
                                     Unidad {bus.plate}

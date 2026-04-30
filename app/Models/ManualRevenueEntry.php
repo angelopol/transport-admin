@@ -35,6 +35,11 @@ class ManualRevenueEntry extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
+    public function registeredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function route(): BelongsTo
     {
         return $this->belongsTo(Route::class);

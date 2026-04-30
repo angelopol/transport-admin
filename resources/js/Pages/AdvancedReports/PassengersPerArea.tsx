@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ReportTabs from '@/Components/ReportTabs';
-import { Head, router } from '@inertiajs/react';
+import CompanyPrintHeader, { getCompanyCsvHeader } from '@/Components/CompanyPrintHeader';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
 import { MapContainer, Marker, Popup, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -178,13 +179,16 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
         window.print();
     };
 
+    const user = usePage().props.auth.user as any;
+
     const handleExportCSV = () => {
         let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += getCompanyCsvHeader(user);
         csvContent += '=== REPORTE DE PASAJEROS POR ZONA ===\n';
         csvContent += `Fecha:,${date}\n`;
         csvContent += `Filtro de Mapa:,${safeActiveBounds ? 'Activo' : 'Inactivo'}\n\n`;
 
-        csvContent += 'Metricas\n';
+        csvContent += 'Métricas\n';
         csvContent += `Total Pasajeros:,${stats.total_passengers}\n`;
         csvContent += `Eventos Reportados:,${stats.total_events}\n`;
         csvContent += `Promedio abordaje:,${stats.average_passengers_per_stop}\n\n`;
@@ -194,7 +198,7 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
             csvContent += 'Hora,Unidad,Pasajeros abordados,Latitud,Longitud\n';
             events.forEach((event) => {
                 const timeStr = new Date(event.event_timestamp).toLocaleTimeString();
-                const plate = event.bus ? event.bus.plate : 'N/A';
+                const plate = event.bus ? event.bus.plate : 'Sin placa';
                 csvContent += `${timeStr},${plate},${event.passenger_count},${event.latitude},${event.longitude}\n`;
             });
         }
@@ -217,7 +221,7 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
         const normalized = normalizeBounds(currentBounds);
 
         if (!normalized) {
-            return 'Sin filtro geografico aplicado';
+            return 'Sin filtro geográfico aplicado';
         }
 
         return `Lat ${normalized.minLat.toFixed(4)} a ${normalized.maxLat.toFixed(4)} | Lng ${normalized.minLng.toFixed(4)} a ${normalized.maxLng.toFixed(4)}`;
@@ -293,7 +297,7 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
                                             : 'bg-indigo-600 text-white hover:bg-indigo-700'
                                     }`}
                                 >
-                                    {isSelectionMode ? 'Cancelar Seleccion' : 'Seleccionar Zona'}
+                                    {isSelectionMode ? 'Cancelar Selección' : 'Seleccionar Zona'}
                                 </button>
                                 <button
                                     onClick={applyMapFilter}
@@ -314,10 +318,11 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
                     </div>
 
                     <div className="mb-6 hidden bg-white text-black print:block">
+                        <CompanyPrintHeader />
                         <div className="mb-4 border-b border-gray-300 pb-4">
                             <h1 className="text-2xl font-bold">Reporte de Pasajeros por Zona</h1>
                             <p className="mt-1 text-sm">Fecha: {date}</p>
-                            <p className="mt-1 text-sm">Filtro geografico: {formatBounds(activeBounds)}</p>
+                            <p className="mt-1 text-sm">Filtro geográfico: {formatBounds(activeBounds)}</p>
                         </div>
 
                         <div className="mb-6 grid grid-cols-3 gap-4">
@@ -369,8 +374,8 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
                     <div className="relative flex flex-1 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm print:hidden">
                         <div className="pointer-events-none absolute left-1/2 top-4 z-[1000] -translate-x-1/2 transform rounded-full border border-gray-200 bg-white/90 px-4 py-2 text-sm font-medium text-gray-700 shadow backdrop-blur">
                             {isSelectionMode
-                                ? 'Seleccion activa: haz clic y arrastra para dibujar el area'
-                                : 'Modo navegacion: mueve el mapa libremente o activa "Seleccionar Zona"'}
+                                ? 'Selección activa: haz clic y arrastra para dibujar el area'
+                                : 'Modo navegación: mueve el mapa libremente o activa "Seleccionar Zona"'}
                         </div>
 
                         <div className="relative z-0 flex-1 w-full">

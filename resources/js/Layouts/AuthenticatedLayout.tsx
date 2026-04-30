@@ -28,7 +28,7 @@ export default function Authenticated({
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+        <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 print:h-auto print:overflow-visible print:bg-white">
             <aside className="z-20 hidden h-full w-64 flex-col bg-blue-900 text-white shadow-2xl print:hidden md:flex">
                 <div className="h-16 shrink-0 border-b border-blue-800/50 bg-blue-950/30 backdrop-blur-sm">
                     <Link href="/" className="flex h-full items-center justify-center gap-2">
@@ -39,7 +39,7 @@ export default function Authenticated({
                     </Link>
                 </div>
 
-                <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
+                <nav className="sidebar-scroll flex-1 space-y-2 overflow-y-auto px-4 py-6">
                     {user.role === 'owner' && (
                         <>
                             <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-blue-300">
@@ -85,7 +85,7 @@ export default function Authenticated({
                     {user.role === 'owner' && (
                         <>
                             <p className="mb-2 mt-8 px-4 text-xs font-semibold uppercase tracking-wider text-blue-300">
-                                Administracion
+                                Administración
                             </p>
                             <NavLink href={route('buses.index')} active={route().current('buses.*')} className="w-full">
                                 <NavItemLabel
@@ -134,6 +134,17 @@ export default function Authenticated({
                                     icon={
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10l9-5 9 5M4 10h16v8H4zm3 4h.01M17 14h.01" />
+                                        </svg>
+                                    }
+                                />
+                            </NavLink>
+                            <NavLink href={route('profile.edit')} active={route().current('profile.edit')} className="w-full">
+                                <NavItemLabel
+                                    label="Ajustes de Empresa"
+                                    icon={
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
                                     }
                                 />
@@ -218,7 +229,7 @@ export default function Authenticated({
                 </div>
             </aside>
 
-            <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="flex flex-1 flex-col overflow-hidden print:h-auto print:overflow-visible">
                 <header className="z-10 shrink-0 bg-blue-900 text-white shadow-md print:hidden md:hidden">
                     <div className="flex h-16 items-center justify-between px-4">
                         <Link href="/" className="flex items-center gap-2">
@@ -260,6 +271,7 @@ export default function Authenticated({
                                     <ResponsiveNavLink href={route('drivers.index')} active={route().current('drivers.*')}>Conductores</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('collectors.index')} active={route().current('collectors.*')}>Colectores</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('bank-accounts.index')} active={route().current('bank-accounts.*')}>Cuentas Bancarias</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('profile.edit')} active={route().current('profile.edit')}>Ajustes de Empresa</ResponsiveNavLink>
                                 </>
                             )}
 
@@ -286,7 +298,7 @@ export default function Authenticated({
                             </div>
                             <div className="mt-3 space-y-1">
                                 <ResponsiveNavLink href={route('profile.edit')}>Perfil</ResponsiveNavLink>
-                                <ResponsiveNavLink method="post" href={route('logout')} as="button">Cerrar Sesion</ResponsiveNavLink>
+                                <ResponsiveNavLink method="post" href={route('logout')} as="button">Cerrar Sesión</ResponsiveNavLink>
                             </div>
                         </div>
                     </div>
@@ -315,13 +327,13 @@ export default function Authenticated({
 
                             <Dropdown.Content>
                                 <Dropdown.Link href={route('profile.edit')}>Perfil</Dropdown.Link>
-                                <Dropdown.Link href={route('logout')} method="post" as="button">Cerrar Sesion</Dropdown.Link>
+                                <Dropdown.Link href={route('logout')} method="post" as="button">Cerrar Sesión</Dropdown.Link>
                             </Dropdown.Content>
                         </Dropdown>
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto bg-gray-50 p-6 scroll-smooth md:p-8">
+                <main className="flex-1 overflow-y-auto bg-gray-50 p-6 scroll-smooth print:h-auto print:overflow-visible print:bg-white md:p-8">
                     {children}
                 </main>
             </div>

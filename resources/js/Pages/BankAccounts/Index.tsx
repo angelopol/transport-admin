@@ -64,7 +64,7 @@ export default function Index({ auth, bankAccounts, flash }: PageProps<{ bankAcc
                                         <tr key={account.id} className="hover:bg-gray-50/50 transition-colors">
                                             <td className="px-6 py-5 whitespace-nowrap">
                                                 <div className="text-sm font-bold text-gray-900">{account.bank_name}</div>
-                                                <div className="text-xs text-gray-500 mt-0.5">{account.account_number || 'N/A'}</div>
+                                                <div className="text-xs text-gray-500 mt-0.5">{account.account_number || 'Sin número'}</div>
                                             </td>
                                             <td className="px-6 py-5 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-gray-900">{account.owner_name}</div>
@@ -139,7 +139,7 @@ export default function Index({ auth, bankAccounts, flash }: PageProps<{ bankAcc
                                         </div>
                                         <div className="col-span-2">
                                             <span className="block text-xs font-semibold text-gray-500 uppercase">Cuenta</span>
-                                            <span>{account.account_number || 'N/A'}</span>
+                                            <span>{account.account_number || 'Sin número'}</span>
                                         </div>
                                         <div className="col-span-2 mt-1">
                                             <span className="block text-xs font-semibold text-gray-500 uppercase mb-1">Servicios Activos</span>

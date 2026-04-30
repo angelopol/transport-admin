@@ -18,7 +18,7 @@ class ManualRevenueEntryController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $entries = ManualRevenueEntry::with(['route', 'bus'])
+        $entries = ManualRevenueEntry::with(['route', 'bus', 'registeredBy'])
             ->forUser($user)
             ->when($user->isOperative(), function ($query) {
                 $query->whereDate('registered_at', Carbon::today());

@@ -51,7 +51,7 @@ const statusStyles: Record<HealthStatus, string> = {
 const statusLabels: Record<HealthStatus, string> = {
     healthy: 'Saludable',
     degraded: 'Degradado',
-    unhealthy: 'Critico',
+    unhealthy: 'Crítico',
 };
 
 function formatValue(value: unknown) {
@@ -60,7 +60,7 @@ function formatValue(value: unknown) {
     }
 
     if (typeof value === 'boolean') {
-        return value ? 'Si' : 'No';
+        return value ? 'Sí' : 'No';
     }
 
     return String(value);
@@ -80,7 +80,7 @@ export default function AdminHealthIndex({ health, generatedAt }: Props) {
                             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Monitor general</p>
                             <h1 className="mt-1 text-2xl font-bold text-slate-900">{health.app.name}</h1>
                             <p className="mt-2 text-sm text-slate-600">
-                                Estado calculado con chequeos de aplicacion, base de datos, cache, storage y flujo de telemetria.
+                                Estado calculado con chequeos de aplicación, base de datos, caché, storage y flujo de telemetría.
                             </p>
                         </div>
 
@@ -110,7 +110,7 @@ export default function AdminHealthIndex({ health, generatedAt }: Props) {
                         <p className="text-sm font-semibold text-violet-700">Eventos hoy</p>
                         <p className="mt-2 text-3xl font-bold text-slate-900">{health.metrics.telemetry.events_today}</p>
                         <p className="mt-1 text-sm text-slate-500">
-                            Ultimo evento hace {health.metrics.telemetry.latest_event_age_minutes ?? '—'} min
+                            Último evento hace {health.metrics.telemetry.latest_event_age_minutes ?? '—'} minutos
                         </p>
                     </div>
                 </div>
@@ -153,7 +153,7 @@ export default function AdminHealthIndex({ health, generatedAt }: Props) {
 
                     <div className="space-y-6">
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                            <h3 className="text-lg font-semibold text-slate-900">Metricas de plataforma</h3>
+                            <h3 className="text-lg font-semibold text-slate-900">Métricas de plataforma</h3>
                             <div className="mt-4 grid gap-3">
                                 {Object.entries(health.metrics.platform ?? {}).map(([key, value]) => (
                                     <div key={key} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
@@ -194,10 +194,10 @@ export default function AdminHealthIndex({ health, generatedAt }: Props) {
                             <table className="w-full min-w-[560px]">
                                 <thead className="sticky top-0 border-b border-slate-200 bg-white text-left text-xs uppercase tracking-wide text-slate-500">
                                     <tr>
-                                        <th className="pb-3">MAC</th>
+                                        <th className="pb-3">Dirección MAC</th>
                                         <th className="pb-3">Unidad</th>
                                         <th className="pb-3">Owner</th>
-                                        <th className="pb-3">Ultima senal</th>
+                                        <th className="pb-3">Última senal</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
@@ -232,7 +232,7 @@ export default function AdminHealthIndex({ health, generatedAt }: Props) {
                                         <th className="pb-3">Placa</th>
                                         <th className="pb-3">Ruta</th>
                                         <th className="pb-3">Owner</th>
-                                        <th className="pb-3">Ultima senal</th>
+                                        <th className="pb-3">Última senal</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-sm text-slate-700">

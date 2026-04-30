@@ -26,6 +26,9 @@ class User extends Authenticatable
         'phone',
         'default_route_fare',
         'default_route_fare_urban',
+        'company_name',
+        'rif',
+        'company_logo_path',
     ];
 
     /**

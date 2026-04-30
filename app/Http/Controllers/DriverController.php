@@ -47,7 +47,7 @@ class DriverController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'cedula' => ['required', 'string', 'regex:/^[VEJPGvejpg]-?\d{5,11}(?:-?\d)?$/', 'unique:drivers,cedula'],
+            'cedula' => ['required', 'string', new \App\Rules\VenezuelanDocument, 'unique:drivers,cedula'],
             'phone' => ['nullable', 'string', 'regex:/^(0414|0424|0412|0416|0426|0422|02[0-9]{2})[0-9]{7}$/'],
             'license_number' => ['nullable', 'string', 'max:50'],
             'is_active' => ['boolean'],
@@ -117,7 +117,7 @@ class DriverController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'cedula' => ['required', 'string', 'regex:/^[VEJPGvejpg]-?\d{5,11}(?:-?\d)?$/', Rule::unique('drivers')->ignore($driver->id)],
+            'cedula' => ['required', 'string', new \App\Rules\VenezuelanDocument, Rule::unique('drivers')->ignore($driver->id)],
             'phone' => ['nullable', 'string', 'regex:/^(0414|0424|0412|0416|0426|0422|02[0-9]{2})[0-9]{7}$/'],
             'license_number' => ['nullable', 'string', 'max:50'],
             'is_active' => ['boolean'],
