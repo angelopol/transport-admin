@@ -90,10 +90,12 @@ export default function PaymentPosterModal({ bus, onClose }: Props) {
         html2pdf().set(opt).from(element).save();
     };
 
-    const getCalculatedFare = (baseFare: number, value?: number | null, isPercentage?: boolean): number => {
-        if (value === undefined || value === null) return baseFare;
-        if (isPercentage) return baseFare - baseFare * (value / 100);
-        return value > 0 ? value : baseFare;
+    const getCalculatedFare = (baseFare: number | string, value?: number | string | null, isPercentage?: boolean | number): number => {
+        const numBase = Number(baseFare);
+        if (value === undefined || value === null || value === '') return numBase;
+        const numVal = Number(value);
+        if (isPercentage) return numBase - numBase * (numVal / 100);
+        return numVal > 0 ? numVal : numBase;
     };
 
     return (

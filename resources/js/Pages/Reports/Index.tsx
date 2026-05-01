@@ -5,6 +5,21 @@ import { Head, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { useState } from 'react';
 
+const paymentMethodLabel: Record<string, string> = {
+    cash: 'Efectivo',
+    digital: 'Digital',
+    mobile: 'Pago Móvil',
+    transfer: 'Transferencia',
+};
+
+const passengerTypeLabel: Record<string, string> = {
+    general: 'General',
+    student: 'Estudiante',
+    senior: 'Adulto Mayor',
+    disabled: 'Discapacitado',
+    telemetry: 'Telemetría (Cámara)',
+};
+
 interface ReportStats {
     total_income: number;
     total_passengers: number;
@@ -69,12 +84,12 @@ export default function ReportsIndex({
         csvContent += 'Por Tipo de Pasajero\n';
         csvContent += 'Tipo,Cantidad,Total VES\n';
         stats.by_passenger_type.forEach((row) => {
-            csvContent += `${row.passenger_type},${row.count},${row.total}\n`;
+            csvContent += `${passengerTypeLabel[row.passenger_type] ?? row.passenger_type},${row.count},${row.total}\n`;
         });
         csvContent += '\nPor Método de Pago\n';
         csvContent += 'Método,Cantidad,Total VES\n';
         stats.by_payment_method.forEach((row) => {
-            csvContent += `${row.payment_method},${row.count},${row.total}\n`;
+            csvContent += `${paymentMethodLabel[row.payment_method] ?? row.payment_method},${row.count},${row.total}\n`;
         });
 
         const encodedUri = encodeURI(csvContent);
@@ -219,7 +234,7 @@ export default function ReportsIndex({
                                         ) : (
                                             stats.by_passenger_type.map((item) => (
                                                 <tr key={`print-type-${item.passenger_type}`} className="border-b border-gray-200">
-                                                    <td className="py-2 pr-3 capitalize">{item.passenger_type}</td>
+                                                    <td className="py-2 pr-3">{passengerTypeLabel[item.passenger_type] ?? item.passenger_type}</td>
                                                     <td className="py-2 pr-3">{item.count}</td>
                                                     <td className="py-2 pr-3">{formatCurrency(item.total)}</td>
                                                 </tr>
@@ -245,7 +260,7 @@ export default function ReportsIndex({
                                         ) : (
                                             stats.by_payment_method.map((item) => (
                                                 <tr key={`print-method-${item.payment_method}`} className="border-b border-gray-200">
-                                                    <td className="py-2 pr-3 capitalize">{item.payment_method}</td>
+                                                    <td className="py-2 pr-3">{paymentMethodLabel[item.payment_method] ?? item.payment_method}</td>
                                                     <td className="py-2 pr-3">{item.count}</td>
                                                     <td className="py-2 pr-3">{formatCurrency(item.total)}</td>
                                                 </tr>
@@ -331,7 +346,7 @@ export default function ReportsIndex({
                                         <tbody className="divide-y divide-gray-100">
                                             {stats.by_passenger_type.map((item) => (
                                                 <tr key={item.passenger_type} className="hover:bg-gray-50/50 transition">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 capitalize">{item.passenger_type}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">{passengerTypeLabel[item.passenger_type] ?? item.passenger_type}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{item.count}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800 font-mono text-right">{formatCurrency(item.total)}</td>
                                                 </tr>
@@ -360,7 +375,7 @@ export default function ReportsIndex({
                                         <tbody className="divide-y divide-gray-100">
                                             {stats.by_payment_method.map((item) => (
                                                 <tr key={item.payment_method} className="hover:bg-gray-50/50 transition">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 capitalize">{item.payment_method}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">{paymentMethodLabel[item.payment_method] ?? item.payment_method}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{item.count}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800 font-mono text-right">{formatCurrency(item.total)}</td>
                                                 </tr>

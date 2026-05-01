@@ -69,15 +69,39 @@ graph LR
     php artisan key:generate
     ```
 
-3.  **Base de Datos:**
+3.  **Base de Datos y Datos de Prueba:**
+    Si deseas una base de datos limpia:
     ```bash
     php artisan migrate --seed
+    ```
+
+    Si deseas llenar el sistema con **datos operativos reales para una demostración** (recomendado para presentaciones):
+    ```bash
+    php artisan db:seed --class=PresentationSeeder
     ```
 
 4.  **Lanzamiento:**
     ```bash
     composer dev
     ```
+
+---
+
+## 🎁 Datos de Demostración (Seeders)
+
+Para facilitar las pruebas y presentaciones, el `PresentationSeeder` genera un ecosistema completo de datos realistas:
+
+| Rol | Usuario / Correo | Contraseña |
+| :--- | :--- | :--- |
+| **Super Administrador** | `admin@admin.com` | `adminadmin` |
+| **Dueño de Empresa (Principal)** | `owner@owner.com` | `ownerowner` |
+| **Dueño de Empresa (Secundaria)** | `empresa2@demo.com` | `password` |
+| **Operativos (Varios)** | Ver sección de usuarios | `password` |
+
+### Contenido generado:
+*   **Geolocalización:** Telemetría GPS distribuida en el área metropolitana de Caracas (Petare, Chacaíto, Altamira).
+*   **Actividad:** 30 días de historial de conexiones, paradas y abordajes sincronizados.
+*   **Finanzas:** Miles de registros de ingresos manuales con diferentes métodos de pago y tipos de usuario.
 
 ---
 

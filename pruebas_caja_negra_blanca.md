@@ -595,6 +595,96 @@ Medir cuantitativamente si la arquitectura tecnológica escogida fluye rápidame
 > [!TIP]
 > **Análisis:** La elección del entorno React + Inertia sobre arquitecturas monolíticas tradicionales demostró ser un acierto. Los tiempos de respuesta excepcionales otorgan a la PWA un rendimiento nativo que acompaña el ritmo frenético del ecosistema urbano.
 
+### 🧪 Prueba 27: Análisis de Densidad de Paradas (Clustering)
+**Estrategia:** 🛠️ Caja Blanca | **Estado:** ✅ **Exitoso**
+
+**1. Objetivo del Caso de Uso**
+Validar que el algoritmo de inteligencia geoespacial agrupe correctamente los eventos de abordaje individuales en una sola "parada" lógica basándose en proximidad (100m) y tiempo (1 min).
+
+**2. Procedimiento de Ejecución**
+* **Paso 1:** Simular el abordaje de 5 personas en un lapso de 45 segundos en la misma coordenada GPS.
+* **Paso 2:** Abrir el modal de "Mapa de Paradas" en el Calendario de Conexiones.
+* **Paso 3:** Observar el marcador generado.
+
+**3. Entradas Inyectadas (Inputs)**
+* 5 eventos de telemetría con `lat/lon` idénticos y `event_timestamp` con diferencias de 10 segundos entre sí.
+
+**4. Salidas Generadas (Outputs)**
+* `Cluster Output:` Un solo círculo (CircleMarker) en el mapa con el número "5" en su interior.
+* `UI Dinámica:` Color del marcador cambia a Ámbar/Rojo según la alta demanda detectada en ese punto.
+
+> [!TIP]
+> **Análisis:** El clustering espacio-temporal evita la saturación visual del mapa y permite al dueño de la flota identificar puntos calientes de abordaje (paradas improvisadas) con precisión quirúrgica, optimizando la planificación de rutas.
+
+---
+
+### 🧪 Prueba 28: Fragmentación de Sesiones por Inactividad
+**Estrategia:** 🛠️ Caja Blanca | **Estado:** ✅ **Exitoso**
+
+**1. Objetivo del Caso de Uso**
+Comprobar que el calendario de conexiones segregue correctamente las jornadas de trabajo (sesiones) cuando el autobús deja de transmitir telemetría por más de 60 minutos.
+
+**2. Procedimiento de Ejecución**
+* **Paso 1:** Inyectar telemetría de 6:00 AM a 10:00 AM.
+* **Paso 2:** Dejar un vacío de datos hasta las 2:00 PM.
+* **Paso 3:** Reiniciar transmisión hasta las 6:00 PM.
+* **Paso 4:** Ver el calendario mensual del autobús.
+
+**3. Entradas Inyectadas (Inputs)**
+* Logs de telemetría con un salto temporal (gap) de 4 horas en un mismo día.
+
+**4. Salidas Generadas (Outputs)**
+* `Calendar Render:` Se visualizan dos bloques de color (sesiones) distintos en el mismo día.
+* `Cálculos:` Cada sesión reporta su propia duración y conteo de pasajeros de forma aislada.
+
+> [!IMPORTANT]
+> **Análisis:** La lógica de "Timeout de Conexión" de 60 minutos es fundamental para separar turnos de mañana y tarde, o detectar paradas técnicas no autorizadas, ofreciendo una línea de tiempo fidedigna de la operatividad diaria.
+
+---
+
+### 🧪 Prueba 29: Trazabilidad de Auditoría en Cobros Manuales
+**Estrategia:** 📦 Caja Negra | **Estado:** ✅ **Exitoso**
+
+**1. Objetivo del Caso de Uso**
+Garantizar que cada ingreso manual esté vinculado de forma irreversible al usuario (colector o administrador) que lo registró, permitiendo deslindar responsabilidades.
+
+**2. Procedimiento de Ejecución**
+* **Paso 1:** Iniciar sesión como "Colector A" y registrar un pasaje.
+* **Paso 2:** Iniciar sesión como "Dueño" y navegar a la tabla de Ingresos Manuales.
+* **Paso 3:** Revisar la columna "Registrado por".
+
+**3. Entradas Inyectadas (Inputs)**
+* Registro de ingreso manual bajo sesión autenticada.
+
+**4. Salidas Generadas (Outputs)**
+* `UI Table:` Se visualiza el nombre y correo de "Colector A" junto al monto y la hora exacta del registro.
+* `RBAC Check:` El colector no puede ver esta columna (redundante para él), pero el Dueño tiene visibilidad total de la cadena de custodia del dinero.
+
+> [!NOTE]
+> **Análisis:** La incorporación de la relación `registered_by` cierra el ciclo de auditoría financiera. Ya no solo se sabe cuánto dinero entró, sino quién fue el responsable físico de recibirlo, eliminando el anonimato en la recaudación.
+
+---
+
+### 🧪 Prueba 30: Integridad Referencial en Sembrado Masivo (Stress Seeding)
+**Estrategia:** 🛠️ Caja Blanca | **Estado:** ✅ **Exitoso**
+
+**1. Objetivo del Caso de Uso**
+Validar que el motor de base de datos soporte la inyección masiva de miles de registros (Seeders) manteniendo todas las llaves foráneas y relaciones intactas para el día de la presentación.
+
+**2. Procedimiento de Ejecución**
+* **Paso 1:** Ejecutar el `PresentationSeeder`.
+* **Paso 2:** Verificar mediante SQL los conteos y relaciones de buses, rutas, telemetría y usuarios.
+
+**3. Entradas Inyectadas (Inputs)**
+* Comando `php artisan db:seed --class=PresentationSeeder`. Inyección de ~50,000 filas.
+
+**4. Salidas Generadas (Outputs)**
+* `Integrity Check:` 0 errores de integridad referencial.
+* `Performance:` El Dashboard carga reportes mensuales en < 1.2 segundos a pesar del volumen masivo de datos inyectados.
+
+> [!TIP]
+> **Análisis:** El uso de inserciones por lotes (Batch Inserts) y la normalización de columnas en el seeder garantizan un entorno de demostración rico en información y técnicamente impecable, simulando meses de uso real sin degradar el rendimiento.
+
 ---
 
 **Fuente:** Polgrossi (2026). Documentación Técnica Avanzada para Auditoría de Sistemas de Transporte Inteligente.

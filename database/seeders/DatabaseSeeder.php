@@ -15,16 +15,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin
+        // Admin global del sistema
         User::firstOrCreate(
             ['email' => 'admin@admin.com'],
             [
-                'name' => 'Super Admin',
+                'name'     => 'Super Admin',
                 'password' => bcrypt('adminadmin'),
-                'role' => 'admin',
-                'phone' => '0000000000',
+                'role'     => 'admin',
+                'phone'    => '0000000000',
             ]
         );
 
+        // Datos de demostración para presentación
+        $this->call(PresentationSeeder::class);
     }
 }

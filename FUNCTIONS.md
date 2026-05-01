@@ -38,10 +38,12 @@ Este documento detalla el arsenal tecnológico y operativo integrado en la plata
 ## 📈 4. Analítica de Negocios (BI)
 
 *   **📊 Dashboard Financiero:** KPIs de recaudación, crecimiento y comparativas históricas.
-*   **🗓️ Calendario de Ingresos:** Visualización tabular y acceso a reportes diarios.
+*   **🗓️ Calendario de Conexiones:** Visualización interactiva de sesiones operativas segmentadas por lapsos de inactividad de 60 minutos.
 *   **🕵️ Reportes Avanzados:**
     *   **Espaciado de Unidades:** Distancia y tiempo entre buses en ruta.
     *   **Mapas de Calor:** Análisis geográfico de densidades de abordaje.
+    *   **📍 Análisis de Paradas (Clustering):** Algoritmo que agrupa eventos de abordaje en "paradas lógicas" (radio 100m, ventana 1 min).
+    *   **🗺️ Mapas de Demanda:** Representación visual en el mapa con marcadores dinámicos (color/tamaño) según afluencia.
     *   **Tiempos de Ruta:** Duración promedio de trayectos completos.
 
 ---
@@ -49,10 +51,11 @@ Este documento detalla el arsenal tecnológico y operativo integrado en la plata
 ## 🛡️ 5. Seguridad y Experiencia de Usuario
 
 *   **🔑 RBAC (Roles):** Jerarquía estricta entre Administradores, Dueños y Operativos.
-*   **📜 Auditoría Forense:** Registro inalterable de cada acción crítica (Audit Logs).
+*   **📜 Auditoría Forense:** Registro inalterable de cada acción crítica (Audit Logs) y **Trazabilidad de Usuario** en cada cobro manual.
+*   **🧪 Entorno de Demostración (Seeders):** Generador masivo de datos operativos realistas para presentaciones y pruebas de estrés.
 *   **⚡ Arquitectura SPA:** Fluidez máxima mediante Inertia.js y React.
-*   **🇻🇪 Localización:** Adaptación total a husos horarios y normativas de Venezuela.
+*   **🇻🇪 Localización:** Adaptación total a husos horarios y normativas de Venezuela (Corrección de Acentos y Terminología).
 
 ---
 
-**Última actualización:** 25 de Abril, 2026.
+**Última actualización:** 30 de Abril, 2026.

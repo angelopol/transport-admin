@@ -126,4 +126,45 @@ Este documento desglosa detalladamente las funcionalidades lógicas del ecosiste
 
 ---
 
+## 📍 Caso de Uso 7: Análisis de Paradas y Sesiones Operativas
+**Segmentación de la jornada laboral y detección de puntos de abordaje.**
+
+| Atributo | Detalle |
+| :--- | :--- |
+| **Actor** | 💼 Dueño de Flota |
+| **Objetivo** | Identificar paradas frecuentes y tiempos de actividad real |
+| **Precondición** | Telemetría GPS almacenada en el sistema |
+| **Postcondición** | Visualización cartográfica de la demanda |
+
+### 🔄 Flujo de Trabajo
+| Flujo Normal | Flujo Alterno (Excepciones) |
+| :--- | :--- |
+| 1. Consultar **Calendario de Conexiones** de un bus. | 📍 **Datos sin GPS:** Si el evento no tiene coordenadas, se omite del clustering pero se cuenta en la sesión. |
+| 2. Seleccionar un bloque de sesión (Sesión de Trabajo). | 💤 **Inactividad:** Si el lapso supera 60 min, el sistema cierra la sesión actual y crea una nueva. |
+| 3. Presionar **"Ver Mapa de Paradas"**. | |
+| 4. El motor agrupa eventos (100m / 1 min). | |
+| 5. Renderizado de marcadores de demanda en mapa. | |
+
+---
+
+## 🕵️ Caso de Uso 8: Auditoría de Registros de Ingresos
+**Rastreo de la cadena de custodia de la recaudación manual.**
+
+| Atributo | Detalle |
+| :--- | :--- |
+| **Actor** | 💼 Dueño / ⚡ Administrador |
+| **Objetivo** | Identificar qué usuario registró un cobro específico |
+| **Precondición** | Ingresos registrados bajo sesión autenticada |
+| **Postcondición** | Trazabilidad completa del responsable del registro |
+
+### 🔄 Flujo de Trabajo
+| Flujo Normal | Flujo Alterno (Excepciones) |
+| :--- | :--- |
+| 1. Acceder a **Ingresos Manuales > Tabla**. | 👤 **Registro Huérfano:** Si el usuario fue eliminado, el sistema muestra un indicador genérico. |
+| 2. Localizar columna **"Registrado por"**. | 🛡️ **Restricción de Rol:** Los operativos no pueden ver esta columna en su propia vista de ingresos. |
+| 3. Visualizar Avatar, Nombre y Email del operador. | |
+| 4. Cruzar datos con reportes de turnos/sesiones. | |
+
+---
+
 **Fuente:** Documentación Técnica Transport Admin (2026).

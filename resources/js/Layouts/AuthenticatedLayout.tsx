@@ -204,7 +204,7 @@ export default function Authenticated({
                             </NavLink>
                             <NavLink href={route('audit-logs.index')} active={route().current('audit-logs.*')} className="w-full">
                                 <NavItemLabel
-                                    label="Auditoria"
+                                    label="Auditoría"
                                     icon={
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l7 4v5c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V7l7-4z" />
@@ -286,7 +286,7 @@ export default function Authenticated({
                                     <ResponsiveNavLink href={route('users.index')} active={route().current('users.*')}>Usuarios</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('devices.index')} active={route().current('devices.*')}>Dispositivos</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('admin.health')} active={route().current('admin.health')}>Salud</ResponsiveNavLink>
-                                    <ResponsiveNavLink href={route('audit-logs.index')} active={route().current('audit-logs.*')}>Auditoria</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('audit-logs.index')} active={route().current('audit-logs.*')}>Auditoría</ResponsiveNavLink>
                                 </>
                             )}
                         </div>
