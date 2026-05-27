@@ -3,7 +3,7 @@ import ReportTabs from '@/Components/ReportTabs';
 import CompanyPrintHeader, { getCompanyCsvHeader } from '@/Components/CompanyPrintHeader';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
-import { MapContainer, Marker, Popup, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
+import { MapContainer, Marker, Popup, Rectangle, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -55,23 +55,28 @@ interface Props {
     selectedDate: string;
     bounds: Bounds | null;
     events?: TelemetryEvent[];
+    /** [lat, lng] — last known location of one of the owner's buses; falls back to Caracas */
+    mapCenter: [number, number];
 }
 
 function normalizeBounds(value: Bounds | null): NumericBounds | null {
-    if (!value) {
-        return null;
-    }
-
+    if (!value) return null;
     const minLat = Number(value.minLat);
     const maxLat = Number(value.maxLat);
     const minLng = Number(value.minLng);
     const maxLng = Number(value.maxLng);
-
-    if (![minLat, maxLat, minLng, maxLng].every(Number.isFinite)) {
-        return null;
-    }
-
+    if (![minLat, maxLat, minLng, maxLng].every(Number.isFinite)) return null;
     return { minLat, maxLat, minLng, maxLng };
+}
+
+/** Sets the initial map view once on mount — does NOT react to prop changes so user panning is preserved. */
+function MapCenterEffect({ center }: { center: [number, number] }) {
+    const map = useMap();
+    useEffect(() => {
+        map.setView(center, 13, { animate: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // intentionally empty — only fires on initial mount
+    return null;
 }
 
 function AreaSelector({
@@ -97,7 +102,6 @@ function AreaSelector({
         },
         mouseup: () => {
             if (!enabled || !startPoint || !currentPoint) return;
-
             const bounds = L.latLngBounds(startPoint, currentPoint);
             onSelectionChange(bounds);
             setStartPoint(null);
@@ -126,20 +130,16 @@ function AreaSelector({
     return null;
 }
 
-export default function PassengersPerArea({ stats, selectedDate, bounds, events = [] }: Props) {
+export default function PassengersPerArea({ stats, selectedDate, bounds, events = [], mapCenter }: Props) {
     const [date, setDate] = useState(selectedDate);
     const [activeBounds, setActiveBounds] = useState<Bounds | null>(normalizeBounds(bounds));
     const [isSelectionMode, setIsSelectionMode] = useState(false);
 
-    const center = [10.4806, -66.9036] as [number, number];
     const safeActiveBounds = normalizeBounds(activeBounds);
 
     const applyFilters = useCallback((newDate: string, newBounds: Bounds | null) => {
         const params: any = { date: newDate };
-        if (newBounds) {
-            params.bounds = newBounds;
-        }
-
+        if (newBounds) params.bounds = newBounds;
         router.get(route('advanced-reports.passengers-area'), params, {
             preserveState: true,
             preserveScroll: true,
@@ -160,14 +160,11 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
             minLng: leafletBounds.getWest(),
             maxLng: leafletBounds.getEast(),
         };
-
         setActiveBounds(newBounds);
         setIsSelectionMode(false);
     };
 
-    const applyMapFilter = () => {
-        applyFilters(date, safeActiveBounds);
-    };
+    const applyMapFilter = () => applyFilters(date, safeActiveBounds);
 
     const clearMapFilter = () => {
         setActiveBounds(null);
@@ -175,10 +172,7 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
         applyFilters(date, null);
     };
 
-    const handlePrint = () => {
-        window.print();
-    };
-
+    const handlePrint = () => window.print();
     const user = usePage().props.auth.user as any;
 
     const handleExportCSV = () => {
@@ -187,7 +181,6 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
         csvContent += '=== REPORTE DE PASAJEROS POR ZONA ===\n';
         csvContent += `Fecha:,${date}\n`;
         csvContent += `Filtro de Mapa:,${safeActiveBounds ? 'Activo' : 'Inactivo'}\n\n`;
-
         csvContent += 'Métricas\n';
         csvContent += `Total Pasajeros:,${stats.total_passengers}\n`;
         csvContent += `Eventos Reportados:,${stats.total_events}\n`;
@@ -213,17 +206,13 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
     };
 
     const formatCoordinate = (value: number | string) => {
-        const numericValue = Number(value);
-        return Number.isFinite(numericValue) ? numericValue.toFixed(5) : 'N/D';
+        const n = Number(value);
+        return Number.isFinite(n) ? n.toFixed(5) : 'N/D';
     };
 
     const formatBounds = (currentBounds: Bounds | null) => {
         const normalized = normalizeBounds(currentBounds);
-
-        if (!normalized) {
-            return 'Sin filtro geográfico aplicado';
-        }
-
+        if (!normalized) return 'Sin filtro geográfico aplicado';
         return `Lat ${normalized.minLat.toFixed(4)} a ${normalized.maxLat.toFixed(4)} | Lng ${normalized.minLng.toFixed(4)} a ${normalized.maxLng.toFixed(4)}`;
     };
 
@@ -233,11 +222,13 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
         >
             <Head title="Pasajeros por Zona" />
 
-            <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden py-6">
-                <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 sm:px-6 lg:px-8">
+            <div className="py-6">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col gap-6">
                     <ReportTabs />
 
-                    <div className="mb-6 flex flex-col justify-between gap-6 rounded-lg border border-gray-100 bg-white p-6 shadow-sm print:hidden lg:flex-row">
+                    {/* ── Stats + filter panel ─────────────────────────────── */}
+                    <div className="flex flex-col justify-between gap-6 rounded-lg border border-gray-100 bg-white p-6 shadow-sm print:hidden lg:flex-row">
+                        {/* Summary cards */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:w-2/3">
                             <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
                                 <p className="mb-1 text-xs font-bold uppercase tracking-wider text-indigo-800">Total Pasajeros</p>
@@ -253,14 +244,16 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
                             </div>
                         </div>
 
+                        {/* Controls */}
                         <div className="flex flex-col justify-center gap-3 lg:w-1/3">
-                            <div className="mb-2 flex justify-end gap-2">
+                            <div className="flex justify-end gap-2">
                                 <button
                                     onClick={handlePrint}
                                     className="flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-700"
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                     </svg>
                                     Imprimir
                                 </button>
@@ -269,7 +262,8 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
                                     className="flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-green-700"
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     Exportar
                                 </button>
@@ -290,7 +284,7 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
 
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => setIsSelectionMode((current) => !current)}
+                                    onClick={() => setIsSelectionMode((v) => !v)}
                                     className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
                                         isSelectionMode
                                             ? 'bg-amber-500 text-white hover:bg-amber-600'
@@ -314,10 +308,18 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
                                     Limpiar
                                 </button>
                             </div>
+
+                            {/* Active zone badge */}
+                            {safeActiveBounds && (
+                                <p className="rounded-md border border-red-100 bg-red-50 px-3 py-1.5 text-xs text-red-700">
+                                    <span className="font-semibold">Zona activa:</span> {formatBounds(activeBounds)}
+                                </p>
+                            )}
                         </div>
                     </div>
 
-                    <div className="mb-6 hidden bg-white text-black print:block">
+                    {/* ── Print header ─────────────────────────────────────── */}
+                    <div className="hidden bg-white text-black print:block">
                         <CompanyPrintHeader />
                         <div className="mb-4 border-b border-gray-300 pb-4">
                             <h1 className="text-2xl font-bold">Reporte de Pasajeros por Zona</h1>
@@ -371,52 +373,65 @@ export default function PassengersPerArea({ stats, selectedDate, bounds, events 
                         </div>
                     </div>
 
-                    <div className="relative flex flex-1 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm print:hidden">
-                        <div className="pointer-events-none absolute left-1/2 top-4 z-[1000] -translate-x-1/2 transform rounded-full border border-gray-200 bg-white/90 px-4 py-2 text-sm font-medium text-gray-700 shadow backdrop-blur">
+                    {/* ── Map ──────────────────────────────────────────────── */}
+                    <div
+                        className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm print:hidden"
+                        style={{ height: 'calc(100vh - 320px)', minHeight: '540px' }}
+                    >
+                        {/* Mode hint overlay */}
+                        <div className="pointer-events-none absolute left-1/2 top-4 z-[1000] -translate-x-1/2 transform rounded-full border border-gray-200 bg-white/90 px-4 py-2 text-sm font-medium text-gray-700 shadow backdrop-blur whitespace-nowrap">
                             {isSelectionMode
-                                ? 'Selección activa: haz clic y arrastra para dibujar el area'
+                                ? 'Selección activa: haz clic y arrastra para dibujar el área'
                                 : 'Modo navegación: mueve el mapa libremente o activa "Seleccionar Zona"'}
                         </div>
 
-                        <div className="relative z-0 flex-1 w-full">
-                            <MapContainer center={center} zoom={12} scrollWheelZoom={true} className="h-full w-full">
-                                <TileLayer
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        <MapContainer
+                            center={mapCenter}
+                            zoom={13}
+                            scrollWheelZoom={true}
+                            className="h-full w-full"
+                        >
+                            {/* Centers the map to the backend-provided location on first mount */}
+                            <MapCenterEffect center={mapCenter} />
+
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+
+                            <AreaSelector enabled={isSelectionMode} onSelectionChange={handleMapSelection} />
+
+                            {safeActiveBounds && (
+                                <Rectangle
+                                    bounds={[
+                                        [Number(safeActiveBounds.minLat), Number(safeActiveBounds.minLng)],
+                                        [Number(safeActiveBounds.maxLat), Number(safeActiveBounds.maxLng)],
+                                    ]}
+                                    pathOptions={{ color: '#ef4444', weight: 2, fillOpacity: 0.1, dashArray: '5, 10' }}
                                 />
+                            )}
 
-                                <AreaSelector enabled={isSelectionMode} onSelectionChange={handleMapSelection} />
-
-                                {safeActiveBounds && (
-                                    <Rectangle
-                                        bounds={[
-                                            [Number(safeActiveBounds.minLat), Number(safeActiveBounds.minLng)],
-                                            [Number(safeActiveBounds.maxLat), Number(safeActiveBounds.maxLng)],
-                                        ]}
-                                        pathOptions={{ color: '#ef4444', weight: 2, fillOpacity: 0.1, dashArray: '5, 10' }}
-                                    />
-                                )}
-
-                                {events.map((event) => (
-                                    <Marker key={event.id} position={[Number(event.latitude), Number(event.longitude)]}>
-                                        <Popup>
-                                            <div className="text-sm">
-                                                <p className="mb-1 border-b pb-1 font-bold">
-                                                    Unidad: <span className="text-indigo-600">{event.bus?.plate || 'Desconocida'}</span>
-                                                </p>
-                                                <p>
-                                                    Pasajeros abordados: <span className="font-bold text-emerald-600">{event.passenger_count}</span>
-                                                </p>
-                                                <p className="mt-1 text-xs text-gray-500">
-                                                    Hora: {new Date(event.event_timestamp).toLocaleTimeString('es-VE')}
-                                                </p>
-                                            </div>
-                                        </Popup>
-                                    </Marker>
-                                ))}
-                            </MapContainer>
-                        </div>
+                            {events.map((event) => (
+                                <Marker key={event.id} position={[Number(event.latitude), Number(event.longitude)]}>
+                                    <Popup>
+                                        <div className="text-sm">
+                                            <p className="mb-1 border-b pb-1 font-bold">
+                                                Unidad: <span className="text-indigo-600">{event.bus?.plate || 'Desconocida'}</span>
+                                            </p>
+                                            <p>
+                                                Pasajeros abordados:{' '}
+                                                <span className="font-bold text-emerald-600">{event.passenger_count}</span>
+                                            </p>
+                                            <p className="mt-1 text-xs text-gray-500">
+                                                Hora: {new Date(event.event_timestamp).toLocaleTimeString('es-VE')}
+                                            </p>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            ))}
+                        </MapContainer>
                     </div>
+
                 </div>
             </div>
         </AuthenticatedLayout>

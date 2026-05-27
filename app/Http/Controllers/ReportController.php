@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
+use App\Models\Bus;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,6 +41,8 @@ class ReportController extends Controller
             ],
         ]);
 
+        $user = $request->user();
+
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->endOfMonth()->toDateString());
 
@@ -59,13 +61,20 @@ class ReportController extends Controller
             $compareTitle = 'periodo anterior';
         }
 
+        // IDs of buses that belong to this owner (all buses for admins)
+        $ownedBusIds = $user->isAdmin()
+            ? null
+            : Bus::where('owner_id', $user->id)->pluck('id');
+
         // Aggregate data for current period (use collection processing for correct America/Caracas timezone)
         $manualEntries = DB::table('manual_revenue_entries')
             ->whereBetween('registered_at', [$start, $end])
+            ->when(!$user->isAdmin(), fn($q) => $q->where('owner_id', $user->id))
             ->get();
 
         $telemetryEntries = DB::table('telemetry_events')
             ->whereBetween('event_timestamp', [$start, $end])
+            ->when(!$user->isAdmin(), fn($q) => $q->whereIn('bus_id', $ownedBusIds))
             ->get();
 
         $mergedIncomeByDay = [];
@@ -95,11 +104,13 @@ class ReportController extends Controller
         $passengerTypes = DB::table('manual_revenue_entries')
             ->selectRaw('user_type as passenger_type, COUNT(*) as count, SUM(amount) as total')
             ->whereBetween('registered_at', [$start, $end])
+            ->when(!$user->isAdmin(), fn($q) => $q->where('owner_id', $user->id))
             ->groupBy('user_type')
             ->get();
 
         $telemetryPassengers = DB::table('telemetry_events')
             ->whereBetween('event_timestamp', [$start, $end])
+            ->when(!$user->isAdmin(), fn($q) => $q->whereIn('bus_id', $ownedBusIds))
             ->sum('passenger_count') ?: 0;
 
         if ($telemetryPassengers > 0) {
@@ -113,32 +124,36 @@ class ReportController extends Controller
         $paymentMethods = DB::table('manual_revenue_entries')
             ->selectRaw('payment_method, COUNT(*) as count, SUM(amount) as total')
             ->whereBetween('registered_at', [$start, $end])
+            ->when(!$user->isAdmin(), fn($q) => $q->where('owner_id', $user->id))
             ->groupBy('payment_method')
             ->get();
 
         $currentTotalIncome = $manualEntries->sum('amount');
-        
+
         // Evasion Calculation
         $manualCount = $manualEntries->count();
         $telemetryCount = $telemetryEntries->sum('passenger_count') ?: 0;
-        
+
         // Actual total passengers is the maximum between camera counts and manual registers
         $currentTotalPassengers = max($manualCount, $telemetryCount);
-        
+
         $evasionCount = max(0, $telemetryCount - $manualCount);
         $evasionRate = $currentTotalPassengers > 0 ? ($evasionCount / $currentTotalPassengers) * 100 : 0;
 
         // Aggregate data for previous period
         $previousTotalIncome = DB::table('manual_revenue_entries')
             ->whereBetween('registered_at', [$previousStart, $previousEnd])
+            ->when(!$user->isAdmin(), fn($q) => $q->where('owner_id', $user->id))
             ->sum('amount');
 
         $previousManualCount = DB::table('manual_revenue_entries')
             ->whereBetween('registered_at', [$previousStart, $previousEnd])
+            ->when(!$user->isAdmin(), fn($q) => $q->where('owner_id', $user->id))
             ->count();
 
         $previousTelemetryCount = DB::table('telemetry_events')
             ->whereBetween('event_timestamp', [$previousStart, $previousEnd])
+            ->when(!$user->isAdmin(), fn($q) => $q->whereIn('bus_id', $ownedBusIds))
             ->sum('passenger_count') ?: 0;
 
         $previousTotalPassengers = max($previousManualCount, $previousTelemetryCount);
@@ -188,6 +203,8 @@ class ReportController extends Controller
      */
     public function calendar(Request $request): Response
     {
+        $user = $request->user();
+
         $monthParam = $request->input('month', now()->timezone('America/Caracas')->format('Y-m'));
 
         try {
@@ -204,15 +221,22 @@ class ReportController extends Controller
         $start = $startLocal->copy()->setTimezone('UTC');
         $end = $endLocal->copy()->setTimezone('UTC');
 
+        // IDs of buses that belong to this owner (null = admin sees all)
+        $ownedBusIds = $user->isAdmin()
+            ? null
+            : Bus::where('owner_id', $user->id)->pluck('id');
+
         // Fetch raw data to process timezones in PHP
         $manualEntries = DB::table('manual_revenue_entries')
             ->select('registered_at', 'amount')
             ->whereBetween('registered_at', [$start, $end])
+            ->when(!$user->isAdmin(), fn($q) => $q->where('owner_id', $user->id))
             ->get();
 
         $telemetryEntries = DB::table('telemetry_events')
             ->select('event_timestamp', 'passenger_count')
             ->whereBetween('event_timestamp', [$start, $end])
+            ->when(!$user->isAdmin(), fn($q) => $q->whereIn('bus_id', $ownedBusIds))
             ->get();
 
         // Convert the collection to a keyed array [ 'YYYY-MM-DD' => [ 'income' => x, 'passengers' => y ] ]

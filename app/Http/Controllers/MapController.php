@@ -92,7 +92,7 @@ class MapController extends Controller
         $liveBuses = $liveBuses->map(function ($bus) {
             $bus->address = $this->resolveLiveAddress($bus->latitude, $bus->longitude);
             $bus->event_timestamp = $bus->event_timestamp
-                ? Carbon::parse($bus->event_timestamp, 'UTC')->toIso8601String()
+                ? Carbon::parse($bus->event_timestamp, config('app.timezone'))->toIso8601String()
                 : null;
 
             return $bus;

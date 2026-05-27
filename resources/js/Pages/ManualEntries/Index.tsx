@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { User } from '@/types';
 import { useState } from 'react';
 import Modal from '@/Components/Modal';
@@ -29,31 +29,99 @@ interface ManualEntry {
     registered_by?: { id: number; name: string; email: string };
 }
 
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface Filters {
+    date_from: string;
+    date_to: string;
+    route_id?: string | null;
+    payment_method?: string | null;
+}
+
+interface Summary {
+    total_amount: number;
+    total_count: number;
+}
+
 interface Props {
     entries: {
         data: ManualEntry[];
-        links: any[];
+        links: PaginationLink[];
+        current_page: number;
+        last_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
     };
     auth: {
         user: User;
     };
+    filters: Filters | null;
+    summary: Summary | null;
+    routes?: Route[];
 }
 
-export default function Index({ entries, auth }: Props) {
+export default function Index({ entries, auth, filters, summary, routes = [] }: Props) {
     const isOperative = auth?.user?.role === 'operative';
 
+    // Filter state (only used for owners/admins)
+    const today = new Date().toISOString().slice(0, 10);
+    const [dateFrom, setDateFrom]       = useState(filters?.date_from ?? today);
+    const [dateTo, setDateTo]           = useState(filters?.date_to   ?? today);
+    const [routeId, setRouteId]         = useState(filters?.route_id  ?? '');
+    const [paymentMethod, setPaymentMethod] = useState(filters?.payment_method ?? '');
+
+    // Image preview
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [previewTitle, setPreviewTitle] = useState<string>('');
+
+    const applyFilters = (overrides: Partial<Filters> = {}) => {
+        router.get(
+            route('manual-entries.index'),
+            {
+                date_from:      overrides.date_from      ?? dateFrom,
+                date_to:        overrides.date_to        ?? dateTo,
+                route_id:       (overrides.route_id       ?? routeId)       || undefined,
+                payment_method: (overrides.payment_method ?? paymentMethod) || undefined,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
+
+    const handleApply = () => applyFilters();
+
+    const handleClear = () => {
+        setDateFrom(today);
+        setDateTo(today);
+        setRouteId('');
+        setPaymentMethod('');
+        router.get(route('manual-entries.index'), { date_from: today, date_to: today }, {
+            preserveState: true, preserveScroll: true, replace: true,
+        });
+    };
+
+    const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setDateFrom(val);
+        if (dateTo < val) setDateTo(val);
+    };
+
+    const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setDateTo(val);
+        if (val < dateFrom) setDateFrom(val);
+    };
 
     const openPreview = (imagePath: string, reference: string | undefined) => {
         setPreviewImage(`/storage/${imagePath}`);
         setPreviewTitle(reference ? `Ref: ${reference}` : 'Comprobante de Pago');
     };
 
-    const closePreview = () => {
-        setPreviewImage(null);
-        setPreviewTitle('');
-    };
+    const closePreview = () => { setPreviewImage(null); setPreviewTitle(''); };
 
     const handlePrint = () => {
         if (!previewImage) return;
@@ -82,37 +150,21 @@ export default function Index({ entries, auth }: Props) {
     };
 
     const formatCurrency = (amount: number | string) => {
-        const numericAmount = Number(amount) || 0;
-        return `Bs. ${new Intl.NumberFormat('es-VE', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(numericAmount)}`;
+        const n = Number(amount) || 0;
+        return `Bs. ${new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)}`;
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString('es-MX', {
-            dateStyle: 'short',
-            timeStyle: 'short',
-        });
-    };
+    const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
 
-    const translateUserType = (type: string) => {
-        const types: Record<string, string> = {
-            general: 'General',
-            student: 'Estudiante',
-            senior: 'Adulto Mayor',
-            disabled: 'Discapacitado',
-        };
-        return types[type] || type;
-    };
+    const translateUserType = (type: string) =>
+        ({ general: 'General', student: 'Estudiante', senior: 'Adulto Mayor', disabled: 'Discapacitado' }[type] ?? type);
 
-    const translatePaymentMethod = (method: string) => {
-        const methods: Record<string, string> = {
-            cash: 'Efectivo',
-            digital: 'Digital',
-        };
-        return methods[method] || method;
-    };
+    const translatePaymentMethod = (method: string) =>
+        ({ cash: 'Efectivo', digital: 'Digital' }[method] ?? method);
+
+    const dateRangeLabel = dateFrom === dateTo ? dateFrom : `${dateFrom} al ${dateTo}`;
+    const isFiltered = filters?.date_from !== today || filters?.date_to !== today || !!filters?.route_id || !!filters?.payment_method;
 
     return (
         <AuthenticatedLayout
@@ -136,7 +188,109 @@ export default function Index({ entries, auth }: Props) {
             <Head title={isOperative ? 'Pasaje' : 'Ingresos'} />
 
             <div className="py-6">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col gap-4">
+
+                    {/* ── Filter bar (owners & admins only) ─────────────── */}
+                    {!isOperative && (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                            <div className="flex flex-wrap gap-3 items-end">
+
+                                {/* Desde */}
+                                <div className="flex flex-col gap-1 min-w-[140px]">
+                                    <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Desde</label>
+                                    <input
+                                        type="date"
+                                        value={dateFrom}
+                                        max={dateTo}
+                                        onChange={handleDateFromChange}
+                                        className="border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                </div>
+
+                                {/* Hasta */}
+                                <div className="flex flex-col gap-1 min-w-[140px]">
+                                    <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Hasta</label>
+                                    <input
+                                        type="date"
+                                        value={dateTo}
+                                        min={dateFrom}
+                                        onChange={handleDateToChange}
+                                        className="border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                </div>
+
+                                {/* Ruta */}
+                                {routes.length > 0 && (
+                                    <div className="flex flex-col gap-1 min-w-[180px]">
+                                        <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Ruta</label>
+                                        <select
+                                            value={routeId}
+                                            onChange={(e) => setRouteId(e.target.value)}
+                                            className="border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        >
+                                            <option value="">Todas las rutas</option>
+                                            {routes.map((r) => (
+                                                <option key={r.id} value={r.id}>{r.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {/* Método de pago */}
+                                <div className="flex flex-col gap-1 min-w-[150px]">
+                                    <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Método de Pago</label>
+                                    <select
+                                        value={paymentMethod}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option value="">Todos</option>
+                                        <option value="cash">Efectivo</option>
+                                        <option value="digital">Digital</option>
+                                    </select>
+                                </div>
+
+                                {/* Action buttons */}
+                                <div className="flex gap-2 items-end pb-0.5">
+                                    <button
+                                        onClick={handleApply}
+                                        className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition flex items-center gap-1.5"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                                        </svg>
+                                        Filtrar
+                                    </button>
+                                    {isFiltered && (
+                                        <button
+                                            onClick={handleClear}
+                                            className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition"
+                                        >
+                                            Limpiar
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Active filter summary */}
+                            {summary && (
+                                <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-600">
+                                    <span>
+                                        Período: <span className="font-semibold text-gray-800">{dateRangeLabel}</span>
+                                    </span>
+                                    <span>
+                                        Registros: <span className="font-semibold text-gray-800">{summary.total_count}</span>
+                                    </span>
+                                    <span>
+                                        Total: <span className="font-bold text-emerald-700">{formatCurrency(summary.total_amount)}</span>
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ── Table ─────────────────────────────────────────── */}
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
@@ -158,8 +312,9 @@ export default function Index({ entries, auth }: Props) {
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {entries.data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                                                No hay ingresos registrados.
+                                            <td colSpan={isOperative ? 7 : 8} className="px-6 py-12 text-center text-gray-400">
+                                                <span className="text-3xl block mb-2">📭</span>
+                                                No hay ingresos registrados{!isOperative ? ` para el período ${dateRangeLabel}` : ' hoy'}.
                                             </td>
                                         </tr>
                                     ) : (
@@ -176,9 +331,9 @@ export default function Index({ entries, auth }: Props) {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                                                        ${entry.user_type === 'general' ? 'bg-gray-100 text-gray-800' : ''}
-                                                        ${entry.user_type === 'student' ? 'bg-blue-100 text-blue-800' : ''}
-                                                        ${entry.user_type === 'senior' ? 'bg-purple-100 text-purple-800' : ''}
+                                                        ${entry.user_type === 'general'  ? 'bg-gray-100 text-gray-800'   : ''}
+                                                        ${entry.user_type === 'student'  ? 'bg-blue-100 text-blue-800'   : ''}
+                                                        ${entry.user_type === 'senior'   ? 'bg-purple-100 text-purple-800' : ''}
                                                         ${entry.user_type === 'disabled' ? 'bg-orange-100 text-orange-800' : ''}
                                                     `}>
                                                         {translateUserType(entry.user_type)}
@@ -209,9 +364,9 @@ export default function Index({ entries, auth }: Props) {
                                                     </td>
                                                 )}
                                                 <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                                    {entry.reference_number && <div><span className="font-semibold">Ref:</span> {entry.reference_number}</div>}
-                                                    {entry.identification && <div><span className="font-semibold">C.I:</span> {entry.identification}</div>}
-                                                    {entry.phone_or_account && <div><span className="font-semibold">Tel/Cta:</span> {entry.phone_or_account}</div>}
+                                                    {entry.reference_number  && <div><span className="font-semibold">Ref:</span> {entry.reference_number}</div>}
+                                                    {entry.identification    && <div><span className="font-semibold">C.I:</span> {entry.identification}</div>}
+                                                    {entry.phone_or_account  && <div><span className="font-semibold">Tel/Cta:</span> {entry.phone_or_account}</div>}
                                                     {!entry.reference_number && !entry.identification && !entry.phone_or_account && <span className="text-gray-400">—</span>}
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
@@ -236,14 +391,59 @@ export default function Index({ entries, auth }: Props) {
                                         ))
                                     )}
                                 </tbody>
+
+                                {/* Total footer row */}
+                                {!isOperative && summary && entries.data.length > 0 && (
+                                    <tfoot>
+                                        <tr className="bg-gray-50 border-t-2 border-gray-200">
+                                            <td colSpan={7} className="px-6 py-3 text-sm text-gray-500">
+                                                {entries.from !== null && entries.to !== null && (
+                                                    <span>Mostrando {entries.from}–{entries.to} de {entries.total} registros</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-3 text-right text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                                Total período:
+                                            </td>
+                                            <td className="px-6 py-3 text-right font-black text-emerald-700 text-base">
+                                                {formatCurrency(summary.total_amount)}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                )}
                             </table>
                         </div>
 
-                        {/* Pagination would go here */}
+                        {/* Pagination */}
+                        {entries.last_page > 1 && (
+                            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-2 flex-wrap">
+                                <p className="text-sm text-gray-500">
+                                    Página {entries.current_page} de {entries.last_page}
+                                </p>
+                                <div className="flex gap-1 flex-wrap">
+                                    {entries.links.map((link, i) => (
+                                        <button
+                                            key={i}
+                                            disabled={!link.url}
+                                            onClick={() => link.url && router.get(link.url, {}, { preserveScroll: true })}
+                                            className={`px-3 py-1.5 text-sm rounded-md border transition
+                                                ${link.active
+                                                    ? 'bg-indigo-600 text-white border-indigo-600 font-semibold'
+                                                    : link.url
+                                                        ? 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                        : 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed'}
+                                            `}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
+
                 </div>
             </div>
-            {/* FAB for mobile devices */}
+
+            {/* FAB for mobile */}
             <Link
                 href={route('manual-entries.create')}
                 className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all z-50"
@@ -259,10 +459,7 @@ export default function Index({ entries, auth }: Props) {
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-medium text-gray-900">{previewTitle}</h3>
-                        <button
-                            onClick={closePreview}
-                            className="text-gray-400 hover:text-gray-500 transition-colors"
-                        >
+                        <button onClick={closePreview} className="text-gray-400 hover:text-gray-500 transition-colors">
                             <span className="sr-only">Cerrar</span>
                             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -272,11 +469,7 @@ export default function Index({ entries, auth }: Props) {
 
                     <div className="mt-2 flex justify-center bg-gray-50 rounded-lg p-2 border border-gray-200 min-h-[50vh]">
                         {previewImage && (
-                            <img
-                                src={previewImage}
-                                alt={previewTitle}
-                                className="max-w-full max-h-[70vh] object-contain rounded shadow-sm"
-                            />
+                            <img src={previewImage} alt={previewTitle} className="max-w-full max-h-[70vh] object-contain rounded shadow-sm" />
                         )}
                     </div>
 
@@ -284,7 +477,7 @@ export default function Index({ entries, auth }: Props) {
                         <a
                             href={previewImage || '#'}
                             download={`comprobante_${previewTitle.replace(/\s+/g, '_')}.png`}
-                            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 items-center gap-2"
+                            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none items-center gap-2"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -294,7 +487,7 @@ export default function Index({ entries, auth }: Props) {
                         <button
                             type="button"
                             onClick={handlePrint}
-                            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500 items-center gap-2 shadow-sm"
+                            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none items-center gap-2 shadow-sm"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />

@@ -204,7 +204,7 @@ export default function MapsIndex({ buses }: Props) {
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between text-sm text-gray-500">
                                         <span>Última actualización:</span>
-                                        <span className="font-medium text-gray-700">{lastRefresh ? lastRefresh.toLocaleTimeString('es-VE') : '...'}</span>
+                                        <span className="font-medium text-gray-700">{lastRefresh ? lastRefresh.toLocaleTimeString('es-VE', { timeZone: 'America/Caracas' }) : '...'}</span>
                                     </div>
 
                                     {selectedLiveBus && (
@@ -231,7 +231,7 @@ export default function MapsIndex({ buses }: Props) {
                                                 </p>
                                                 <p>
                                                     <span className="font-semibold text-gray-800">Último reporte:</span>{' '}
-                                                    {new Date(selectedLiveBus.event_timestamp).toLocaleString('es-VE')}
+                                                    {new Date(selectedLiveBus.event_timestamp).toLocaleString('es-VE', { timeZone: 'America/Caracas' })}
                                                 </p>
                                             </div>
                                         </div>
@@ -270,7 +270,7 @@ export default function MapsIndex({ buses }: Props) {
                                                         <p className="mt-1 text-xs text-gray-600 line-clamp-2">
                                                             {bus.address || 'Dirección no disponible todavía'}
                                                         </p>
-                                                        <p className="text-xs text-gray-500 mt-1">{new Date(bus.event_timestamp).toLocaleTimeString('es-VE')}</p>
+                                                        <p className="text-xs text-gray-500 mt-1">{new Date(bus.event_timestamp).toLocaleTimeString('es-VE', { timeZone: 'America/Caracas' })}</p>
                                                     </div>
                                                 </button>
                                             ))
@@ -387,7 +387,7 @@ export default function MapsIndex({ buses }: Props) {
                                                         <span className="font-medium text-emerald-600">+{bus.passenger_count} pasajeros</span>
                                                     </p>
                                                     <p className="text-xs text-gray-400 mt-2">
-                                                        {new Date(bus.event_timestamp).toLocaleString('es-VE')}
+                                                        {new Date(bus.event_timestamp).toLocaleString('es-VE', { timeZone: 'America/Caracas' })}
                                                     </p>
                                                 </div>
                                             </Popup>

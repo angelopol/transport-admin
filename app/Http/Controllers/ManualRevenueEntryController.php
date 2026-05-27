@@ -18,16 +18,76 @@ class ManualRevenueEntryController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $entries = ManualRevenueEntry::with(['route', 'bus', 'registeredBy'])
+        $tz   = 'America/Caracas';
+
+        // Operatives always see only today; owners/admins get a date-range filter
+        if ($user->isOperative()) {
+            $entries = ManualRevenueEntry::with(['route', 'bus', 'registeredBy'])
+                ->forUser($user)
+                ->whereDate('registered_at', Carbon::today($tz))
+                ->orderBy('registered_at', 'desc')
+                ->paginate(20);
+
+            return Inertia::render('ManualEntries/Index', [
+                'entries' => $entries,
+                'filters' => null,
+                'summary' => null,
+            ]);
+        }
+
+        // --- Owner / Admin flow ---
+        $today    = Carbon::today($tz)->toDateString();
+        $dateFrom = $request->input('date_from', $today);
+        $dateTo   = $request->input('date_to',   $today);
+
+        // Clamp: date_to must not precede date_from
+        if ($dateTo < $dateFrom) {
+            $dateTo = $dateFrom;
+        }
+
+        $fromUtc = Carbon::parse($dateFrom, $tz)->startOfDay()->utc();
+        $toUtc   = Carbon::parse($dateTo,   $tz)->endOfDay()->utc();
+
+        $baseQuery = ManualRevenueEntry::with(['route', 'bus', 'registeredBy'])
             ->forUser($user)
-            ->when($user->isOperative(), function ($query) {
-                $query->whereDate('registered_at', Carbon::today());
-            })
+            ->whereBetween('registered_at', [$fromUtc, $toUtc]);
+
+        // Optional extra filters
+        if ($request->filled('route_id')) {
+            $baseQuery->where('route_id', $request->input('route_id'));
+        }
+        if ($request->filled('payment_method')) {
+            $baseQuery->where('payment_method', $request->input('payment_method'));
+        }
+
+        $summary = ManualRevenueEntry::forUser($user)
+            ->whereBetween('registered_at', [$fromUtc, $toUtc])
+            ->when($request->filled('route_id'),         fn($q) => $q->where('route_id',        $request->input('route_id')))
+            ->when($request->filled('payment_method'),   fn($q) => $q->where('payment_method',  $request->input('payment_method')))
+            ->selectRaw('SUM(amount) as total_amount, COUNT(*) as total_count')
+            ->first();
+
+        $entries = $baseQuery
             ->orderBy('registered_at', 'desc')
-            ->paginate(15);
+            ->paginate(20)
+            ->withQueryString();
+
+        // Routes the user owns (for optional route filter)
+        $routes = Route::active()->forUser($user)->get(['id', 'name']);
 
         return Inertia::render('ManualEntries/Index', [
             'entries' => $entries,
+            'filters' => [
+                'date_from'      => $dateFrom,
+                'date_to'        => $dateTo,
+                'route_id'       => $request->input('route_id'),
+                'payment_method' => $request->input('payment_method'),
+            ],
+            'summary' => [
+                'total_amount' => (float) ($summary->total_amount ?? 0),
+                'total_count'  => (int)   ($summary->total_count  ?? 0),
+            ],
+            'routes' => $routes,
         ]);
     }
 

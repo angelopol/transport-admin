@@ -37,6 +37,22 @@ class AdvancedReportController extends Controller
             abort(403);
         }
 
+        $tz = 'America/Caracas';
+
+        // Date range — defaults to today in VET
+        $defaultDate = now()->timezone($tz)->toDateString();
+        $dateFrom = $request->input('date_from', $defaultDate);
+        $dateTo   = $request->input('date_to',   $defaultDate);
+
+        // Clamp: date_to must not be before date_from
+        if ($dateTo < $dateFrom) {
+            $dateTo = $dateFrom;
+        }
+
+        // Convert to UTC window for DB query
+        $startUtc = Carbon::parse($dateFrom, $tz)->startOfDay()->setTimezone('UTC');
+        $endUtc   = Carbon::parse($dateTo,   $tz)->endOfDay()->setTimezone('UTC');
+
         $routesQuery = Route::active();
         if (!$user->isAdmin()) {
             $routesQuery->where('owner_id', $user->id);
@@ -50,8 +66,11 @@ class AdvancedReportController extends Controller
             $buses = Bus::where('route_id', $selectedRouteId)
                 ->where('is_active', true)
                 ->with([
-                    'telemetryEvents' => function ($query) {
-                        $query->withLocation()->latest('event_timestamp')->limit(1);
+                    'telemetryEvents' => function ($query) use ($startUtc, $endUtc) {
+                        $query->withLocation()
+                              ->whereBetween('event_timestamp', [$startUtc, $endUtc])
+                              ->latest('event_timestamp')
+                              ->limit(1);
                     }
                 ])
                 ->get();
@@ -71,24 +90,25 @@ class AdvancedReportController extends Controller
                 }
             }
 
-            // To figure out the spacing, we ideally sort them along the route. 
-            // For now, sorting them by last_seen to show the gap between them.
+            // Sort by last_seen to establish leader → follower order
             usort($busesData, function ($a, $b) {
                 return $a['last_seen'] <=> $b['last_seen'];
             });
 
-            // Calculate differences
+            // Calculate differences (Haversine + time gap)
             for ($i = 0; $i < count($busesData); $i++) {
                 if ($i > 0) {
                     $prev = $busesData[$i - 1];
                     $curr = $busesData[$i];
 
-                    // Simple Haversine
-                    $distance = $this->haversineGreatCircleDistance($curr['lat'], $curr['lng'], $prev['lat'], $prev['lng']);
+                    $distance = $this->haversineGreatCircleDistance(
+                        $curr['lat'], $curr['lng'],
+                        $prev['lat'], $prev['lng']
+                    );
                     $timeDiff = $curr['last_seen']->diffInMinutes($prev['last_seen']);
 
                     $busesData[$i]['distance_to_prev'] = round($distance, 2); // meters
-                    $busesData[$i]['time_to_prev'] = abs($timeDiff); // minutes
+                    $busesData[$i]['time_to_prev'] = abs($timeDiff);           // minutes
                 } else {
                     $busesData[$i]['distance_to_prev'] = 0;
                     $busesData[$i]['time_to_prev'] = 0;
@@ -97,9 +117,11 @@ class AdvancedReportController extends Controller
         }
 
         return Inertia::render('AdvancedReports/UnitSpacing', [
-            'routes' => $routes,
-            'busesData' => $busesData,
-            'selectedRouteId' => $selectedRouteId
+            'routes'          => $routes,
+            'busesData'       => $busesData,
+            'selectedRouteId' => $selectedRouteId,
+            'selectedDateFrom' => $dateFrom,
+            'selectedDateTo'   => $dateTo,
         ]);
     }
 
@@ -147,11 +169,25 @@ class AdvancedReportController extends Controller
             $stats['average_passengers_per_stop'] = round($stats['total_passengers'] / $stats['total_events'], 2);
         }
 
+        // Determine the best initial map center: last telemetry event with location from the
+        // user's buses (any date), so the map opens on the operator's actual area of operation.
+        $lastLocatedEvent = TelemetryEvent::withLocation()
+            ->when(!$user->isAdmin(), function ($q) use ($user) {
+                $q->whereHas('bus', fn($bq) => $bq->where('owner_id', $user->id));
+            })
+            ->latest('event_timestamp')
+            ->first(['latitude', 'longitude']);
+
+        $mapCenter = $lastLocatedEvent
+            ? [(float) $lastLocatedEvent->latitude, (float) $lastLocatedEvent->longitude]
+            : [10.4806, -66.9036]; // Caracas fallback
+
         return Inertia::render('AdvancedReports/PassengersPerArea', [
-            'stats' => $stats,
+            'stats'        => $stats,
             'selectedDate' => $dateStr,
-            'bounds' => $bounds,
-            'events' => $events
+            'bounds'       => $bounds,
+            'events'       => $events,
+            'mapCenter'    => $mapCenter,
         ]);
     }
 

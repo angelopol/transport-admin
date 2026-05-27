@@ -24,27 +24,50 @@ interface Props {
     routes: Route[];
     busesData: BusData[];
     selectedRouteId: number | null;
+    selectedDateFrom: string;
+    selectedDateTo: string;
 }
 
-export default function UnitSpacing({ routes, busesData, selectedRouteId }: Props) {
-    const [routeId, setRouteId] = useState(selectedRouteId || '');
+export default function UnitSpacing({ routes, busesData, selectedRouteId, selectedDateFrom, selectedDateTo }: Props) {
+    const today = new Date().toISOString().slice(0, 10);
 
-    const handleRouteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newRouteId = e.target.value;
-        setRouteId(newRouteId);
+    const [routeId, setRouteId]   = useState<string | number>(selectedRouteId || '');
+    const [dateFrom, setDateFrom] = useState(selectedDateFrom || today);
+    const [dateTo, setDateTo]     = useState(selectedDateTo   || today);
+
+    /** Central navigation — always sends all active filters together */
+    const applyFilters = (newRouteId: string | number, newFrom: string, newTo: string) => {
         router.get(
             route('advanced-reports.unit-spacing'),
-            { route_id: newRouteId },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            }
+            { route_id: newRouteId, date_from: newFrom, date_to: newTo },
+            { preserveState: true, preserveScroll: true },
         );
     };
 
-    const handlePrint = () => {
-        window.print();
+    const handleRouteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const id = e.target.value;
+        setRouteId(id);
+        applyFilters(id, dateFrom, dateTo);
     };
+
+    const handleApplyDates = () => {
+        applyFilters(routeId, dateFrom, dateTo);
+    };
+
+    /** Keep date_to ≥ date_from automatically */
+    const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setDateFrom(val);
+        if (dateTo < val) setDateTo(val);
+    };
+
+    const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setDateTo(val);
+        if (val < dateFrom) setDateFrom(val);
+    };
+
+    const handlePrint = () => window.print();
 
     const user = usePage().props.auth.user as any;
 
@@ -53,16 +76,17 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
         csvContent += getCompanyCsvHeader(user);
         csvContent += '=== REPORTE DE ESPACIADO DE UNIDADES ===\n';
 
-        const selectedRoute = routes.find((route) => route.id.toString() === routeId.toString());
-        csvContent += `Ruta Seleccionada:,${selectedRoute ? selectedRoute.name : 'Sin ruta'}\n\n`;
+        const selectedRoute = routes.find((r) => r.id.toString() === routeId.toString());
+        csvContent += `Ruta Seleccionada:,${selectedRoute ? selectedRoute.name : 'Sin ruta'}\n`;
+        csvContent += `Período:,${dateFrom} al ${dateTo}\n\n`;
 
         csvContent += 'Posición,Placa,Último Reporte,Brecha de Tiempo (minutos),Distancia (metros),Interpretación\n';
 
         if (busesData.length > 0) {
             busesData.forEach((bus, index) => {
-                const position = index === 0 ? 'LIDER' : index + 1;
-                const timeGap = index === 0 ? '0' : bus.time_to_prev;
-                const distanceGap = index === 0 ? '0' : bus.distance_to_prev;
+                const position     = index === 0 ? 'LIDER' : index + 1;
+                const timeGap      = index === 0 ? '0' : bus.time_to_prev;
+                const distanceGap  = index === 0 ? '0' : bus.distance_to_prev;
                 const interpretation =
                     index === 0
                         ? 'Unidad mas adelantada segun ultimo reporte'
@@ -77,22 +101,24 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
-        link.setAttribute('download', `Reporte_Espaciado_Ruta_${routeId}.csv`);
+        link.setAttribute('download', `Reporte_Espaciado_Ruta_${routeId}_${dateFrom}_${dateTo}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
-    const selectedRoute = routes.find((route) => route.id.toString() === routeId.toString());
-    const trailingUnits = busesData.slice(1);
-    const averageTimeGap =
+    const selectedRoute    = routes.find((r) => r.id.toString() === routeId.toString());
+    const trailingUnits    = busesData.slice(1);
+    const averageTimeGap   =
         trailingUnits.length > 0
-            ? Math.round(trailingUnits.reduce((sum, bus) => sum + bus.time_to_prev, 0) / trailingUnits.length)
+            ? Math.round(trailingUnits.reduce((sum, b) => sum + b.time_to_prev, 0) / trailingUnits.length)
             : 0;
     const averageDistanceGap =
         trailingUnits.length > 0
-            ? Math.round(trailingUnits.reduce((sum, bus) => sum + bus.distance_to_prev, 0) / trailingUnits.length)
+            ? Math.round(trailingUnits.reduce((sum, b) => sum + b.distance_to_prev, 0) / trailingUnits.length)
             : 0;
+
+    const dateRangeLabel = dateFrom === dateTo ? dateFrom : `${dateFrom} al ${dateTo}`;
 
     return (
         <AuthenticatedLayout
@@ -104,8 +130,11 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <ReportTabs />
 
+                    {/* ── Filter panel ────────────────────────────────────── */}
                     <div className="bg-white p-6 shadow-sm sm:rounded-lg mb-6 print:hidden">
-                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+
+                        {/* Row 1: route selector + action buttons */}
+                        <div className="flex flex-col sm:flex-row gap-4 items-end justify-between">
                             <div className="w-full sm:w-1/2">
                                 <label htmlFor="route_id" className="block text-sm font-medium text-gray-700 mb-1">
                                     Seleccionar Ruta:
@@ -117,68 +146,106 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                                     className="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                 >
                                     <option value="">-- Seleccione una ruta --</option>
-                                    {routes.map((route) => (
-                                        <option key={route.id} value={route.id}>
-                                            {route.name}
-                                        </option>
+                                    {routes.map((r) => (
+                                        <option key={r.id} value={r.id}>{r.name}</option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+
+                            <div className="flex gap-2 w-full sm:w-auto">
                                 <button
                                     onClick={handlePrint}
                                     className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm flex items-center justify-center gap-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                                        />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                     </svg>
                                     Imprimir
                                 </button>
                                 <button
-                                    className="flex-1 sm:flex-none px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition shadow-sm flex items-center justify-center gap-2"
                                     onClick={handleExportCSV}
+                                    className="flex-1 sm:flex-none px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition shadow-sm flex items-center justify-center gap-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        ></path>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     Exportar
                                 </button>
                             </div>
                         </div>
 
+                        {/* Row 2: date range */}
+                        <div className="mt-4 flex flex-col sm:flex-row gap-3 items-end">
+                            <div className="flex-1 min-w-0">
+                                <label htmlFor="date_from" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Desde:
+                                </label>
+                                <input
+                                    id="date_from"
+                                    type="date"
+                                    value={dateFrom}
+                                    max={dateTo}
+                                    onChange={handleDateFromChange}
+                                    className="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
+                                />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <label htmlFor="date_to" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Hasta:
+                                </label>
+                                <input
+                                    id="date_to"
+                                    type="date"
+                                    value={dateTo}
+                                    min={dateFrom}
+                                    max={today}
+                                    onChange={handleDateToChange}
+                                    className="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
+                                />
+                            </div>
+                            <button
+                                onClick={handleApplyDates}
+                                disabled={!routeId}
+                                className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm flex items-center gap-2 whitespace-nowrap"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                                </svg>
+                                Aplicar
+                            </button>
+                        </div>
+
+                        {/* Info box */}
                         <div className="w-full text-sm text-gray-700 bg-blue-50 p-4 rounded-lg mt-4 border border-blue-100">
                             <p className="font-semibold text-blue-900 mb-2">¿Para qué sirve este reporte?</p>
                             <p>
-                                Este reporte ayuda a detectar si las unidades de una misma ruta están demasiado juntas o demasiado separadas.
-                                Compara cada unidad con la que va inmediatamente por delante usando su último reporte de telemetría.
+                                Este reporte ayuda a detectar si las unidades de una misma ruta están demasiado juntas o demasiado
+                                separadas. Compara cada unidad con la que va inmediatamente por delante usando su último reporte de
+                                telemetría dentro del período seleccionado.
                             </p>
                             <p className="mt-2">
-                                Si las brechas de tiempo o distancia son muy grandes, puede indicar huecos en la frecuencia del servicio.
-                                Si son demasiado pequeñas, puede haber saturación de unidades en el mismo tramo.
+                                Si las brechas de tiempo o distancia son muy grandes, puede indicar huecos en la frecuencia del
+                                servicio. Si son demasiado pequeñas, puede haber saturación de unidades en el mismo tramo.
                             </p>
                         </div>
                     </div>
+                    {/* ── End filter panel ────────────────────────────────── */}
 
                     {routeId ? (
                         <>
+                            {/* ── Print view ─────────────────────────────────── */}
                             <div className="hidden print:block bg-white text-black mb-6">
                                 <CompanyPrintHeader />
                                 <div className="border-b border-gray-300 pb-4 mb-4">
                                     <h1 className="text-2xl font-bold">Reporte de Espaciado de Unidades</h1>
                                     <p className="text-sm mt-1">Ruta: {selectedRoute?.name || 'N/D'}</p>
+                                    <p className="text-sm mt-1">Período: {dateRangeLabel}</p>
                                     <p className="text-sm mt-1">
-                                        Este reporte ordena las unidades por su último reporte de telemetría y calcula la brecha de tiempo y
-                                        distancia respecto a la unidad inmediatamente anterior.
+                                        Este reporte ordena las unidades por su último reporte de telemetría y calcula la brecha
+                                        de tiempo y distancia respecto a la unidad inmediatamente anterior.
                                     </p>
                                 </div>
 
@@ -229,11 +296,29 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                                         </tbody>
                                     </table>
                                 ) : (
-                                    <p className="text-sm text-gray-600">No hay unidades activas con datos de telemetría recientes para esta ruta.</p>
+                                    <p className="text-sm text-gray-600">
+                                        No hay unidades con datos de telemetría en el período seleccionado para esta ruta.
+                                    </p>
                                 )}
                             </div>
+                            {/* ── End print view ─────────────────────────────── */}
 
+                            {/* ── Screen view ────────────────────────────────── */}
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg print:hidden">
+
+                                {/* Active filter badge */}
+                                <div className="px-6 pt-4 pb-0 flex items-center gap-2 text-sm text-gray-500">
+                                    <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>
+                                        Mostrando datos de{' '}
+                                        <span className="font-semibold text-gray-700">{dateRangeLabel}</span>
+                                    </span>
+                                </div>
+
+                                {/* Summary cards */}
                                 <div className="p-6 border-b border-gray-100">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="rounded-xl bg-indigo-50 border border-indigo-100 p-4">
@@ -251,6 +336,7 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                                     </div>
                                 </div>
 
+                                {/* Timeline list */}
                                 <div className="p-0 sm:p-6">
                                     {busesData.length > 0 ? (
                                         <div className="relative">
@@ -278,7 +364,8 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                                                                 </div>
                                                                 <div className="text-sm text-gray-500 mt-2 flex items-center gap-2">
                                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                                     </svg>
                                                                     Último reporte: {bus.last_seen_formatted}
                                                                 </div>
@@ -306,7 +393,9 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                                                                     <div className="bg-slate-50 text-slate-700 px-4 py-2 rounded-lg border border-slate-200 min-w-[150px] text-left">
                                                                         <p className="text-xs uppercase font-bold tracking-wider">Lectura</p>
                                                                         <p className="text-sm font-semibold mt-1">
-                                                                            {bus.time_to_prev > 15 || bus.distance_to_prev > 1500 ? 'Brecha amplia' : 'Brecha normal'}
+                                                                            {bus.time_to_prev > 15 || bus.distance_to_prev > 1500
+                                                                                ? 'Brecha amplia'
+                                                                                : 'Brecha normal'}
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -318,11 +407,14 @@ export default function UnitSpacing({ routes, busesData, selectedRouteId }: Prop
                                         </div>
                                     ) : (
                                         <div className="text-center py-12 text-gray-500">
-                                            No hay unidades activas con datos de telemetría recientes para esta ruta.
+                                            <span className="text-4xl block mb-3">📭</span>
+                                            No hay unidades con datos de telemetría en el período{' '}
+                                            <span className="font-semibold">{dateRangeLabel}</span> para esta ruta.
                                         </div>
                                     )}
                                 </div>
                             </div>
+                            {/* ── End screen view ────────────────────────────── */}
                         </>
                     ) : (
                         <div className="bg-white p-12 text-center text-gray-500 shadow-sm sm:rounded-lg border-2 border-dashed border-gray-300">
