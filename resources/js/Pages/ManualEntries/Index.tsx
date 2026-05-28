@@ -155,7 +155,7 @@ export default function Index({ entries, auth, filters, summary, routes = [] }: 
     };
 
     const formatDate = (dateString: string) =>
-        new Date(dateString).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+        new Date(dateString).toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' });
 
     const translateUserType = (type: string) =>
         ({ general: 'General', student: 'Estudiante', senior: 'Adulto Mayor', disabled: 'Discapacitado' }[type] ?? type);

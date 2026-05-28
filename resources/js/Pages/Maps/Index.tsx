@@ -196,7 +196,7 @@ export default function MapsIndex({ buses }: Props) {
                                     onClick={() => setMode('history')}
                                     className={`flex-1 py-1.5 text-sm font-medium rounded-md transition ${mode === 'history' ? 'bg-white shadow text-indigo-700' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
-                                    Historico
+                                    Histórico
                                 </button>
                             </div>
 
@@ -216,7 +216,7 @@ export default function MapsIndex({ buses }: Props) {
                                                     <p className="text-sm text-gray-500">{selectedLiveBus.route_name || 'Sin ruta asignada'}</p>
                                                 </div>
                                                 <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                                                    En linea
+                                                    En línea
                                                 </span>
                                             </div>
 
@@ -243,7 +243,7 @@ export default function MapsIndex({ buses }: Props) {
 
                                     <div className="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300">
                                         {liveData.length === 0 ? (
-                                            <p className="text-sm text-gray-500 italic">No hay unidades transmitiendo en las ultimas 2 horas.</p>
+                                            <p className="text-sm text-gray-500 italic">No hay unidades transmitiendo en las últimas 2 horas.</p>
                                         ) : (
                                             liveData.map((bus) => (
                                                 <button

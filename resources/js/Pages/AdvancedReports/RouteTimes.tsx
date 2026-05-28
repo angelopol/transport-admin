@@ -112,7 +112,7 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                     <div className="bg-white p-4 shadow-sm sm:rounded-lg mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center print:hidden">
                         <div className="text-gray-600 max-w-3xl">
                             El reporte resume la jornada operativa por ruta: ventana de servicio, dispersión entre unidades,
-                            volumen de eventos y detalle por autobus para el dia seleccionado.
+                            volumen de eventos y detalle por autobús para el día seleccionado.
                         </div>
                         <div className="flex gap-4 items-center flex-wrap">
                             <div className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                                     <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <p>No hay suficientes datos de telemetria para calcular promedios en esta fecha.</p>
+                                    <p>No hay suficientes datos de telemetría para calcular promedios en esta fecha.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-6 print:space-y-8">
@@ -216,7 +216,7 @@ export default function RouteTimes({ routeStats, selectedDate }: Props) {
                                                         </p>
                                                     </div>
                                                     <div className="rounded-xl bg-white border border-gray-100 p-4">
-                                                        <p className="text-xs uppercase tracking-wide text-gray-500">Eventos de telemetria</p>
+                                                        <p className="text-xs uppercase tracking-wide text-gray-500">Eventos de telemetría</p>
                                                         <p className="mt-2 text-lg font-bold text-gray-900">{stat.total_events}</p>
                                                         <p className="text-sm text-gray-500 mt-1">{stat.average_event_count} por unidad</p>
                                                     </div>

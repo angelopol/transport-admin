@@ -75,7 +75,7 @@ export default function ComparativeReport({ comparativeData, currentMonth }: Pag
                             <div className="space-y-12">
                                 {/* Chart 1: Revenue vs Evasion */}
                                 <div>
-                                    <h4 className="text-center font-semibold text-gray-700 mb-4">Ingresos ($) vs Ratio de Evasión (%)</h4>
+                                    <h4 className="text-center font-semibold text-gray-700 mb-4">Ingresos (Bs.) vs Ratio de Evasión (%)</h4>
                                     <div className="h-96 w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <ComposedChart
@@ -84,11 +84,11 @@ export default function ComparativeReport({ comparativeData, currentMonth }: Pag
                                             >
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                                 <XAxis dataKey="plate" tick={{fontSize: 12}} />
-                                                <YAxis yAxisId="left" orientation="left" stroke="#10b981" tickFormatter={(v) => `Bs${v}`} width={80} />
+                                                <YAxis yAxisId="left" orientation="left" stroke="#10b981" tickFormatter={(v) => `Bs. ${v}`} width={80} />
                                                 <YAxis yAxisId="right" orientation="right" stroke="#ef4444" tickFormatter={(v) => `${v}%`} width={40}/>
                                                 <Tooltip 
                                                     formatter={(value, name) => {
-                                                        if (name === 'Ingresos') return [`Bs ${value}`, name];
+                                                        if (name === 'Ingresos') return [`Bs. ${value}`, name];
                                                         if (name === 'Tasa Evasión') return [`${value}%`, name];
                                                         return [value, name];
                                                     }}

@@ -177,7 +177,7 @@ export default function SettingsModal({ isOpen, onClose, routes, user }: any) {
                                                 </div>
                                             </div>
                                             <div className="text-sm font-semibold text-gray-700">
-                                                $ {parseFloat(route.fare).toFixed(2)}
+                                                Bs. {parseFloat(route.fare).toFixed(2)}
                                             </div>
                                         </label>
                                     ))}

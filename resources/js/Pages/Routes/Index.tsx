@@ -92,7 +92,7 @@ export default function Index({ routes }: Props) {
                                             <td className="px-6 py-4 font-medium">
                                                 <div className="flex flex-col gap-1">
                                                     <div className="flex items-center gap-2">
-                                                        <span>{route.is_suburban ? 'Sub:' : ''} ${parseFloat(route.fare.toString()).toFixed(2)}</span>
+                                                        <span>{route.is_suburban ? 'Sub:' : ''} Bs. {parseFloat(route.fare.toString()).toFixed(2)}</span>
                                                         {route.official_gazette_path && (
                                                             <a href={`/storage/${route.official_gazette_path}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700" title="Ver Gaceta Oficial">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -103,7 +103,7 @@ export default function Index({ routes }: Props) {
                                                     </div>
                                                     {route.is_suburban && route.fare_urban && (
                                                         <div className="text-xs text-gray-500 font-normal">
-                                                            Urb: ${parseFloat(route.fare_urban.toString()).toFixed(2)}
+                                                            Urb: Bs. {parseFloat(route.fare_urban.toString()).toFixed(2)}
                                                         </div>
                                                     )}
                                                 </div>
@@ -162,7 +162,7 @@ export default function Index({ routes }: Props) {
                                             <span className="font-semibold text-gray-500 w-16 mt-0.5">Tarifa:</span>
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium text-gray-900">{route.is_suburban ? 'Sub:' : ''} ${parseFloat(route.fare.toString()).toFixed(2)}</span>
+                                                    <span className="font-medium text-gray-900">{route.is_suburban ? 'Sub:' : ''} Bs. {parseFloat(route.fare.toString()).toFixed(2)}</span>
                                                     {route.official_gazette_path && (
                                                         <a href={`/storage/${route.official_gazette_path}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700" title="Ver Gaceta Oficial">
                                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -173,7 +173,7 @@ export default function Index({ routes }: Props) {
                                                 </div>
                                                 {route.is_suburban && route.fare_urban && (
                                                     <div className="text-xs text-gray-500 font-normal">
-                                                        Urb: ${parseFloat(route.fare_urban.toString()).toFixed(2)}
+                                                        Urb: Bs. {parseFloat(route.fare_urban.toString()).toFixed(2)}
                                                     </div>
                                                 )}
                                             </div>
