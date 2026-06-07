@@ -51,11 +51,22 @@ export default function Create({ buses, isOperative }: Props) {
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const nativeCaptureRef = useRef<HTMLInputElement>(null);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const [isExtractingReference, setIsExtractingReference] = useState(false);
+    const [referenceWarning, setReferenceWarning] = useState<string | null>(null);
     const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+
+    // The live in-page camera (getUserMedia) only works in a secure context:
+    // HTTPS or localhost. When the app is served over plain HTTP via a LAN IP
+    // (e.g. http://172.x.x.x) navigator.mediaDevices is undefined, so we fall
+    // back to the OS-native camera via a file input with the `capture` attribute.
+    const isLiveCameraAvailable =
+        typeof navigator !== 'undefined' &&
+        !!navigator.mediaDevices &&
+        typeof navigator.mediaDevices.getUserMedia === 'function';
 
     // PWA Offline Logic
     const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -125,8 +136,49 @@ export default function Create({ buses, isOperative }: Props) {
         };
     }, []);
 
+    // Phone cameras produce full-resolution photos (often 5-12 MB) that exceed the
+    // server upload limit and PHP's upload_max_filesize. Downscale + re-encode to a
+    // small JPEG before sending: fixes the 422, speeds up upload, and is plenty
+    // readable for both the OCR and the stored proof.
+    const compressImage = (file: File, maxDim = 1600, quality = 0.85): Promise<File> =>
+        new Promise((resolve) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                let { width, height } = img;
+                if (width > maxDim || height > maxDim) {
+                    if (width >= height) {
+                        height = Math.round(height * (maxDim / width));
+                        width = maxDim;
+                    } else {
+                        width = Math.round(width * (maxDim / height));
+                        height = maxDim;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) { resolve(file); return; }
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) { resolve(file); return; }
+                        const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+                        resolve(new File([blob], name, { type: 'image/jpeg' }));
+                    },
+                    'image/jpeg',
+                    quality,
+                );
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+            img.src = url;
+        });
+
     const extractReference = async (file: File) => {
         setIsExtractingReference(true);
+        setReferenceWarning(null);
         const formData = new FormData();
         formData.append('reference_image', file);
 
@@ -135,20 +187,26 @@ export default function Create({ buses, isOperative }: Props) {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
+            // Always fill whatever the model managed to read, even if it flagged the
+            // image as not-quite-valid. The warning is shown inline, non-blocking.
             if (response.data && response.data.reference) {
-                // Remove trailing dots or non-alphanumeric weirdness if any, though backend should handle it
                 setData(prevData => ({
                     ...prevData,
                     reference_number: response.data.reference
                 }));
             }
+
+            if (response.data && response.data.warning) {
+                let msg = response.data.warning;
+                if (response.data.detail) {
+                    msg += ` — Respuesta del modelo: ${response.data.detail}`;
+                }
+                setReferenceWarning(msg);
+            }
         } catch (error: any) {
             console.error("Error extracted reference via OCR:", error);
-            if (error.response && error.response.status === 422) {
-                alert("Atención: El modelo de Inteligencia Artificial determinó que la imagen suministrada NO es un comprobante bancario válido (posible archivo irrelevante o fraude). Por favor intente con una imagen correcta.");
-            } else {
-                alert("Ocurrió un error extrayendo la referencia bancaria automáticamente. Puede escribirla manualmente.");
-            }
+            const detail = error?.response?.data?.detail || error?.message || 'sin detalle disponible';
+            setReferenceWarning(`No se pudo extraer la referencia automáticamente. Detalle: ${detail}`);
         } finally {
             setIsExtractingReference(false);
         }
@@ -230,10 +288,35 @@ export default function Create({ buses, isOperative }: Props) {
         }
     };
 
+    // Native OS camera fallback (works over plain HTTP). The file input with
+    // capture="environment" opens the phone's camera app directly on mobile.
+    const handleNativeCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const original = e.target.files?.[0];
+        // Reset the input so re-selecting the same file still fires onChange
+        e.target.value = '';
+        if (!original) return;
+
+        const file = await compressImage(original);
+
+        setData('reference_image', file);
+
+        const reader = new FileReader();
+        reader.onload = () => setPhotoPreview(reader.result as string);
+        reader.readAsDataURL(file);
+
+        extractReference(file);
+    };
+
     const retakePhoto = () => {
         setPhotoPreview(null);
         setData('reference_image', null);
-        openCamera(selectedDeviceId || undefined);
+        setReferenceWarning(null);
+        if (isLiveCameraAvailable) {
+            openCamera(selectedDeviceId || undefined);
+        } else {
+            // Re-open the native camera picker
+            nativeCaptureRef.current?.click();
+        }
     };
 
     // Cleanup camera on unmount
@@ -491,6 +574,16 @@ export default function Create({ buses, isOperative }: Props) {
                                     <div className="space-y-4 p-4 border border-blue-100 bg-blue-50/50 rounded-lg">
                                         <h4 className="font-medium text-blue-900 mb-2">Detalles de Transferencia / Pago Digital</h4>
 
+                                        {referenceWarning && (
+                                            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 text-sm">
+                                                <span className="text-lg leading-none">⚠️</span>
+                                                <div className="min-w-0">
+                                                    <p className="font-semibold">Advertencia</p>
+                                                    <p className="break-words whitespace-pre-wrap">{referenceWarning} Revisa que el número sea correcto antes de guardar.</p>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">N° de Referencia *</label>
@@ -547,18 +640,44 @@ export default function Create({ buses, isOperative }: Props) {
                                                 {isOperative ? (
                                                     <>
                                                         {!photoPreview && !isCameraOpen && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => openCamera()}
-                                                                disabled={isFormDisabled}
-                                                                className="w-full py-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 flex flex-col items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-blue-500 outline-none"
-                                                            >
-                                                                <span className="text-4xl">📸</span>
-                                                                <span className="font-medium">Tomar Fotografía del Pago</span>
-                                                            </button>
+                                                            isLiveCameraAvailable ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => openCamera()}
+                                                                    disabled={isFormDisabled}
+                                                                    className="w-full py-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 flex flex-col items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-blue-500 outline-none"
+                                                                >
+                                                                    <span className="text-4xl">📸</span>
+                                                                    <span className="font-medium">Tomar Fotografía del Pago</span>
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => nativeCaptureRef.current?.click()}
+                                                                    disabled={isFormDisabled}
+                                                                    className="w-full py-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 flex flex-col items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-blue-500 outline-none"
+                                                                >
+                                                                    <span className="text-4xl">📸</span>
+                                                                    <span className="font-medium">Tomar Fotografía del Pago</span>
+                                                                    <span className="text-xs text-gray-400">Se abrirá la cámara de tu dispositivo</span>
+                                                                </button>
+                                                            )
                                                         )}
 
-                                                        {isCameraOpen && (
+                                                        {/* Persistent native capture input — works over plain HTTP */}
+                                                        {!isLiveCameraAvailable && (
+                                                            <input
+                                                                ref={nativeCaptureRef}
+                                                                type="file"
+                                                                accept="image/*"
+                                                                capture="environment"
+                                                                onChange={handleNativeCapture}
+                                                                disabled={isFormDisabled}
+                                                                className="sr-only"
+                                                            />
+                                                        )}
+
+                                                        {isCameraOpen && isLiveCameraAvailable && (
                                                             <div className="relative rounded-lg overflow-hidden bg-black shadow-inner border border-gray-800">
                                                                 {videoDevices.length > 1 && (
                                                                     <div className="absolute top-4 left-4 right-4 z-10 drop-shadow-md">
@@ -613,7 +732,10 @@ export default function Create({ buses, isOperative }: Props) {
                                                 ) : (
                                                     <FileInput
                                                         accept="image/*"
-                                                        onChange={(file) => setData('reference_image', file)}
+                                                        onChange={async (file) => {
+                                                            if (!file) { setData('reference_image', null); return; }
+                                                            setData('reference_image', await compressImage(file));
+                                                        }}
                                                     />
                                                 )}
 

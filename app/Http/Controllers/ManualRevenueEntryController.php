@@ -127,11 +127,11 @@ class ManualRevenueEntryController extends Controller
             'reference_number' => ['required_if:payment_method,digital', 'nullable', 'string', 'max:100'],
             'identification' => ['nullable', 'string', 'max:20'],
             'phone_or_account' => ['nullable', 'string', 'max:50'],
-            'reference_image' => ['nullable', 'image', 'max:5120'],
+            'reference_image' => ['nullable', 'image', 'max:10240'],
         ];
 
         if ($request->user()->isOperative()) {
-            $rules['reference_image'] = ['required_if:payment_method,digital', 'image', 'max:5120'];
+            $rules['reference_image'] = ['required_if:payment_method,digital', 'image', 'max:10240'];
         }
 
         $validated = $request->validate($rules);
